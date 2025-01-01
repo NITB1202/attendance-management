@@ -5,7 +5,7 @@ import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
 
-const ClassStudent = () => {
+const ClassTeacher = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [newClassName, setNewClassName] = useState("");
 
@@ -67,7 +67,7 @@ const ClassStudent = () => {
                         <option value="SE105.024">Teacher name</option>
                     </select>
                 </div>
-                
+
             </div>
 
             {/* Table Section */}
@@ -147,4 +147,4 @@ const ClassStudent = () => {
     );
 };
 
-export default ClassStudent;
+export default ClassTeacher;

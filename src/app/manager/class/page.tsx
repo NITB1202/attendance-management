@@ -1,22 +1,35 @@
 "use client";
 
+
 import React, { useState } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
+import Input from "../../../../component/Input";
+import Dropdown from "../../../../component/Dropdown";
 
-const ClassStudent = () => {
+
+const ClassManager = () => {
     const [modalVisible, setModalVisible] = useState(false);
-    const [newClassName, setNewClassName] = useState("");
+    
+    const [newClassName] = useState("");
+
 
     const handleSearch = () => {
         console.log("Từ khóa tìm kiếm:");
     };
 
+
+    const handleAddNew = () => {
+        setModalVisible(true);
+    };
+
+
     const handleSave = () => {
         console.log("New Class Name:", newClassName);
         setModalVisible(false);
     };
+
 
     const tableHeader = [
         "CLASS NAME",
@@ -27,6 +40,7 @@ const ClassStudent = () => {
         "END TIME",
         "TEACHER NAME",
     ];
+
 
     const tableData = [
         [
@@ -40,7 +54,9 @@ const ClassStudent = () => {
         ],
     ];
 
+
     return (
+
 
         <div style={{ padding: 10 }}>
             {/* Search and Filter Section */}
@@ -67,13 +83,28 @@ const ClassStudent = () => {
                         <option value="SE105.024">Teacher name</option>
                     </select>
                 </div>
-                
+                <button
+                    style={{
+                        backgroundColor: "green",
+                        padding: "10px 20px",
+                        borderRadius: 5,
+                        marginLeft: "auto",
+                        color: "white",
+                        fontSize: 16,
+                        fontWeight: "bold",
+                    }}
+                    onClick={handleAddNew}
+                >
+                    Add New
+                </button>
             </div>
+
 
             {/* Table Section */}
             <div style={{ marginTop: 20 }}>
                 <Table tableHeader={tableHeader} tableData={tableData} />
             </div>
+
 
             {modalVisible && (
                 <div
@@ -92,7 +123,7 @@ const ClassStudent = () => {
                     <div
                         style={{
                             width: 523,
-                            height: 670,
+                            height: 745,
                             backgroundColor: "white",
                             borderRadius: 10,
                             padding: 20,
@@ -112,39 +143,47 @@ const ClassStudent = () => {
                         >
                             ✕
                         </button>
-                        <h3 style={{ marginBottom: 15 }}>Create New Class</h3>
-                        <div>
-                            <label>Class Name</label>
-                            <input
-                                style={{
-                                    width: "70%",
-                                    height: 40,
-                                    border: "1px solid #ccc",
-                                    borderRadius: 5,
-                                    padding: "0 10px",
-                                    marginBottom: 15,
-                                }}
-                                placeholder="Enter class name"
-                                value={newClassName}
-                                onChange={(e) => setNewClassName(e.target.value)}
-                            />
+                        <h1 style={{ marginBottom: 15, marginTop: 30, fontSize: 24, fontWeight: "bold" }}>Create a new class</h1>
+
+                        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div style={{ flex: 1, margin: '0 5px' }}>
+                                <label>Class name</label>
+                                <Input
+                                    title=""
+                                    placeHolder="Enter class name"
+                                    style={{ marginBottom: '10px' }}
+                                />
+                                <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
+                                <label>Course name</label>
+                                <Dropdown
+                                    title=""
+                                    options={['Course 1', 'Course 2', 'Course 3']}
+                                    style={{ marginBottom: '10px' }}
+                                />
+                                <input type="text" style={{ width: '100%' }} />
+                            </div>
+                            <div style={{ flex: 1,  margin: '0 5px' }}>Part 2</div>
+                            <div style={{ flex: 1,  margin: '0 5px' }}>Part 3</div>
                         </div>
+
                         <RoundedButton
                             title="CONFIRM"
                             onClick={handleSave}
                             style={{
                                 width: "100%",
-                                height: 40,
-                                marginTop: 25,
+                                height: 46,
+                                marginTop: "auto"
                             }}
-                            textStyle={{ fontSize: 20, fontWeight: "bold" }}
+                            textStyle={{ fontSize: 24, fontWeight: "bold" }}
                         />
                     </div>
                 </div>
             )}
         </div>
 
+
     );
 };
 
-export default ClassStudent;
+
+export default ClassManager;
