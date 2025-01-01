@@ -3,6 +3,7 @@ import React from "react";
 interface TableProps {
     tableHeader: string[];
     tableData: string[][];
+    onRowClick?: (rowData: string[]) => void;
 }
 
 const Table: React.FC<TableProps> = ({ tableHeader, tableData }) => {
