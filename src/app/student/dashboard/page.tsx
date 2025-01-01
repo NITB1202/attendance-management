@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { AlarmClock, CircleAlert, UserMinus, UserX } from "lucide-react";
+import Table from "../../../../component/Table";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
@@ -19,6 +20,15 @@ export default function Dashboard() {
     };
   }, []);
 
+  const tableHeader = ["NO", "DATE", "ARRIVAL TIME", "ATTENDANCE STATUS"];
+  const tableData = [
+    ["1", "12/09/2024", "09:00:00 AM", "Late"],
+    ["2", "13/09/2024", "08:00:00 AM", "On-time"],
+  ];
+
+  const handleRowClick = (rowData: string[]) => {
+    console.log("Row clicked:", rowData);
+  };
   return (
     <div style={isMobile ? styles.mobileContainer : styles.container}>
       {/* Dropdown */}
@@ -87,6 +97,14 @@ export default function Dashboard() {
           />
         </div>
       </div>
+      {/* Table Section */}
+      <p style={styles.chartTitle}>Attendance record</p>
+
+      <Table
+        tableHeader={tableHeader}
+        tableData={tableData}
+        onRowClick={handleRowClick}
+      />
     </div>
   );
 }
@@ -101,15 +119,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#fff",
     maxWidth: "100%",
   },
-  // mobileContainer: {
-  //   display: "flex",
-  //   flexDirection: "column",
-  //   alignItems: "flex-start",
-  //   padding: "1rem",
-  //   fontFamily: "Roboto, sans-serif",
-  //   backgroundColor: "#fff",
-  //   maxWidth: "100%",
-  // },
+
   dropdownContainer: {
     display: "flex",
     alignItems: "center",
@@ -174,6 +184,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   cardTitle: {
     fontSize: "16px",
     marginBottom: "10px",
+    color: "#000000",
   },
   Value: {
     display: "flex",
