@@ -1,10 +1,9 @@
-import Header from "../../../../component/Header";
-import NavBar from "../../../../component/NavBar";
-import { Role } from "../../../../enum/RoleEnum";
+"use client";
 
 export default function StudentDashBoard(){
     return (
-        <Header>
-        </Header>
+        <div>
+            <h1>This is admin dashboard</h1>
+        </div>
     );
 }

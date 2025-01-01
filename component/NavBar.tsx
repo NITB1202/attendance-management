@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Colors } from "../constant/Colors";
 import { FaHouse, FaUser, FaUserGroup, FaUserCheck,  FaExpand, FaRegFileLines, FaArrowRightFromBracket, FaAlignJustify } from "react-icons/fa6";
 import { MdOutlineGridView, MdOutlineKeyboardArrowLeft } from "react-icons/md";
 import { Role } from "../enum/RoleEnum";
+import { useAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
+import QuestionMessage from "./QuestionMessage";
 
 interface MenuItemProps{
     label: string;
@@ -16,25 +19,54 @@ interface MenuItemProps{
 }
 
 const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedIndex}: MenuItemProps) => {
-    const handleClick = () =>{
-        if(setSelectedIndex)
-            setSelectedIndex(index);
+    const router = useRouter();
+    const {authState, onLogout} = useAuth();
+    const [showQuestion, setShowQuestion] = useState(false);
+    const [agree, setAgree] = useState(false);
 
-    }
+    const handleClick = () => {
+        if (label === "Logout") {
+            setShowQuestion(true);
+            return;
+        }
+
+        if (setSelectedIndex) setSelectedIndex(index);
+        const url = "/" + authState.role?.toLowerCase() + path;
+        router.push(url);
+    };
+
+    useEffect(() => {
+        if (agree) {
+            onLogout();
+            router.push(path);
+        }
+    }, [agree]);
 
     const itemStyle = active 
         ? { ...styles.item, backgroundColor: Colors.primary }
         : styles.item;
 
-    return(
-        <button
-            style={itemStyle} 
-            onClick={handleClick}>
-            {icon}
-            <p style={styles.label}>{label}</p>
-        </button>
+    return (
+        <>
+            <button
+                style={itemStyle} 
+                onClick={handleClick}>
+                {icon}
+                <p style={styles.label}>{label}</p>
+            </button>
+            {showQuestion && (
+                <QuestionMessage
+                    title="Logout"
+                    description="Are you sure you want to logout?"
+                    setOpen={setShowQuestion}
+                    setAgree={setAgree}
+                />
+            )}
+        </>
     );
-}
+};
+
+
 
 const data: MenuItemProps[] = [
     {
@@ -70,17 +102,17 @@ const data: MenuItemProps[] = [
     {
         label: "Roll call",
         icon: <FaExpand size={24} width={2}  color="white"/>,
-        path: "rollcall",
+        path: "/rollcall",
     }
 ];
 
 interface NavBarProps{
-    role?: Role;
+    role?: Role|null;
 }
 
 export default function NavBar({role}: NavBarProps){
-    const [show, setShow] = useState(true);
-    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [show, setShow] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(0);
     const studentHiddenPath = ["Account","Course","Report"];
     const managerHiddenPath = ["Roll call"];
     const teacherHiddenPath = ["Account", "Course", "Report", "Roll call"];
@@ -134,7 +166,9 @@ export default function NavBar({role}: NavBarProps){
                     <MenuItem
                         label="Logout"
                         icon={<FaArrowRightFromBracket size={24} width={2}  color="white"/>}
-                        path="/auth/login">
+                        path="/auth/login"
+                        index={data.length + 1}
+                        setSelectedIndex={setSelectedIndex}>
                     </MenuItem>
                 </div>
             </div>)
