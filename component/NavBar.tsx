@@ -118,7 +118,7 @@ export default function NavBar({role}: NavBarProps){
     const teacherHiddenPath = ["Account", "Course", "Report", "Roll call"];
 
     return (
-        <div style={styles.container}>
+        <>
         {show ? 
             (
             <div 
@@ -181,19 +181,12 @@ export default function NavBar({role}: NavBarProps){
                 </button>
             )
             }
-        </div>
+        </>
     );
 }
 
 
 const styles: { [key: string]: React.CSSProperties } = {
-    container:{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: "100vh",
-    },
     overlay:{
         position: "absolute",
         top: 0,
