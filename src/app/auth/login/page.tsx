@@ -39,13 +39,19 @@ export default function Login() {
   const handleLogin = async () => {
     if (username === "") {
       setShowError(true);
-      setError({ title: "Invalid username", description: "Username is empty." });
+      setError({
+        title: "Invalid username",
+        description: "Username is empty.",
+      });
       return;
     }
 
     if (password === "") {
       setShowError(true);
-      setError({ title: "Invalid password", description: "Password is empty." });
+      setError({
+        title: "Invalid password",
+        description: "Password is empty.",
+      });
       return;
     }
 
@@ -74,13 +80,21 @@ export default function Login() {
   };
 
   return (
-    <div style={screenWidth > 500 ? styles.container : styles.mobile }>
+    <div style={screenWidth > 500 ? styles.container : styles.mobile}>
       <div style={styles.partContainer}>
         <div style={styles.formContainer}>
           <h1 style={styles.header}>SIGN IN</h1>
           <div style={styles.inputContainer}>
-            <Input title="Username" placeHolder="Enter your username" onChangeText={setUsername} />
-            <PasswordInput title="Password" placeHolder="Enter your password" onChangeText={setPassword} />
+            <Input
+              title="Username"
+              placeHolder="Enter your username"
+              onChangeText={setUsername}
+            />
+            <PasswordInput
+              title="Password"
+              placeHolder="Enter your password"
+              onChangeText={setPassword}
+            />
             <div style={styles.bottom}>
               <div style={styles.checkBoxContainer}>
                 <CheckBox onPress={() => setRemember(!remember)} />
@@ -101,11 +115,7 @@ export default function Login() {
       </div>
       <div style={styles.partContainer}>
         <div style={styles.imageContainer}>
-          <img
-            style={styles.formatImage}
-            src="/Login.png"
-            alt="Login"
-          />
+          <img style={styles.formatImage} src="/Login.png" alt="Login" />
         </div>
       </div>
       {showError && (
@@ -120,77 +130,76 @@ export default function Login() {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-      display: "flex",
-      flexDirection: "row",
-      height: "100vh",
-      backgroundColor: "white",
-    },
-    mobile:{
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      backgroundColor: "white",
-    },
-    partContainer: {
-      flex: 1,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    header: {
-      fontFamily: 'Roboto, sans-serif',
-      fontWeight: 700,
-      fontSize: "3rem",
-      textAlign: "center",
-    },
-    inputContainer: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "20px",
-    },
-    checkBoxContainer: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      gap: "0.625rem",
-    },
-    text: {
-      fontFamily: "Roboto, sans-serif",
-      fontSize: "1.125rem",
-    },
-    formContainer: {
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      gap: "20px",
-      width: "100%",
-      padding: "0px 20px",
-      maxWidth: "26rem",
-    },
-    highlight: {
-      fontSize: "1.125rem",
-      fontFamily: 'Roboto, sans-serif',
-      fontWeight: 700,
-      color: Colors.primary,
-      cursor: "pointer",
-    },
-    bottom: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    formatImage: {
-      width: "100%",
-      height: "100%",
-      objectFit: "contain",
-    },
-    imageContainer: {
-      width: "80%",
-      height: "80%",
-      overflow: "hidden",
-    },
+  container: {
+    display: "flex",
+    flexDirection: "row",
+    height: "100vh",
+    backgroundColor: "white",
+  },
+  mobile: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    backgroundColor: "white",
+  },
+  partContainer: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  header: {
+    fontFamily: "Roboto, sans-serif",
+    fontWeight: 700,
+    fontSize: "3rem",
+    textAlign: "center",
+  },
+  inputContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
+  checkBoxContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: "0.625rem",
+  },
+  text: {
+    fontFamily: "Roboto, sans-serif",
+    fontSize: "1.125rem",
+  },
+  formContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: "20px",
+    width: "100%",
+    padding: "0px 20px",
+    maxWidth: "26rem",
+  },
+  highlight: {
+    fontSize: "1.125rem",
+    fontFamily: "Roboto, sans-serif",
+    fontWeight: 700,
+    color: Colors.primary,
+    cursor: "pointer",
+  },
+  bottom: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  formatImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  },
+  imageContainer: {
+    width: "80%",
+    height: "80%",
+    overflow: "hidden",
+  },
 };
-
