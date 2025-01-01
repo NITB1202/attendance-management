@@ -6,7 +6,7 @@ interface TableProps {
     onRowClick?: (rowData: string[]) => void;
 }
 
-const Table: React.FC<TableProps> = ({ tableHeader, tableData }) => {
+const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
     return (
         <div style={styles.container}>
             {/* Table Header */}
@@ -19,7 +19,11 @@ const Table: React.FC<TableProps> = ({ tableHeader, tableData }) => {
             </div>
             {/* Table Data */}
             {tableData.map((row, rowIndex) => (
-                <div key={rowIndex} style={styles.dataRow}>
+                <div
+                    key={rowIndex}
+                    style={styles.dataRow}
+                    onClick={() => onRowClick?.(row)} // Kiểm tra và gọi onRowClick nếu có
+                >
                     {row.map((cell, cellIndex) => (
                         <div key={cellIndex} style={styles.dataCell}>
                             {cell}
@@ -33,30 +37,32 @@ const Table: React.FC<TableProps> = ({ tableHeader, tableData }) => {
 
 const styles: { [key: string]: React.CSSProperties } = {
     container: {
-        border: '1px solid #ddd',
-        borderRadius: '5px',
-        overflow: 'hidden',
+        border: "1px solid #ddd",
+        borderRadius: "5px",
+        overflow: "hidden",
+        width: "100%",
+        marginTop: "20px",
     },
     headerRow: {
-        display: 'flex',
-        flexDirection: 'row',
-        backgroundColor: '#6A9AB0',
+        display: "flex",
+        flexDirection: "row",
+        backgroundColor: "#6A9AB0",
     },
     headerCell: {
         flex: 1,
-        padding: '10px',
-        textAlign: 'center',
-        color: '#fff',
+        padding: "10px",
+        textAlign: "center",
+        color: "#fff",
     },
     dataRow: {
-        display: 'flex',
-        flexDirection: 'row',
+        display: "flex",
+        flexDirection: "row",
     },
     dataCell: {
         flex: 1,
-        padding: '10px',
-        textAlign: 'center',
-        borderBottom: '1px solid #ddd',
+        padding: "10px",
+        textAlign: "center",
+        borderBottom: "1px solid #ddd",
     },
 };
 
