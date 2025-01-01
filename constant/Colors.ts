@@ -5,4 +5,5 @@ export const Colors = {
   hint: "#C2C2C2",
   green: "#00B01A",
   focusGreen: "#057616",
+  secondary: "#6A9AB0",
 }

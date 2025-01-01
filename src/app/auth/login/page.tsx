@@ -58,14 +58,17 @@ export default function Login() {
     const authState = await onLogin(username, password, remember);
 
     if (authState.authenticated) {
-      if (authState.role === Role.MANAGER) {
-        router.push("/section_manager/dashboard_manager");
-      } else if (authState.role === Role.TEACHER) {
-        router.push("/section_teacher/dashboard_teacher");
-      } else if (authState.role === Role.STUDENT) {
-        router.push("/section_student/dashboard_student");
-      } else {
-        console.error("Unknown role detected.");
+      switch (authState.role)
+      {
+        case Role.STUDENT:
+          router.push("/student/dashboard");
+          break;
+        case Role.MANAGER:
+          router.push("/manager/dashboard");
+          break;
+        case Role.TEACHER:
+          router.push("/teacher/dashboard");
+          break; 
       }
     } else {
       setShowError(true);
