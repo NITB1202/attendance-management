@@ -120,7 +120,6 @@ export default function Verification() {
     }
   };
 
-
   return (
     <div style={styles.container}>
         <div style={styles.formContainer}>
