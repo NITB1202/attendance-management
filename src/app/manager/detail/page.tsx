@@ -4,9 +4,19 @@ import React, { useState } from "react";
 import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
+import RoundedButton from "../../../../component/RoundedButton";
+import Input from "../../../../component/Input";
+import CustomDatePicker from "../../../../component/CustomDatePicker";
+import CustomTimePicker from "../../../../component/CustomTimePicker";
+
 
 const DetailManager = () => {
   const [activeTab, setActiveTab] = useState('General');
+  const [newClassName] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [, setSelectedDate] = useState<Date | null>(null);
+  const [, setSelectedTime] = useState<Date | null>(null);
+
   const tableHeaders = ['Order', 'Student Code', 'Student Name', 'Username'];
   const tableData = [
     ['1', 'S001', 'John Doe', 'johndoe'],
@@ -14,10 +24,19 @@ const DetailManager = () => {
   ];
 
   const tableHeaders2 = ['No', 'Date'];
-  const tableData2 = [
+  const tableData2 = [    
     ['1', '2023-01-01'],
     ['2', '2023-01-02'],
   ];
+
+  const handleAddNew = () => {
+    setModalVisible(true);
+  };
+
+  const handleSave = () => {
+    console.log("New Class Name:", newClassName); 
+    setModalVisible(false);
+  };
 
   return (
     <div>
@@ -108,45 +127,19 @@ const DetailManager = () => {
                 <div style={{ flex: 1, marginBottom: '10px', padding: '10px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: '10px', width: '75%' }}>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <label style={{ marginBottom: '5px', display: 'block' }}>Start Date</label>
-                    <div style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}>
-                      Teacher Code
-                    </div>
+                    <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <label style={{ marginBottom: '5px', display: 'block' }}>End Date</label>
-                    <div style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}>
-                      Teacher Code
-                    </div>
+                    <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ display: 'block' }}>Start Time</label>
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                      <input
-                        type="text"
-                        placeholder="Enter start time"
-                        style={{ width: '30%', flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginRight: '10px' }}
-                      />
-                      <Dropdown
-                        title=""
-                        options={['AM', 'PM']}
-                        style={{width: '100%', flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                      />
-                    </div>
+                    <label style={{ marginBottom: '5px', display: 'block' }}>Start Time</label>
+                    <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ display: 'block' }}>End Time</label>
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-                      <input
-                        type="text"
-                        placeholder="Enter start time"
-                        style={{ width: '30%', flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginRight: '10px' }}
-                      />
-                      <Dropdown
-                        title=""
-                        options={['AM', 'PM']}
-                        style={{width: '100%', flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                      />
-                    </div>
+                    <label style={{ marginBottom: '5px', display: 'block' }}>End Time</label>
+                    <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
                   </div>
                 </div>
                 <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: '10px', width: '30%' }}>
@@ -206,8 +199,9 @@ const DetailManager = () => {
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      fontWeight: 'bold'
+                      fontWeight: 'bold'  
                     }}
+                    onClick={handleAddNew}
                   >
                     Add New
                   </button>
@@ -217,6 +211,82 @@ const DetailManager = () => {
             </div>
           </div>
         )}
+          {modalVisible && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 297,
+                height: 341,
+                backgroundColor: "white",
+                borderRadius: 10,
+                padding: 20,
+                position: "relative",
+              }}
+            >
+              <button
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  fontSize: 24,
+                  backgroundColor: "transparent",
+                  border: "none",
+                }}
+                onClick={() => setModalVisible(false)}
+              >
+                ✕
+              </button>
+              <h1 style={{ marginBottom: 15, marginTop: 30, fontSize: 24, fontWeight: "bold" }}>Select a student</h1>
+
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                <div style={{ height: 90 }}>
+                  <label>Student name</label>
+                  <Dropdown
+                    title=""
+                    options={['Martin Blue', 'Martin Gray', 'Martin Green']}
+                    style={{ marginBottom: '10px' }}
+                  />
+                  <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
+                </div>
+                <div style={{ height: 90 }}>
+                  <label>Student code</label>
+                  <Input
+                    title=""
+                    placeHolder="SV12345"
+                    style={{ marginBottom: '10px' }}
+                  />
+                  <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <RoundedButton
+                    title="CONFIRM"
+                    onClick={handleSave}
+                    style={{
+                      width: "100%",
+                      height: 46,
+                      marginTop: "auto"
+                    }}
+                    textStyle={{ fontSize: 24, fontWeight: "bold" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {activeTab === 'Session' && (
           <div style={{ display: 'flex', width: '100%', height: '620px' }}>
             <div style={{ flex: 1, padding: '10px' }}>

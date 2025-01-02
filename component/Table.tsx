@@ -2,8 +2,10 @@ import React from "react";
 
 interface TableProps {
   tableHeader: string[];
-  tableData: string[][];
-  onRowClick?: (rowData: string[]) => void;
+
+  tableData: (string | React.ReactNode)[][];
+
+  onRowClick?: (rowData: (string | React.ReactNode)[]) => void;
 }
 
 const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {

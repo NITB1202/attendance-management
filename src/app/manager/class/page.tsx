@@ -7,11 +7,14 @@ import SearchBar from "../../../../component/SearchBar";
 import Input from "../../../../component/Input";
 import Dropdown from "../../../../component/Dropdown";
 import { Colors } from "../../../../constant/Colors";
+import CustomDatePicker from "../../../../component/CustomDatePicker";
+import CustomTimePicker from "../../../../component/CustomTimePicker";
 
 
 const ClassManager = () => {
     const [modalVisible, setModalVisible] = useState(false);
-    
+    const [, setSelectedDate] = useState<Date | null>(null);
+    const [, setSelectedTime] = useState<Date | null>(null);
     const [newClassName] = useState("");
 
 
@@ -116,7 +119,7 @@ const ClassManager = () => {
                     <div
                         style={{
                             width: 523,
-                            height: 735,
+                            height: 710,
                             backgroundColor: "white",
                             borderRadius: 10,
                             padding: 20,
@@ -160,54 +163,24 @@ const ClassManager = () => {
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                     <label>Start Date</label>
-                                    <Input
-                                        title=""
-                                        placeHolder=""
-                                        style={{ marginBottom: '10px', width: '70%', height: '46px' }}
-                                    />
+                                    <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '46px' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '46px', marginLeft: '10px' }}>
                                     <label>End Date</label>
-                                    <Input
-                                        title=""
-                                        placeHolder=""
-                                        style={{ marginBottom: '10px', width: '70%', height: '46px' }}
-                                    />
+                                    <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
                                 </div>
                             </div>
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: 10 }}>
                                     <label>Start Time</label>
-                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '90%' }}>
-                                        <Input
-                                            title=""
-                                            placeHolder=""
-                                            style={{ marginBottom: '10px', width: '90%', height: '46px' }}
-                                        />
-                                        <Dropdown
-                                            title=""
-                                            options={['AM', 'PM']}
-                                            style={{ marginBottom: '10px', marginRight: '40px', width: '110%', height: '46px' }}
-                                        />
-                                    </div>
+                                    <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px', marginTop: 10 }}>
                                     <label>End Time</label>
-                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' ,width: '90%' }}>
-                                        <Input
-                                            title=""
-                                            placeHolder=""
-                                            style={{ marginBottom: '10px', width: '90%', height: '46px' }}
-                                        />
-                                        <Dropdown
-                                            title=""
-                                            options={['AM', 'PM']}
-                                            style={{ marginBottom: '10px', marginRight: '40px', width: '110%', height: '46px' }}
-                                        />
-                                    </div>
+                                    <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                                 <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
                                     <label>Teacher Name</label>
                                     <Dropdown
