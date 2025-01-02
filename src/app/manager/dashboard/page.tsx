@@ -25,6 +25,7 @@ export default function Dashboard() {
   const tableData = [
     ["1", "SE102.P12", "Adam Levine", "7:30 AM", "12"],
     ["2", "SE102.P11", "Eva Levine", "7:30 AM", "2"],
+    ["3", "", "", "", ""],
   ];
 
   const handleRowClick = (rowData: string[]) => {
