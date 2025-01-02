@@ -7,6 +7,7 @@ import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
 import Input from "../../../../component/Input";
 import Dropdown from "../../../../component/Dropdown";
+import { Colors } from "../../../../constant/Colors";
 
 
 const ClassManager = () => {
@@ -30,7 +31,6 @@ const ClassManager = () => {
         setModalVisible(false);
     };
 
-
     const tableHeader = [
         "CLASS NAME",
         "COURSE NAME",
@@ -40,7 +40,6 @@ const ClassManager = () => {
         "END TIME",
         "TEACHER NAME",
     ];
-
 
     const tableData = [
         [
@@ -54,10 +53,7 @@ const ClassManager = () => {
         ],
     ];
 
-
     return (
-
-
         <div style={{ padding: 10 }}>
             {/* Search and Filter Section */}
             <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
@@ -99,12 +95,10 @@ const ClassManager = () => {
                 </button>
             </div>
 
-
             {/* Table Section */}
             <div style={{ marginTop: 20 }}>
                 <Table tableHeader={tableHeader} tableData={tableData} />
             </div>
-
 
             {modalVisible && (
                 <div
@@ -123,7 +117,7 @@ const ClassManager = () => {
                     <div
                         style={{
                             width: 523,
-                            height: 745,
+                            height: 735,
                             backgroundColor: "white",
                             borderRadius: 10,
                             padding: 20,
@@ -145,43 +139,135 @@ const ClassManager = () => {
                         </button>
                         <h1 style={{ marginBottom: 15, marginTop: 30, fontSize: 24, fontWeight: "bold" }}>Create a new class</h1>
 
-                        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                            <div style={{ flex: 1, margin: '0 5px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                            <div style={{ height: 90 }}>
                                 <label>Class name</label>
                                 <Input
                                     title=""
                                     placeHolder="Enter class name"
-                                    style={{ marginBottom: '10px' }}
+                                    style={{ marginBottom: '10px'}}
                                 />
                                 <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
+                            </div>
+                            <div style={{ height: 90 }}>
                                 <label>Course name</label>
                                 <Dropdown
                                     title=""
-                                    options={['Course 1', 'Course 2', 'Course 3']}
+                                    options={['Math', 'Course 2', 'Course 3']}
                                     style={{ marginBottom: '10px' }}
                                 />
                                 <input type="text" style={{ width: '100%' }} />
                             </div>
-                            <div style={{ flex: 1,  margin: '0 5px' }}>Part 2</div>
-                            <div style={{ flex: 1,  margin: '0 5px' }}>Part 3</div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <label>Start Date</label>
+                                    <Input
+                                        title=""
+                                        placeHolder=""
+                                        style={{ marginBottom: '10px', width: '70%', height: '46px' }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '46px' }}>
+                                    <label>End Date</label>
+                                    <Input
+                                        title=""
+                                        placeHolder=""
+                                        style={{ marginBottom: '10px', width: '70%', height: '46px' }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <label>Start Time</label>
+                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '90%' }}>
+                                        <Input
+                                            title=""
+                                            placeHolder=""
+                                            style={{ marginBottom: '10px', width: '90%', height: '46px' }}
+                                        />
+                                        <Dropdown
+                                            title=""
+                                            options={['AM', 'PM']}
+                                            style={{ marginBottom: '10px', marginRight: '40px', width: '110%', height: '46px' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <label>End Time</label>
+                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' ,width: '90%' }}>
+                                        <Input
+                                            title=""
+                                            placeHolder=""
+                                            style={{ marginBottom: '10px', width: '90%', height: '46px' }}
+                                        />
+                                        <Dropdown
+                                            title=""
+                                            options={['AM', 'PM']}
+                                            style={{ marginBottom: '10px', marginRight: '40px', width: '110%', height: '46px' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+                                    <label>Teacher Name</label>
+                                    <Dropdown
+                                        title=""
+                                        options={['Brian Anna', 'Anna Brian']}
+                                        style={{ marginBottom: '10px', width: '100%', height: '46px' }}
+                                    />
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
+                                    <label>Teacher Code</label>
+                                    <div style={{
+                                        marginTop: 10, width: '100%', height: '46px', padding: '10px', borderRadius: "5px",
+                                        borderWidth: "1px",
+                                        borderColor: Colors.gray, display: 'flex', alignItems: 'center' }}>
+                                        TC12345
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+                                    <label>Teacher Name</label>
+                                    <div style={{
+                                        marginTop: 10, marginBottom: 20, width: '100%', height: '46px', padding: '10px', borderRadius: "5px",
+                                        borderWidth: "1px",
+                                        borderColor: Colors.gray, display: 'flex', alignItems: 'center'
+                                    }}>
+                                        TC12345
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft: '10px' }}>
+                                    <RoundedButton
+                                        title="Upload Excel File"
+                                        onClick={handleSave}
+                                        style={{
+                                            width: "100%",
+                                            height: 46,
+                                            marginTop: 34,
+                                        }}
+                                        textStyle={{ fontSize: 16, fontWeight: "bold" }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <RoundedButton
+                                    title="CONFIRM"
+                                    onClick={handleSave}
+                                    style={{
+                                        width: "100%",
+                                        height: 46,
+                                        marginTop: "auto"
+                                    }}
+                                    textStyle={{ fontSize: 24, fontWeight: "bold" }}
+                                />
+                            </div>
                         </div>
-
-                        <RoundedButton
-                            title="CONFIRM"
-                            onClick={handleSave}
-                            style={{
-                                width: "100%",
-                                height: 46,
-                                marginTop: "auto"
-                            }}
-                            textStyle={{ fontSize: 24, fontWeight: "bold" }}
-                        />
                     </div>
                 </div>
             )}
         </div>
-
-
     );
 };
 
