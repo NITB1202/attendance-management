@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
