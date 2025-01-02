@@ -4,6 +4,7 @@ import { UserCheck, UserMinus, UserRoundCheck, UserX } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Table from "../../../../component/Table";
+import Dropdown from "../../../../component/Dropdown";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
@@ -32,27 +33,93 @@ export default function Dashboard() {
     console.log("Row clicked:", rowData);
   };
 
+  const [selectedOption, setSelectedOption] = useState<string>("");
+  const handleDropdownChange = (value: string) => {
+    setSelectedOption(value);
+    console.log("Selected option:", value);
+  };
+
+  const styles: { [key: string]: React.CSSProperties } = {
+    container: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      padding: "1rem",
+      fontFamily: "Roboto, sans-serif",
+      gap: 20,
+      marginLeft: 40,
+      marginRight: 20,
+    },
+    dropdown: {
+      width: isMobile ? "50%" : "10%", // Responsive width
+    },
+    summary: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      gap: 20,
+      width: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "0 auto",
+    },
+    summaryItem: {
+      display: "flex",
+      flexDirection: isMobile ? "row" : "row", // Adjust content layout
+      alignItems: "center",
+      justifyContent: "flex-start",
+      padding: "1rem",
+      borderRadius: 10,
+      gap: 13,
+      width: isMobile ? "100%" : "20%", // Responsive item width
+      backgroundColor: "#f0f0f0",
+    },
+    content: {
+      textAlign: "center",
+      fontSize: 14,
+      fontWeight: "bold",
+      color: "#000",
+    },
+    pieChartContainer: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: "100%",
+      backgroundColor: "#EFEFEF",
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Add shadow for container
+      borderRadius: 10,
+      padding: 20,
+    },
+    chartTitle: {
+      paddingTop: 20,
+      fontSize: "20px",
+      fontWeight: "bold",
+    },
+    tableContainer: {
+      display: "flex",
+      flexDirection: "column",
+      width: "100%",
+    },
+    tableTitle: {
+      paddingTop: 20,
+      fontSize: 20,
+      fontWeight: "600",
+    },
+  };
+
   return (
     <div style={styles.container}>
       {/* dropdown */}
       <div style={styles.dropdown}>
-        <div style={styles.dropdownContainer}>
-          <label style={styles.dropdownLabel}>Filter by</label>
-          <select style={styles.dropdownInput}>
-            <option value="Week">Week</option>
-            <option value="Month">Month</option>
-            <option value="Year">Year</option>
-          </select>
-        </div>
+        <Dropdown
+          title="Filter:"
+          options={["Week", "Month", "Year"]}
+          style={{ borderColor: "#959595" }}
+          onChange={handleDropdownChange}
+        />
       </div>
 
       {/* summary */}
-      <div
-        style={{
-          ...styles.summary,
-          flexDirection: isMobile ? "column" : "row",
-        }}
-      >
+      <div style={styles.summary}>
         {[
           {
             icon: <UserCheck color="#FFFFFF" size={60} />,
@@ -78,13 +145,16 @@ export default function Dashboard() {
             style={{
               ...styles.summaryItem,
               backgroundColor: item.bgColor,
-              width: isMobile ? "90%" : "30%",
             }}
           >
             {item.icon}
             <div style={styles.content}>
               <div
-                style={{ fontSize: "36px", fontWeight: "bold", color: "#fff" }}
+                style={{
+                  fontSize: "36px",
+                  fontWeight: "bold",
+                  color: "#fff",
+                }}
               >
                 {item.value}
               </div>
@@ -117,8 +187,8 @@ export default function Dashboard() {
               ],
             },
           ]}
-          width={isMobile ? 650 : 700}
-          height={300}
+          width={isMobile ? 400 : 700} // Adjust width for mobile
+          height={isMobile ? 100 : 300}
         />
       </div>
 
@@ -136,80 +206,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "1rem",
-    fontFamily: "Roboto, sans-serif",
-    backgroundColor: "#f9f9f9",
-    gap: 20,
-  },
-  dropdown: {
-    width: "20%",
-  },
-  dropdownContainer: {
-    display: "flex",
-    alignItems: "center",
-    height: 40,
-    gap: 20,
-    paddingLeft: 20,
-  },
-  dropdownLabel: {
-    fontSize: 20,
-    fontWeight: 700,
-  },
-  dropdownInput: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1.5px solid #959595",
-  },
-  summary: {
-    display: "flex",
-    gap: 20,
-    width: "80%",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto",
-  },
-  summaryItem: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    padding: "1rem",
-    borderRadius: 10,
-    gap: 13,
-  },
-  content: {
-    textAlign: "center",
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  pieChartContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: "100%",
-  },
-
-  chartTitle: {
-    paddingTop: 20,
-    fontSize: "20px",
-    fontWeight: "bold",
-  },
-  tableContainer: {
-    display: "flex",
-    flexDirection: "column",
-    width: "100%",
-  },
-  tableTitle: {
-    paddingTop: 20,
-    fontSize: 20,
-    fontWeight: "600",
-  },
-};
