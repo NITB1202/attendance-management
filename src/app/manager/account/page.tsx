@@ -6,9 +6,9 @@ import Dropdown from "../../../../component/Dropdown";
 import SearchBar from "../../../../component/SearchBar";
 import TabSwitcher from "../../../../component/Tabs";
 import RoundedButton from "../../../../component/RoundedButton";
-import { FileUp } from "lucide-react";
+import { Calendar, FileUp } from "lucide-react";
 
-export default function Dashboard() {
+export default function Account() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -56,11 +56,6 @@ export default function Dashboard() {
       "SV112",
     ],
   ];
-
-  const handleRowClick = (rowData: string[]) => {
-    console.log("Row clicked:", rowData);
-  };
-
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleDropdownChange = (value: string) => {
@@ -79,8 +74,52 @@ export default function Dashboard() {
   };
 
   const [isModalVisible, setIsModalVisible] = useState(false); // State để kiểm soát modal
+  const [isModalVisible1, setIsModalVisible1] = useState(false); // State để kiểm soát modal
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+  };
+  const toggleModal1 = () => {
+    setIsModalVisible1(!isModalVisible);
+  };
+
+  const [selectedRow, setSelectedRow] = useState<Record<string, string> | null>(
+    null
+  );
+
+  const [formData, setFormData] = useState<Record<string, string>>({});
+
+  const handleRowClick = (rowData: (string | React.ReactNode)[]) => {
+    const convertedData: Record<string, string> = tableHeader.reduce(
+      (acc, header, index) => {
+        acc[header] =
+          typeof rowData[index] === "string"
+            ? (rowData[index] as string)
+            : String(rowData[index]);
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+
+    setFormData(convertedData); // Lưu dữ liệu đã chuyển đổi
+    setIsModalVisible1(true); // Hiển thị modal
+  };
+
+  const closeModal = () => {
+    setIsModalVisible1(false);
+    setSelectedRow(null);
+    setFormData({});
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    console.log("Updated Data:", formData); // Bạn có thể gọi API để cập nhật dữ liệu ở đây
+    closeModal();
   };
 
   const styles: { [key: string]: React.CSSProperties } = {
@@ -190,7 +229,193 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Modal Section */}
+      {/* Modal */}
+      {isModalVisible1 && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              maxWidth: "600px",
+              width: "90%",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <button
+              style={{
+                alignSelf: "flex-end",
+                background: "none",
+                border: "none",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+              onClick={closeModal}
+            >
+              X
+            </button>
+            <label
+              style={{
+                fontSize: "24px",
+                fontWeight: "500",
+                marginBottom: "20px",
+              }}
+            >
+              Update account
+            </label>
+            <form
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
+              <div style={{ display: "flex", gap: "16px" }}>
+                <div style={{ flex: 1.6 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.EMAIL || ""}
+                    onChange={(e) => handleInputChange("EMAIL", e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 0.4 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Role
+                  </label>
+                  <select
+                    value={formData.ROLE || ""}
+                    onChange={(e) => handleInputChange("ROLE", e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="STUDENT">Student</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="TEACHER">Teacher</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                  Full name
+                </label>
+                <input
+                  type="text"
+                  value={formData["FULL NAME"] || ""}
+                  onChange={(e) =>
+                    handleInputChange("FULL NAME", e.target.value)
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: "16px" }}>
+                <div style={{ flex: 0.8 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Date of birth
+                  </label>
+                  <input
+                    type="text"
+                    value={formData["DATE OF BIRTH"] || ""}
+                    onChange={(e) =>
+                      handleInputChange("DATE OF BIRTH", e.target.value)
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1.2 }}>
+                  <label>Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.PHONE || ""}
+                    onChange={(e) => handleInputChange("PHONE", e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                  Role code
+                </label>
+                <input
+                  type="text"
+                  value={formData["ROLE CODE"] || ""}
+                  onChange={(e) =>
+                    handleInputChange("ROLE CODE", e.target.value)
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
+                />
+              </div>
+              <button
+                type="submit"
+                style={{
+                  marginTop: "16px",
+                  padding: "10px",
+                  backgroundColor: "#3A6D8C",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "24px",
+                  fontWeight: "500",
+                }}
+              >
+                CONFIRM
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Section create */}
       {isModalVisible && (
         <div
           style={{
@@ -213,7 +438,7 @@ export default function Dashboard() {
               backgroundColor: "white",
               padding: "20px",
               borderRadius: "8px",
-              maxWidth: "500px",
+              maxWidth: "600px",
               width: "90%",
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
               display: "flex",
@@ -232,13 +457,23 @@ export default function Dashboard() {
             >
               X
             </button>
-            <h2 style={{ marginBottom: "16px" }}>Create a new account</h2>
+            <label
+              style={{
+                fontSize: "24px",
+                fontWeight: "500",
+                marginBottom: "20px",
+              }}
+            >
+              Create a new accoount
+            </label>
             <form
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
               <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1 }}>
-                  <label>Email</label>
+                <div style={{ flex: 1.6 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Email
+                  </label>
                   <input
                     type="email"
                     placeholder="anna123@gmail.com"
@@ -250,8 +485,10 @@ export default function Dashboard() {
                     }}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label>Role</label>
+                <div style={{ flex: 0.4 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Role
+                  </label>
                   <select
                     style={{
                       width: "100%",
@@ -262,12 +499,14 @@ export default function Dashboard() {
                   >
                     <option value="student">Student</option>
                     <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Teacher</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label>Full name</label>
+                <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                  Full name
+                </label>
                 <input
                   type="text"
                   placeholder="Anna Maderlaise"
@@ -280,8 +519,10 @@ export default function Dashboard() {
                 />
               </div>
               <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1 }}>
-                  <label>Date of birth</label>
+                <div style={{ flex: 0.8 }}>
+                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                    Date of birth
+                  </label>
                   <input
                     type="date"
                     style={{
@@ -292,7 +533,7 @@ export default function Dashboard() {
                     }}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1.2 }}>
                   <label>Phone</label>
                   <input
                     type="tel"
@@ -307,7 +548,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <div>
-                <label>Role code</label>
+                <label style={{ fontSize: "16px", fontWeight: "500" }}>
+                  Role code
+                </label>
                 <input
                   type="text"
                   placeholder="If role is 'Manager', you can leave this empty"
@@ -323,7 +566,7 @@ export default function Dashboard() {
                 type="submit"
                 style={{
                   marginTop: "16px",
-                  padding: "12px",
+                  padding: "10px",
                   backgroundColor: "#3A6D8C",
                   color: "white",
                   border: "none",
