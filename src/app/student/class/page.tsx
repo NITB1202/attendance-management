@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
+import CustomSelect from "../../../../component/CustomSelect";
 
 const ClassStudent = () => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -40,32 +41,22 @@ const ClassStudent = () => {
         ],
     ];
 
+    const searchTerms = ["Class name", "Course name", "Teacher name"];
+
     return (
 
-        <div style={{ padding: 10 }}>
+        <div style={{ padding: "20px 10px"}}>
             {/* Search and Filter Section */}
-            <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
+            <div style={{ display: "flex"}}>
                 <SearchBar
                     placeholder="Type to search..."
                     onSearch={handleSearch}
                 />
                 <div style={{ marginLeft: 20, height: 37 }}>
-                    <select
-                        style={{
-                            height: 40,
-                            borderRadius: 5,
-                            borderWidth: 1,
-                            borderColor: "#ccc",
-                            paddingLeft: 10,
-                            paddingRight: 10,
-                            backgroundColor: "#fff",
-                        }}
-                        onChange={(e) => console.log(e.target.value)}
-                    >
-                        <option value="SE103.022">Class name</option>
-                        <option value="SE104.023">Course name</option>
-                        <option value="SE105.024">Teacher name</option>
-                    </select>
+                    <CustomSelect
+                        options={searchTerms}
+                        onSelect={()=>{}}>
+                    </CustomSelect>
                 </div>
                 
             </div>
