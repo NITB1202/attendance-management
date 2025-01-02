@@ -128,7 +128,7 @@ export default function Dashboard() {
       <Dropdown
         title="Class:"
         options={["SE100.P10", "SE100.P11", "SE100.P13"]}
-        style={{ borderColor: "blue" }}
+        style={{ borderColor: "#959595" }}
         onChange={handleDropdownChange}
       />
       <div style={styles.chart}>

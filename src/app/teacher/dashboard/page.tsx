@@ -10,6 +10,7 @@ import {
   UserX,
 } from "lucide-react";
 import Table from "../../../../component/Table";
+import Dropdown from "../../../../component/Dropdown";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
@@ -26,40 +27,122 @@ export default function Dashboard() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+  const [selectedOption, setSelectedOption] = useState<string>("");
+  const handleDropdownChange = (value: string) => {
+    setSelectedOption(value);
+    console.log("Selected option:", value);
+  };
+
+  const styles: { [key: string]: React.CSSProperties } = {
+    container: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      padding: "1.5rem",
+      fontFamily: "Roboto, sans-serif",
+      backgroundColor: "#fff",
+      maxWidth: "100%",
+      gap: 30,
+    },
+    dropdown: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      width: "100%",
+      gap: isMobile ? 20 : 50,
+      paddingLeft: 20,
+    },
+
+    dropdownLabel: {
+      fontSize: 20,
+      fontWeight: "600",
+      marginBottom: 15,
+    },
+
+    report: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      alignItems: "center",
+      gap: isMobile ? "20px" : "50px",
+      padding: "1.5rem",
+      width: "100%",
+      flexWrap: "wrap",
+    },
+    label: {
+      fontSize: 20,
+      fontWeight: "600",
+    },
+    row: {
+      display: "flex",
+      flexDirection: "row",
+      gap: 20,
+      color: "#FFFDFD",
+      fontSize: 64,
+      fontWeight: 600,
+    },
+
+    box_respond: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: isMobile ? "100%" : "auto", // Adjust width for mobile
+      backgroundColor: "#6A9AB0",
+      borderRadius: 10,
+      padding: 20,
+      gap: 5,
+    },
+    box_efficacy: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: isMobile ? "100%" : "auto", // Adjust width for mobile
+      backgroundColor: "rgba(0, 176, 26, 0.7)",
+      borderRadius: 10,
+      padding: 20,
+      gap: 5,
+    },
+
+    pieChartContainer: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      gap: "80px",
+      flexWrap: "wrap",
+      backgroundColor: "#F5F5F5",
+      borderRadius: 10,
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+      margin: isMobile ? "0 auto" : "0",
+    },
+    pieChart: {
+      display: "flex",
+      flexDirection: "column",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 50,
+      padding: 20,
+    },
+  };
 
   return (
-    <div style={isMobile ? styles.mobileContainer : styles.container}>
+    <div style={styles.container}>
       {/* Dropdown */}
       <div style={styles.dropdown}>
-        <div style={styles.dropdownContainer}>
-          <label style={styles.dropdownLabel}>Class</label>
-          <select style={styles.dropdownInput}>
-            <option value="SE103.022">SE103.022</option>
-            <option value="SE104.023">SE104.023</option>
-            <option value="SE105.024">SE105.024</option>
-          </select>
-        </div>
+        {/* Dropdown */}
+        <Dropdown
+          title="Class:"
+          options={["SE100.P10", "SE100.P11", "SE100.P13"]}
+          style={{ borderColor: "#959595" }}
+          onChange={handleDropdownChange}
+        />
 
-        <div style={styles.dropdownContainer}>
-          <label style={styles.dropdownLabel}>Session</label>
-          <select style={styles.dropdownInput}>
-            <option value="0">All</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-          </select>
-        </div>
+        <Dropdown
+          title="Session:"
+          options={["All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]}
+          style={{ borderColor: "#959595" }}
+          onChange={handleDropdownChange}
+        />
       </div>
 
       {/* Report */}
-
       <div style={styles.report}>
         <div style={styles.box_respond}>
           <div style={styles.label}>Respond received</div>
@@ -76,151 +159,47 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      <div style={isMobile ? styles.mobileChart : styles.chart}>
-        {/* Pie Chart Section */}
-        <div style={styles.pieChartContainer}>
-          <div style={styles.pieChart}>
-            <label style={styles.dropdownLabel}>
-              Students’ understanding level
-            </label>
-            <PieChart
-              colors={["#EF1F1F", "#FFC038", "#6A9AB0", "#00B01A"]}
-              series={[
-                {
-                  data: [
-                    { id: 0, value: 1, label: "Well" },
-                    { id: 1, value: 1, label: "Normal" },
-                    { id: 2, value: 1, label: "Not well" },
-                    { id: 3, value: 2, label: "Bad" },
-                  ],
-                },
-              ]}
-              width={isMobile ? 350 : 500}
-              height={isMobile ? 200 : 300}
-            />
-          </div>
-          <div style={styles.pieChart}>
-            <label style={styles.dropdownLabel}>Presence rate </label>
-            <PieChart
-              colors={["#EF1F1F", "#FFC038", "#6A9AB0"]}
-              series={[
-                {
-                  data: [
-                    { id: 0, value: 3, label: "On-time" },
-                    { id: 1, value: 2, label: "Late" },
-                    { id: 2, value: 2, label: "Absence" },
-                  ],
-                },
-              ]}
-              width={isMobile ? 350 : 500}
-              height={isMobile ? 200 : 300}
-            />
-          </div>
+
+      {/* Pie Chart Section */}
+      <div style={styles.pieChartContainer}>
+        <div style={styles.pieChart}>
+          <label style={styles.dropdownLabel}>
+            Students’ understanding level
+          </label>
+          <PieChart
+            colors={["#EF1F1F", "#FFC038", "#6A9AB0", "#00B01A"]}
+            series={[
+              {
+                data: [
+                  { id: 0, value: 1, label: "Well" },
+                  { id: 1, value: 1, label: "Normal" },
+                  { id: 2, value: 1, label: "Not well" },
+                  { id: 3, value: 2, label: "Bad" },
+                ],
+              },
+            ]}
+            width={isMobile ? 350 : 500}
+            height={isMobile ? 200 : 300}
+          />
+        </div>
+        <div style={styles.pieChart}>
+          <label style={styles.dropdownLabel}>Presence rate </label>
+          <PieChart
+            colors={["#EF1F1F", "#FFC038", "#6A9AB0"]}
+            series={[
+              {
+                data: [
+                  { id: 0, value: 3, label: "On-time" },
+                  { id: 1, value: 2, label: "Late" },
+                  { id: 2, value: 2, label: "Absence" },
+                ],
+              },
+            ]}
+            width={isMobile ? 350 : 500}
+            height={isMobile ? 200 : 300}
+          />
         </div>
       </div>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "1.5rem",
-    fontFamily: "Roboto, sans-serif",
-    backgroundColor: "#fff",
-    maxWidth: "100%",
-    gap: 30,
-  },
-  dropdown: {
-    display: "flex",
-    flexDirection: "row",
-    width: "40%",
-    gap: 50,
-  },
-  dropdownContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "1.5rem",
-    fontFamily: "Roboto, sans-serif",
-    backgroundColor: "#fff",
-    maxWidth: "100%",
-    borderColor: "#959595",
-  },
-  dropdownLabel: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 15,
-  },
-  dropdownInput: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1.5px solid #959595",
-  },
-
-  report: {
-    display: "flex",
-    alignItems: "center",
-    gap: "50px",
-    padding: "1.5rem",
-    width: "100%",
-    flexWrap: "wrap",
-  },
-  label: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  row: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 20,
-    color: "#FFFDFD",
-    fontSize: 64,
-    fontWeight: 600,
-  },
-
-  box_respond: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: "auto",
-    backgroundColor: "#6A9AB0",
-    borderRadius: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    gap: 5,
-  },
-  box_efficacy: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: "auto",
-    backgroundColor: "rgba(0, 176, 26, 0.7)",
-    borderRadius: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    gap: 5,
-  },
-
-  pieChartContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "80px",
-    flexWrap: "wrap",
-  },
-  pieChart: {
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 50,
-  },
-};
