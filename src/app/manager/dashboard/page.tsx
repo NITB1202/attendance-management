@@ -1,7 +1,9 @@
 "use client";
 import { StyledEngineProvider } from "@mui/material";
-import { UserCheck, UserMinus, UserRoundCheck } from "lucide-react";
+import { UserCheck, UserMinus, UserRoundCheck, UserX } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { PieChart } from "@mui/x-charts/PieChart";
+import Table from "../../../../component/Table";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
@@ -19,8 +21,18 @@ export default function Dashboard() {
     };
   }, []);
 
+  const tableHeader = ["NO", "CLASS NAME", "TEACHER", "START TIME", "NUM"];
+  const tableData = [
+    ["1", "SE102.P12", "Adam Levine", "7:30 AM", "12"],
+    ["2", "SE102.P11", "Eva Levine", "7:30 AM", "2"],
+  ];
+
+  const handleRowClick = (rowData: string[]) => {
+    console.log("Row clicked:", rowData);
+  };
+
   return (
-    <div style={isMobile ? styles.mobileContainer : styles.container}>
+    <div style={styles.container}>
       {/* dropdown */}
       <div style={styles.dropdown}>
         <div style={styles.dropdownContainer}>
@@ -37,57 +49,88 @@ export default function Dashboard() {
       <div
         style={{
           ...styles.summary,
-          flexDirection: isMobile ? "column" : "row", // Thay đổi layout khi màn hình nhỏ
-          width: isMobile ? "80%" : "70%", // Điều chỉnh độ rộng
+          flexDirection: isMobile ? "column" : "row",
         }}
       >
-        <div style={styles.summaryItem1}>
-          <UserCheck color="#FFFFFF" size={60} />
-          <div style={styles.content}>
-            <div
-              style={{ fontSize: "36px", fontWeight: "bold", color: "#fff" }}
-            >
-              39
-            </div>
-            <div
-              style={{ fontSize: "16px", fontWeight: "bold", color: "#000000" }}
-            >
-              Absence with permission
+        {[
+          {
+            icon: <UserCheck color="#FFFFFF" size={60} />,
+            value: 39,
+            label: "Absence with permission",
+            bgColor: "#6A9AB0",
+          },
+          {
+            icon: <UserMinus color="#FFFFFF" size={60} />,
+            value: 8,
+            label: "Late for class",
+            bgColor: "#FFC038",
+          },
+          {
+            icon: <UserX color="#FFFFFF" size={60} />,
+            value: 18,
+            label: "Absence without permission",
+            bgColor: "#EF1F1F",
+          },
+        ].map((item, index) => (
+          <div
+            key={index}
+            style={{
+              ...styles.summaryItem,
+              backgroundColor: item.bgColor,
+              width: isMobile ? "90%" : "30%",
+            }}
+          >
+            {item.icon}
+            <div style={styles.content}>
+              <div
+                style={{ fontSize: "36px", fontWeight: "bold", color: "#fff" }}
+              >
+                {item.value}
+              </div>
+              <div
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color: "#000000",
+                  textAlign: "center",
+                }}
+              >
+                {item.label}
+              </div>
             </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div style={styles.summaryItem2}>
-          <UserMinus color="#FFFFFF" size={60} />
-          <div style={styles.content}>
-            <div
-              style={{ fontSize: "36px", fontWeight: "bold", color: "#fff" }}
-            >
-              8
-            </div>
-            <div
-              style={{ fontSize: "16px", fontWeight: "bold", color: "#000000" }}
-            >
-              Late for class
-            </div>
-          </div>
-        </div>
+      {/* Pie Chart */}
+      <div style={styles.pieChartContainer}>
+        <p style={styles.chartTitle}>Attendance status</p>
+        <PieChart
+          colors={["#6A9AB0", "#FFC038", "#EF1F1F"]}
+          series={[
+            {
+              data: [
+                { id: 0, value: 3, label: "Permission" },
+                { id: 1, value: 2, label: "Late" },
+                { id: 2, value: 2, label: "Without permission" },
+              ],
+            },
+          ]}
+          width={isMobile ? 650 : 700}
+          height={300}
+        />
+      </div>
 
-        <div style={styles.summaryItem3}>
-          <UserMinus color="#FFFFFF" size={60} />
-          <div style={styles.content}>
-            <div
-              style={{ fontSize: "36px", fontWeight: "bold", color: "#fff" }}
-            >
-              18
-            </div>
-            <div
-              style={{ fontSize: "16px", fontWeight: "bold", color: "#000000" }}
-            >
-              Absence without permission
-            </div>
-          </div>
-        </div>
+      {/* Table Section */}
+      <div style={styles.tableContainer}>
+        <p style={styles.tableTitle}>
+          Top classes with the most absent student
+        </p>
+        <Table
+          tableHeader={tableHeader}
+          tableData={tableData}
+          onRowClick={handleRowClick}
+        />
       </div>
     </div>
   );
@@ -98,37 +141,24 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
-    padding: "1.5rem",
-    fontFamily: "Roboto, sans-serif",
-    backgroundColor: "#fff",
-    maxWidth: "100%",
-    gap: 30,
-  },
-  mobileContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
     padding: "1rem",
     fontFamily: "Roboto, sans-serif",
     backgroundColor: "#f9f9f9",
     gap: 20,
   },
   dropdown: {
-    display: "flex",
-    flexDirection: "row",
-    width: "100%",
+    width: "20%",
   },
   dropdownContainer: {
-    display: "flex", // Thêm display flex
-    flexDirection: "row",
+    display: "flex",
     alignItems: "center",
     height: 40,
-    paddingLeft: 20,
     gap: 20,
+    paddingLeft: 20,
   },
   dropdownLabel: {
     fontSize: 20,
-    fontWeight: "700", // SemiBold
+    fontWeight: 700,
   },
   dropdownInput: {
     flex: 1,
@@ -136,69 +166,49 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "5px",
     border: "1.5px solid #959595",
   },
-
-  //   summary
   summary: {
     display: "flex",
-    // flexDirection: "column",
     gap: 20,
-    width: "70%",
+    width: "80%",
     alignItems: "center",
     justifyContent: "center",
     margin: "0 auto",
   },
-  summaryItem1: {
+  summaryItem: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     padding: "1rem",
-    backgroundColor: "#6A9AB0",
     borderRadius: 10,
-    width: "100%",
-    gap: 13,
-  },
-  summaryItem2: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    padding: "1rem",
-    backgroundColor: "#FFC038",
-    borderRadius: 10,
-    width: "100%",
-    gap: 13,
-  },
-
-  summaryItem3: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    padding: "1rem",
-    backgroundColor: "#EF1F1F",
-    borderRadius: 10,
-    width: "100%",
     gap: 13,
   },
   content: {
-    textAlign: "center", // Căn giữa nội dung văn bản
+    textAlign: "center",
     fontSize: 14,
     fontWeight: "bold",
     color: "#000",
   },
   pieChartContainer: {
     display: "flex",
-    flexDirection: "row",
-    gap: "80px",
-    flexWrap: "wrap",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
   },
-  pieChart: {
+
+  chartTitle: {
+    paddingTop: 20,
+    fontSize: "20px",
+    fontWeight: "bold",
+  },
+  tableContainer: {
     display: "flex",
     flexDirection: "column",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 50,
+    width: "100%",
+  },
+  tableTitle: {
+    paddingTop: 20,
+    fontSize: 20,
+    fontWeight: "600",
   },
 };
