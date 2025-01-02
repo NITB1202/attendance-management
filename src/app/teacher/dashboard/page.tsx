@@ -27,9 +27,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleRowClick = (rowData: string[]) => {
-    console.log("Row clicked:", rowData);
-  };
   return (
     <div style={isMobile ? styles.mobileContainer : styles.container}>
       {/* Dropdown */}
