@@ -2,10 +2,7 @@ import axiosInstance from "./axiosConfig";
 
 const classApi = {
     getRollCallClasses(){
-        return axiosInstance.get(
-            "/classroom/roll-call",
-            {attachToken: true}
-        )
+        return axiosInstance.get("/classroom/roll-call");
     }
 }
 

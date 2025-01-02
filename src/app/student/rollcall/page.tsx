@@ -24,7 +24,7 @@ export default function RollcallStudent() {
   const [classes, setClasses] = useState<{id: number, className: string; session: number, startTime: string, allowedLateTime: number}[]>([]);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(500);
 
   useEffect(() => {
     const getClassess = async () => {
@@ -85,7 +85,11 @@ export default function RollcallStudent() {
   };
 
   const handleConfirm = () => {
-    console.log(selectedIndex);
+    if(classes.length < 1)
+    {
+      handleCloseModal();
+      return;
+    }
     const selectClass = classes.at(selectedIndex);
     if(selectClass){
         setQRContent({

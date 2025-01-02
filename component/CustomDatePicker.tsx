@@ -1,5 +1,4 @@
 import { DatePicker } from "@mui/x-date-pickers";
-import { Colors } from "../constant/Colors";
 
 interface CustomDatePickerProps{
     title: string;
@@ -15,6 +14,7 @@ export default function CustomDatePicker({title, setSelectedDate}: CustomDatePic
         <div style={styles.container}>
             <h1 style={styles.title}>{title}</h1>
             <DatePicker
+            format="dd/MM/yyyy"
             onChange={handleDateChange}
             slotProps={{
             textField: {
@@ -23,12 +23,13 @@ export default function CustomDatePicker({title, setSelectedDate}: CustomDatePic
                 height: "44px",
                 fontSize: "16px",
                 borderRadius: "5px",
+                minWidth: "165px",
               },
               "& .MuiOutlinedInput-notchedOutline": {
                 borderColor: "rgb(149, 149, 149)",
               },
               "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: Colors.primary,
+                borderColor: "#3A6D8C",
               },
             },},}}
             />

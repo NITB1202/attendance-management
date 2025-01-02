@@ -10,154 +10,175 @@ import { Colors } from "../../../../constant/Colors";
 import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 import ErrorMessage from "../../../../component/ErrorMessage";
 
-export default function OpenCamera(){
-    const { authState } = useAuth();
-    const [user, setUser] = useState<{ name: string; code: string }>({
-        name: "",
-        code: "",
-    });
-    const [data, setData] = useState("");
-    const [isScanning, setIsScanning] = useState<boolean>(true);
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [jsonData, setJsonData] = useState<{id: number, className: string; session: number }>({
-        id: 0,
-        className: "",
-        session: 0,
-      });
-    const [message, setMessage] = useState<{type: string, title: string; description: string }>({
-      type: "",
-      title: "",
-      description: "",
-    });
-    const [showMessage, setShowMessage] = useState(false);
+export default function OpenCamera() {
+  const { authState } = useAuth();
+  const [user, setUser] = useState<{ name: string; code: string }>({
+    name: '',
+    code: '',
+  });
+  const [data, setData] = useState('');
+  const [isScanning, setIsScanning] = useState<boolean>(true);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [jsonData, setJsonData] = useState<{ id: number; className: string; session: number }>({
+    id: 0,
+    className: '',
+    session: 0,
+  });
+  const [message, setMessage] = useState<{ type: string; title: string; description: string }>({
+    type: '',
+    title: '',
+    description: '',
+  });
+  const [showMessage, setShowMessage] = useState(false);
 
-    useEffect(() => {
-        const getUser = async () => {
-          try {
-            const response = await userApi.getById(authState.id);
-            setUser({
-              name: response.data.name,
-              code: response.data.roleCode,
-            });
-          } catch (error) {
-            console.error(error);
-          }
-        };
-    
-        getUser();
-    }, [authState.id]);
-
-    useEffect(() => {
-        const decodeData = async () => {
-            if(data !== ""){
-            setIsScanning(false);
-            setShowConfirm(true);
-            try {
-              const jsonData = JSON.parse(data);
-              setJsonData({
-                id: jsonData.id,
-                className: jsonData.className,
-                session: jsonData.session,
-              });
-              setData("");
-            } catch (error) {
-              setShowMessage(true);
-              setMessage({
-                type: "erorr",
-                title: "Error",
-                description: "Invalid QR Code."
-              });
-            }
-            }
-        };
-    
-        decodeData();
-    }, [data]);
-
-      const handleCloseModal = () => {
-        setShowConfirm(false);
-        setIsScanning(true);
-      };
-    
-      const handleConfirm = async () => {
+  useEffect(() => {
+    const getUser = async () => {
+      if(authState.id){
         try {
-          await attendanceApi.create(jsonData.id);
+          const response = await userApi.getById(authState.id);
+          setUser({
+            name: response.data.name,
+            code: response.data.roleCode,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+    getUser();
+  }, [authState.id]);
+
+  useEffect(() => {
+    const decodeData = async () => {
+      if (data !== '') {
+        setIsScanning(false);
+        setShowConfirm(true);
+        try {
+          const parsedData = JSON.parse(data);
+          setJsonData({
+            id: parsedData.id,
+            className: parsedData.className,
+            session: parsedData.session,
+          });
+          setData('');
+        } catch (error) {
           setShowMessage(true);
           setMessage({
-            type: "success",
-            title: "Roll call successfully",
-            description: "Your attendance has been recorded."
+            type: 'error',
+            title: 'Error',
+            description: 'Invalid QR Code.',
           });
-          handleCloseModal();
-        } catch (error) {
-            setShowMessage(true);
-            setMessage({
-              type: "error",
-              title: "Invalid attendance",
-              description: "The classroom is over."
-            });
-            handleCloseModal();
-          console.error("Error: ", error);
         }
-      };
+      }
+    };
+    decodeData();
+  }, [data]);
+
+  useEffect(() => {
+    const startCamera = async () => {
+      if (isScanning) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setCameraStream(stream);
+        } catch (error) {
+          console.error('Không thể mở camera:', error);
+        }
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        console.log('Camera đã tắt.');
+      }
+    };
+  }, [isScanning]);
+
+  const handleCloseModal = () => {
+    setShowConfirm(false);
+    setIsScanning(true);
+  };
+
+  const handleConfirm = async () => {
+    try {
+      await attendanceApi.create(jsonData.id);
+      setShowMessage(true);
+      setMessage({
+        type: 'success',
+        title: 'Roll call successfully',
+        description: 'Your attendance has been recorded.',
+      });
+      handleCloseModal();
+    } catch (error) {
+      setShowMessage(true);
+      setMessage({
+        type: 'error',
+        title: 'Invalid attendance',
+        description: 'The classroom is over.',
+      });
+      handleCloseModal();
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div style={styles.container}>
-    <QRScanner
+      <QRScanner
         style={styles.camera}
         setData={setData}
-        isScanning={isScanning}>
-    </QRScanner>
-    { showConfirm &&
-         <div style={styles.modalOverlay}>
-         <div style={styles.modalContent}>
-           <button onClick={handleCloseModal}>
-            <img src="/icon/close.png" alt="Close" />
-           </button>
-           <h2 style={styles.title}>Attendance confirmation</h2>
-           <div style={styles.body}>
-             <div>
-               <p>Class name:</p>
-               <p>Session no:</p>
-               <p>Date:</p>
-               <p>Student name:</p>
-               <p>Student code:</p>
-               <p>Arrival time:</p>
-             </div>
-             <div>
-               <p>{jsonData.className}</p>
-               <p>{jsonData.session}</p>
-               <p>{new Date().toLocaleDateString()}</p>
-               <p>{user.name}</p>
-               <p>{user.code}</p>
-               <p>{new Date().toLocaleTimeString()}</p>
-             </div>
-           </div>
-           <RoundedButton
+        isScanning={isScanning}
+      />
+      {showConfirm && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <button onClick={handleCloseModal}>
+              <img src="/icon/close.png" alt="Close" />
+            </button>
+            <h2 style={styles.title}>Attendance confirmation</h2>
+            <div style={styles.body}>
+              <div>
+                <p>Class name:</p>
+                <p>Session no:</p>
+                <p>Date:</p>
+                <p>Student name:</p>
+                <p>Student code:</p>
+                <p>Arrival time:</p>
+              </div>
+              <div>
+                <p>{jsonData.className}</p>
+                <p>{jsonData.session}</p>
+                <p>{new Date().toLocaleDateString()}</p>
+                <p>{user.name}</p>
+                <p>{user.code}</p>
+                <p>{new Date().toLocaleTimeString()}</p>
+              </div>
+            </div>
+            <RoundedButton
               title="CONFIRM"
               style={styles.button}
               textStyle={styles.buttonText}
               onClick={handleConfirm}
             />
-         </div>
-       </div>
-    }
-    {
-      showMessage && message.type === "success" &&
+          </div>
+        </div>
+      )}
+      {showMessage && message.type === 'success' && (
         <SuccessfulMessage
           title={message.title}
           description={message.description}
-          setOpen={setShowMessage}>
-        </SuccessfulMessage>
-    }
-    {
-      showMessage && message.type === "error" &&
+          setOpen={setShowMessage}
+        />
+      )}
+      {showMessage && message.type === 'error' && (
         <ErrorMessage
           title={message.title}
           description={message.description}
-          setOpen={setShowMessage}>
-        </ErrorMessage>
-    }
+          setOpen={setShowMessage}
+        />
+      )}
     </div>
   );
 }
