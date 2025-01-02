@@ -1,15 +1,22 @@
 "use client";
+
 import React, { useState } from "react";
 import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
+import CommentBox from "../../../../component/CommentBox";
 
-const TabComponent = () => {
+const DetailManager = () => {
   const [activeTab, setActiveTab] = useState('General');
   const tableHeaders = ['Order', 'Student Code', 'Student Name', 'Username'];
   const tableData = [
     ['1', 'S001', 'John Doe', 'johndoe'],
     ['2', 'S002', 'Jane Smith', 'janesmith'],
-    // Thêm dữ liệu khác nếu cần
+  ];
+
+  const tableHeaders2 = ['No', 'Date'];
+  const tableData2 = [
+    ['1', '2023-01-01'],
+    ['2', '2023-01-02'],
   ];
 
   return (
@@ -210,10 +217,66 @@ const TabComponent = () => {
             </div>
           </div>
         )}
-        {activeTab === 'Session' && <div>Content for Session tab</div>}
+        {activeTab === 'Session' && (
+          <div style={{ display: 'flex', width: '100%', height: '620px' }}>
+            <div style={{ flex: 1, padding: '10px' }}>
+              <Table tableHeader={tableHeaders2} tableData={tableData2} />
+            </div>
+            <div style={{ flex: 6, padding: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '10px' }}>
+                <label style={{ fontSize: 16, marginRight: '10px', fontWeight: 'bold' }}>Roll Caller Name:</label>
+                <label style={{ fontSize: 16 }}>John Doe</label>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '10px' }}>
+                <label style={{ fontSize: 16, marginRight: '10px', fontWeight: 'bold' }}>Student Code:</label>
+                <label style={{ fontSize: 16 }}>S001</label>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', marginTop: '10px' }}>
+                <div style={{ flex: 4, marginBottom: '10px' }}>
+                  <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Student Attendance Status</label>
+                  <Table
+                    tableHeader={['Order', 'Student Code', 'Student Name', 'Attendance Status']}
+                    tableData={[
+                      ['1', 'S001', 'John Doe', 'Present'],
+                      ['2', 'S002', 'Jane Smith', 'Absent'],
+                    ]}
+                  />
+                </div>
+                <div style={{ flex: 6, padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                  <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Discussion</label>
+                  <div style={{ flex:1, border: '1px solid #ccc', padding: '10px', borderRadius: '4px'}}>
+                    <CommentBox 
+                      avatar="path/to/avatar.jpg"
+                      name="John Doe"
+                      content="This is a comment."
+                      timestamp="2023-01-01"
+                      onReply={() => console.log('Reply clicked')}
+                    />
+                    <button
+                      style={{
+                        alignSelf: 'flex-start',
+                        backgroundColor: '#6A9AB0',
+                        border: 'none',
+                        color: '#3A6D8C',
+                        cursor: 'pointer',
+                        padding: '8px 16px',
+                        marginTop: '10px',
+                        borderRadius: '4px'
+                      }}
+                      onClick={() => console.log('4 Replies clicked')}
+                    >
+                      4 Replies
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default TabComponent;
+export default DetailManager;
