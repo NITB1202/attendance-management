@@ -9,27 +9,22 @@ import { QRCodeCanvas } from "qrcode.react";
 import classApi from "../../../../api/classApi";
 import { useRouter } from "next/navigation";
 import { Colors } from "../../../../constant/Colors";
-
+import { toZonedTime } from 'date-fns-tz';
 
 
 export default function RollcallStudent() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [timer, setTimer] = useState(0);
   const [showQR, setShowQR] = useState(false);
-  const [selectedClass, setSelectedClass] = useState({
-    id: 0,
-    className: "",
-    session: 0,
-    startTime: "",
-  });
   const [QRContent, setQRContent] = useState({
     id: 0,
     className: "",
     session: 0,
   });
-  const [classes, setClasses] = useState<{id: number, className: string; session: number, startTime: string}[]>([]);
+  const [classes, setClasses] = useState<{id: number, className: string; session: number, startTime: string, allowedLateTime: number}[]>([]);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const router = useRouter();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     const getClassess = async () => {
@@ -40,6 +35,7 @@ export default function RollcallStudent() {
           className: item.name,
           session: item.session.no,
           startTime: item.session.startTime,
+          allowedLateTime: item.allowedLateTime,
         })))
       } catch (error) {
         console.error(error);
@@ -62,6 +58,7 @@ export default function RollcallStudent() {
       let interval: NodeJS.Timeout | null = setInterval(() => {
         setTimer((prevTimer) => {
           if (prevTimer <= 1) {
+            setShowQR(false);
             if (interval) clearInterval(interval);
             return 0;
           }
@@ -72,9 +69,10 @@ export default function RollcallStudent() {
       return () => {
         if (interval) clearInterval(interval);
       };
-    }, []);
+    }, [timer]);
 
   const handleGenerateQRCode = () => {
+    setSelectedIndex(0);
     setModalVisible(true);
   };
 
@@ -82,22 +80,33 @@ export default function RollcallStudent() {
     setModalVisible(false);
   };
 
-  const handleConfirm = () => {
-    setModalVisible(false);
-    const secondLeft = handleTime(selectedClass.startTime);
-    if(secondLeft <= 0)
-    setQRContent({
-        id: selectedClass.id,
-        session: selectedClass.session,
-        className: selectedClass.className
-    });
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedIndex(Number(event.target.value));
+  };
 
+  const handleConfirm = () => {
+    console.log(selectedIndex);
+    const selectClass = classes.at(selectedIndex);
+    if(selectClass){
+        setQRContent({
+            id: selectClass.id,
+            className: selectClass.className,
+            session: selectClass.session,
+        })
+
+        const secondLeft = handleTime(selectClass.startTime, selectClass.allowedLateTime);
+        if(secondLeft <= 0)
+            setTimer(120);
+        else
+            setTimer(secondLeft);
+    }
+    setModalVisible(false);
     setShowQR(true);
   };
 
   const handleScanQRCode = () => {
     console.log("Scan QR code");
-    router.push("/student/open_camera");
+    router.push("/student/camera");
   };
 
   const flexDirection = screenWidth > 600? "row": "column";
@@ -137,13 +146,12 @@ export default function RollcallStudent() {
             <p style={styles.modalText}>
               Select the class for which you would like to take a roll call
             </p>
-            <select style={styles.select}>
-                {classes.map((classroom) => (
+            <select style={styles.select} onChange={handleSelectChange} defaultValue="">
+                {classes.map((classroom, index) => (
                   <option
                     key={classroom.id}
                     style={styles.option}
-                    onClick={() => setSelectedClass(classroom)}
-                  >
+                    value={index}>
                     {classroom.className}
                   </option>
                 ))}
@@ -168,12 +176,13 @@ const formatTime = (seconds: number) => {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 };
 
-const handleTime = (timeString: string) =>{
+const handleTime = (timeString: string, minutes: number) =>{
     const date = new Date(timeString);
-    const now = new Date();
-    const duration = +date - +now;
+    date.setMinutes(date.getMinutes() + minutes);
+    const currentTime= toZonedTime(new Date(), 'Asia/Ho_Chi_Minh');
+    const duration = date.getTime() - currentTime.getTime();
     const seconds = duration/1000;
-    return seconds;
+    return Math.round(seconds);
 }   
 
 
