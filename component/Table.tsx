@@ -41,6 +41,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "5px",
     overflow: "hidden",
     width: "100%",
+    minWidth: "fit-content",
     marginTop: "20px",
   },
   headerRow: {
@@ -49,10 +50,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#6A9AB0",
   },
   headerCell: {
+    display: "flex",
     flex: 1,
     padding: "10px",
-    textAlign: "center",
-    color: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    color: "black",
+    fontWeight: 700,
+    minWidth: 100,
   },
   dataRow: {
     display: "flex",
@@ -63,6 +68,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px",
     textAlign: "center",
     borderBottom: "1px solid #ddd",
+    minWidth: 100,
   },
 };
 
