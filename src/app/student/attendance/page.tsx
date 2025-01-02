@@ -4,6 +4,7 @@ import CustomSelect from "../../../../component/CustomSelect"
 import RoundedButton from "../../../../component/RoundedButton"
 import SmallInput from "../../../../component/SmallInput"
 import { IoSearchOutline } from "react-icons/io5";
+import CustomDatePicker from "../../../../component/CustomDatePicker";
 
 export default function AttendancePage(){
     const time = ["Morning", "Evening", "Night"]
@@ -11,24 +12,27 @@ export default function AttendancePage(){
     return (
         <div style={styles.page}>
             <div style={styles.headerContainer}>
-                <SmallInput
-                    title="Student Code"
-                    placeHolder="22520992">
-                </SmallInput>
-                <SmallInput
-                    title="Start date"
-                    placeHolder="12/02/2005">
-                </SmallInput>
-                <SmallInput
+                <div style={styles.row}>
+                    <SmallInput
+                        title="Student Code"
+                        placeHolder="22520992">
+                    </SmallInput>
+                    <CustomDatePicker
+                        title="Start date"
+                        setSelectedDate={()=>{}}>
+                    </CustomDatePicker>
+                </div>
+                <div style={styles.row}>
+                <CustomDatePicker
                     title="End date"
-                    placeHolder="14/02/2025">
-                </SmallInput>
+                    setSelectedDate={()=>{}}>
+                </CustomDatePicker>
                 <CustomSelect
                     title="Time"
                     options={time}
                     onSelect={()=>{}}>
                 </CustomSelect>
-                
+                </div>
             </div>
             <div>
                 <RoundedButton
@@ -55,8 +59,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     headerContainer:{
         display: "flex",
         justifyContent: "flex-start",
-        alignItems: "center",
+        alignItems: "flex-start",
+        flexDirection: "row",
+        gap: 20,
+    },
+    row:{
+        display: "flex",
         gap: 40,
+        marginRight: 20,
     }
 
 }
