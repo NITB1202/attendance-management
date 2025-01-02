@@ -117,7 +117,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "flex-start",
     padding: "1.5rem",
     fontFamily: "Roboto, sans-serif",
-    backgroundColor: "#fff",
     maxWidth: "100%",
   },
 
