@@ -6,7 +6,7 @@ import Dropdown from "../../../../component/Dropdown";
 import SearchBar from "../../../../component/SearchBar";
 import TabSwitcher from "../../../../component/Tabs";
 import RoundedButton from "../../../../component/RoundedButton";
-import { Calendar, FileUp } from "lucide-react";
+import { Calendar, FileUp, X } from "lucide-react";
 
 export default function Account() {
   const [isMobile, setIsMobile] = useState(false);
@@ -269,7 +269,7 @@ export default function Account() {
               }}
               onClick={closeModal}
             >
-              X
+              <X />
             </button>
             <label
               style={{
@@ -455,7 +455,7 @@ export default function Account() {
               }}
               onClick={toggleModal}
             >
-              X
+              <X />
             </button>
             <label
               style={{
