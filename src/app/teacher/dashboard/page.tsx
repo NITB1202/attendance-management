@@ -1,7 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { AlarmClock, CircleAlert, UserMinus, UserX } from "lucide-react";
+import {
+  AlarmClock,
+  CircleAlert,
+  Rows4,
+  TrendingUp,
+  UserMinus,
+  UserX,
+} from "lucide-react";
 import Table from "../../../../component/Table";
 
 export default function Dashboard() {
@@ -39,6 +46,7 @@ export default function Dashboard() {
         <div style={styles.dropdownContainer}>
           <label style={styles.dropdownLabel}>Session</label>
           <select style={styles.dropdownInput}>
+            <option value="0">All</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -52,9 +60,26 @@ export default function Dashboard() {
           </select>
         </div>
       </div>
-      <div style={isMobile ? styles.mobileChart : styles.chart}>
-        {/* Statistics Section */}
 
+      {/* Report */}
+
+      <div style={styles.report}>
+        <div style={styles.box_respond}>
+          <div style={styles.label}>Respond received</div>
+          <div style={styles.row}>
+            <Rows4 color="#FFFFFF" size={80} />
+            <div style={styles.value}>48</div>
+          </div>
+        </div>
+        <div style={styles.box_efficacy}>
+          <div style={styles.label}> The efficacy of the lesson</div>
+          <div style={styles.row}>
+            <TrendingUp color="#FFFFFF" size={80} />
+            <div style={styles.value}>72</div>
+          </div>
+        </div>
+      </div>
+      <div style={isMobile ? styles.mobileChart : styles.chart}>
         {/* Pie Chart Section */}
         <div style={styles.pieChartContainer}>
           <div style={styles.pieChart}>
@@ -109,11 +134,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontFamily: "Roboto, sans-serif",
     backgroundColor: "#fff",
     maxWidth: "100%",
+    gap: 30,
   },
   dropdown: {
     display: "flex",
     flexDirection: "row",
     width: "40%",
+    gap: 50,
   },
   dropdownContainer: {
     display: "flex",
@@ -126,7 +153,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderColor: "#959595",
   },
   dropdownLabel: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "600",
     marginBottom: 15,
   },
@@ -136,10 +163,59 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "5px",
     border: "1.5px solid #959595",
   },
+
+  report: {
+    display: "flex",
+    alignItems: "center",
+    gap: "50px",
+    padding: "1.5rem",
+    width: "100%",
+    flexWrap: "wrap",
+  },
+  label: {
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 20,
+    color: "#FFFDFD",
+    fontSize: 64,
+    fontWeight: 600,
+  },
+
+  box_respond: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "auto",
+    backgroundColor: "#6A9AB0",
+    borderRadius: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    gap: 5,
+  },
+  box_efficacy: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "auto",
+    backgroundColor: "rgba(0, 176, 26, 0.7)",
+    borderRadius: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    gap: 5,
+  },
+
   pieChartContainer: {
     display: "flex",
     flexDirection: "row",
-    gap: "20px",
+    gap: "80px",
     flexWrap: "wrap",
   },
   pieChart: {
@@ -148,5 +224,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 50,
   },
 };
