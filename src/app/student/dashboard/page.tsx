@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { AlarmClock, CircleAlert, UserMinus, UserX } from "lucide-react";
 import Table from "../../../../component/Table";
+import studentApi from "../../../../api/studentApi";
+import Dropdown from "../../../../component/Dropdown";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
@@ -30,18 +32,106 @@ export default function Dashboard() {
   const handleRowClick = (rowData: string[]) => {
     console.log("Row clicked:", rowData);
   };
+
+  const [selectedOption, setSelectedOption] = useState<string>("");
+
+  const handleDropdownChange = (value: string) => {
+    setSelectedOption(value);
+    console.log("Selected option:", value);
+  };
+
+  const styles: { [key: string]: React.CSSProperties } = {
+    container: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "column",
+      alignItems: isMobile ? "center" : "flex-start",
+      padding: "1.5rem",
+      fontFamily: "Roboto, sans-serif",
+      backgroundColor: "#fff",
+      maxWidth: "100%",
+    },
+    statisticsContainer: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      gap: "1rem",
+      alignContent: "center",
+      justifyContent: "space-between",
+      paddingBottom: "20px",
+      width: isMobile ? "100%" : "40%",
+    },
+    chart: {
+      paddingTop: 10,
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      flexWrap: "wrap",
+      width: isMobile ? "100%" : "80%",
+      justifyContent: isMobile ? "center" : "space-between",
+      alignItems: "center",
+      margin: "0 auto",
+    },
+    statBox1: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
+      width: "100%",
+      height: "auto",
+    },
+    statBox2: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
+      width: "100%",
+      height: "auto",
+    },
+    statCard: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "8px",
+      color: "#fff",
+      fontWeight: "bold",
+      textAlign: "center",
+      padding: "10px",
+      width: "100%",
+      height: "auto",
+    },
+    cardTitle: {
+      fontSize: "16px",
+      marginBottom: "10px",
+      color: "#000000",
+    },
+    Value: {
+      display: "flex",
+      flexDirection: "row",
+      gap: "10px",
+      alignItems: "center",
+    },
+    cardValue: {
+      fontSize: "45px",
+    },
+    pieChartContainer: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    },
+    chartTitle: {
+      fontSize: "20px",
+      fontWeight: "bold",
+      marginBottom: "10px",
+    },
+  };
+
   return (
-    <div style={isMobile ? styles.mobileContainer : styles.container}>
+    <div style={styles.container}>
       {/* Dropdown */}
-      <div style={styles.dropdownContainer}>
-        <label style={styles.dropdownLabel}>Class</label>
-        <select style={styles.dropdownInput}>
-          <option value="SE103.022">SE103.022</option>
-          <option value="SE104.023">SE104.023</option>
-          <option value="SE105.024">SE105.024</option>
-        </select>
-      </div>
-      <div style={isMobile ? styles.mobileChart : styles.chart}>
+      <Dropdown
+        title="Class:"
+        options={["SE100.P10", "SE100.P11", "SE100.P13"]}
+        style={{ borderColor: "blue" }}
+        onChange={handleDropdownChange}
+      />
+      <div style={styles.chart}>
         {/* Statistics Section */}
         <div style={styles.statisticsContainer}>
           <div style={styles.statBox1}>
@@ -81,7 +171,6 @@ export default function Dashboard() {
         {/* Pie Chart Section */}
         <div style={styles.pieChartContainer}>
           <p style={styles.chartTitle}>Attendance status</p>
-
           <PieChart
             colors={["#EF1F1F", "#FFC038", "#6A9AB0"]}
             series={[
@@ -100,7 +189,6 @@ export default function Dashboard() {
       </div>
       {/* Table Section */}
       <p style={styles.chartTitle}>Attendance record</p>
-
       <Table
         tableHeader={tableHeader}
         tableData={tableData}
@@ -109,102 +197,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "1.5rem",
-    fontFamily: "Roboto, sans-serif",
-    maxWidth: "100%",
-  },
-
-  dropdownContainer: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "20px",
-    width: "100%",
-    maxWidth: "16.4375rem",
-  },
-  dropdownLabel: {
-    marginRight: "10px",
-    fontWeight: "bold",
-  },
-  dropdownInput: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  statisticsContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "1rem",
-    alignContent: "center",
-    // alignItems: "flex-start",
-    justifyContent: "space-between",
-    paddingBottom: "20px",
-  },
-  chart: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap", // Cho phép các item xuống dòng khi vượt quá chiều rộng
-    gap: "10px", // Khoảng cách giữa các item
-    width: "100%", // Đảm bảo container chiếm toàn bộ chiều rộng
-    justifyContent: "space-between", // Canh đều khoảng cách giữa các item
-    alignItems: "center", // (Tùy chọn) Căn giữa các item theo trục dọc
-  },
-
-  statBox1: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    minWidth: "10.5rem",
-  },
-  statBox2: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    minWidth: "17rem",
-  },
-
-  statCard: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "8px",
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    padding: "10px",
-  },
-
-  cardTitle: {
-    fontSize: "16px",
-    marginBottom: "10px",
-    color: "#000000",
-  },
-  Value: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "10px",
-    alignItems: "center",
-  },
-  cardValue: {
-    fontSize: "45px",
-  },
-  pieChartContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    // width: "100%",
-    // maxWidth: "600px",
-  },
-  chartTitle: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  },
-};
