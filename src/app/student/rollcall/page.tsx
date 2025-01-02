@@ -24,6 +24,7 @@ export default function RollcallStudent() {
   const [classes, setClasses] = useState<{id: number, className: string; session: number, startTime: string, allowedLateTime: number}[]>([]);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const router = useRouter();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     const getClassess = async () => {
@@ -71,6 +72,7 @@ export default function RollcallStudent() {
     }, [timer]);
 
   const handleGenerateQRCode = () => {
+    setSelectedIndex(0);
     setModalVisible(true);
   };
 
@@ -79,7 +81,12 @@ export default function RollcallStudent() {
   };
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectClass = classes.at(Number(event.target.value));
+    setSelectedIndex(Number(event.target.value));
+  };
+
+  const handleConfirm = () => {
+    console.log(selectedIndex);
+    const selectClass = classes.at(selectedIndex);
     if(selectClass){
         setQRContent({
             id: selectClass.id,
@@ -93,9 +100,6 @@ export default function RollcallStudent() {
         else
             setTimer(secondLeft);
     }
-  };
-
-  const handleConfirm = () => {
     setModalVisible(false);
     setShowQR(true);
   };
@@ -142,7 +146,7 @@ export default function RollcallStudent() {
             <p style={styles.modalText}>
               Select the class for which you would like to take a roll call
             </p>
-            <select style={styles.select} onChange={handleSelectChange}>
+            <select style={styles.select} onChange={handleSelectChange} defaultValue="">
                 {classes.map((classroom, index) => (
                   <option
                     key={classroom.id}
