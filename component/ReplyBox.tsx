@@ -5,10 +5,11 @@ interface CommentBoxProps {
     name: string;
     content: string;
     timestamp: string;
-    onReply: () => void;
+    onPost: () => void;
+    onCancel: () => void;
 }
 
-const CommentBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestamp, onReply }) => {
+const ReplyBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestamp, onPost, onCancel }) => {
     return (
         <div style={{
             display: 'flex',
@@ -42,9 +43,10 @@ const CommentBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestam
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button
-                    onClick={onReply}
+                    onClick={onCancel}
                     style={{
-                        backgroundColor: '#6a9ab0',
+                        marginRight: '10px',
+                        backgroundColor: '#999999',
                         border: 'none',
                         color: 'black',
                         cursor: 'pointer',
@@ -52,11 +54,24 @@ const CommentBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestam
                         borderRadius: '5px',
                     }}
                 >
-                    Reply
+                    Cancel
+                </button>
+                <button
+                    onClick={onPost}
+                    style={{
+                        backgroundColor: '#3a6d8c',
+                        border: 'none',
+                        color: 'white',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        borderRadius: '5px',
+                    }}
+                >
+                    Post
                 </button>
             </div>
         </div>
     );
 };
 
-export default CommentBox;
+export default ReplyBox;

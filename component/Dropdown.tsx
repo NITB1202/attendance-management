@@ -38,7 +38,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     title: {
         fontFamily: "Roboto, sans-serif",
-        fontSize: "22px",
+        fontSize: 16,
     },
     inputContainer: {
         display: "flex",
@@ -51,8 +51,8 @@ const styles: { [key: string]: React.CSSProperties } = {
         width: "100%",
     },
     select: {
-        fontFamily: "Roboto, sans-serif",
-        fontSize: "20px",
+        fontFamily: "Roboto",
+        fontSize: "16px",
         outline: "none",
         width: "100%",
         border: "none",

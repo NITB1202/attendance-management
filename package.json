@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.3.0",
@@ -16,6 +17,7 @@
     "@mui/x-charts": "^7.23.2",
     "@mui/x-date-pickers": "^7.23.3",
     "@zxing/library": "^0.21.3",
+    "antd": "^5.22.7",
     "axios": "^1.7.9",
     "date-fns-tz": "^3.2.0",
     "jwt-decode": "^4.0.0",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/antd": "^1.0.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
