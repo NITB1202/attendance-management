@@ -1,14 +1,18 @@
+"use client";
+
 import React from "react";
 import { Colors } from "../constant/Colors";
 
 interface InputProps {
-  title: string;
+  title?: string;
   placeHolder?: string;
   style?: React.CSSProperties;
+  textStyle?: React.CSSProperties;
   onChangeText?: (text: string) => void;
+  icon?: React.ReactNode;
 }
 
-const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText }) => {
+const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, icon, textStyle }) => {
 
   const handleChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChangeText) onChangeText(event.target.value);
@@ -16,12 +20,13 @@ const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText }
 
   return (
     <div style={styles.container}>
-      <label style={styles.title}>{title}</label>
+      {title && <label style={styles.title}>{title}</label>}
       <div style={{ ...styles.inputContainer, ...style }}>
+        {icon}
         <input
           type="text"
           placeholder={placeHolder}
-          style={styles.input}
+          style={{...styles.input, ... textStyle}}
           onChange={handleChangeText}
         />
       </div>
@@ -48,6 +53,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderColor: Colors.gray,
     padding: "10px",
     width: "100%",
+    gap: 10,
   },
   input: {
     fontFamily: "Roboto, sans-serif",
