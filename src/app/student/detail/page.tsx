@@ -193,7 +193,7 @@ const DetailStudent = () => {
                 </TabSwitcher>
             </div>
             <div style={{ marginTop: '20px' }}>
-                {activeTab === 'General' && (
+            {activeTab === 'General' && (
                     <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
                         <div style={{ display: "flex", flexDirection: "column", padding: '10px'}}>
                             <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
@@ -297,8 +297,7 @@ const DetailStudent = () => {
                                             name="John Doe"
                                             content="This is a comment."
                                             timestamp="2023-01-01"
-                                            onReply={() => console.log('Reply clicked')}
-                                        />
+                                            onReply={() => console.log('Reply clicked')} className={""}                                        />
                                         <div style={{ marginLeft: '20px' }}>
                                             <ReplyBox
                                                 avatar="path/to/avatar.jpg"
@@ -306,8 +305,7 @@ const DetailStudent = () => {
                                                 content="This is a reply."
                                                 timestamp="2023-01-01"
                                                 onPost={() => console.log('Post clicked')}
-                                                onCancel={() => console.log('Cancel clicked')}
-                                            />
+                                                onCancel={() => console.log('Cancel clicked')} className={""}                                            />
                                         </div>
                                         <button
                                             style={{
