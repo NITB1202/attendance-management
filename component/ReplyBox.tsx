@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface CommentBoxProps {
+    className: string;
     avatar: string;
     name: string;
     content: string;
@@ -10,6 +11,21 @@ interface CommentBoxProps {
 }
 
 const ReplyBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestamp, onPost, onCancel }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 500);
+        };
+
+        handleResize(); // Initialize the state
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     return (
         <div style={{
             display: 'flex',
@@ -18,7 +34,8 @@ const ReplyBox: React.FC<CommentBoxProps> = ({ avatar, name, content, timestamp,
             borderRadius: '10px',
             padding: '10px',
             marginBottom: '10px',
-            width: '40%',
+            width: isMobile ? '100%' : '40%',
+            marginLeft: '15px',
         }}>
             <div style={{ display: 'flex', marginBottom: '10px' }}>
                 <img src={avatar} alt="avatar" style={{

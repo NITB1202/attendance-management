@@ -13,8 +13,6 @@ import { useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
 
-
-
 const DetailStudent = () => {
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -216,15 +214,23 @@ const DetailStudent = () => {
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherCode}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorName}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorCode}</label>
+
                                     </div>
                                 </div>
-                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row' }}>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Date:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Date:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Time:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Time:</label>
+                                <div className="class-info-column">
+                                    <div className="class-info-item">
+                                        <label className="class-info-label">Start Date:</label>
+                                        <label className="class-info-value">12/09/2024</label>
                                     </div>
+                                    <div className="class-info-item">
+                                        <label className="class-info-label">End Date:</label>
+                                        <label className="class-info-value">02/04/2025</label>
+                                    </div>
+                                    <div className="class-info-item">
+                                        <label className="class-info-label">Start Time:</label>
+                                        <label className="class-info-value">07:00 AM</label>
+                                    </div>
+
                                     <div style={{ flex: 1, padding: '10px' }}>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startDate}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endDate}</label>
@@ -254,6 +260,7 @@ const DetailStudent = () => {
                         </div>
                     </div>
                 )}
+
                 {activeTab === 'Session' && (
                     <div style={{ display: 'flex', width: '100%', height: '600px' }}>
                         <div style={{ flex: 1, padding: '0px 10px' }}>
@@ -319,70 +326,107 @@ const DetailStudent = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <button
-                                        style={{
-                                            alignSelf: 'flex-start',
-                                            backgroundColor: '#008e15',
-                                            border: 'none',
-                                            color: '#FFFFFF',
-                                            cursor: 'pointer',
-                                            padding: '8px 16px',
-                                            marginTop: '10px',
-                                            borderRadius: '6px',
-                                            marginRight: '10px',
-                                            width: '120px',
-                                        }}
-                                        onClick={() => console.log('4 Replies clicked')}
-                                    >
-                                        Add new
+                            </div>
+                            <div className="discussion-section">
+                                <label className="discussion-label">Discussion</label>
+                                <div className="comment-box">
+                                    <CommentBox
+                                        className="custom-comment-box"
+                                        avatar="path/to/avatar.jpg"
+                                        name="John Doe"
+                                        content="This is a comment."
+                                        timestamp="2023-01-01"
+                                        onReply={() => console.log('Reply clicked')}
+                                    />
+                                    <ReplyBox
+                                        className="custom-reply-box"
+                                        avatar="path/to/avatar.jpg"
+                                        name="John Doe"
+                                        content="This is another reply."
+                                        timestamp="2023-01-01"
+                                        onPost={() => console.log('Post clicked')}
+                                        onCancel={() => console.log('Cancel clicked')}
+                                    />
+                                    <button className="reply-button" onClick={() => console.log('4 Replies clicked')}>
+                                        4 Replies
                                     </button>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                        <ReplyBox
-                                            avatar="path/to/avatar.jpg"
-                                            name="John Doe"
-                                            content="This is another reply."
-                                            timestamp="2023-01-01"
-                                            onPost={() => console.log('Post clicked')}
-                                            onCancel={() => console.log('Cancel clicked')}
-                                        />
-                                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                                            <label style={{ marginRight: '10px' }}>Anonymous</label>
-                                            <div
-                                                onClick={handleToggle}
-                                                style={{
-                                                    width: '40px',
-                                                    height: '20px',
-                                                    backgroundColor: isAnonymous ? '#6a9ab0' : '#ccc',
-                                                    borderRadius: '20px',
-                                                    position: 'relative',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        width: '18px',
-                                                        height: '18px',
-                                                        backgroundColor: 'white',
-                                                        borderRadius: '50%',
-                                                        position: 'absolute',
-                                                        top: '1px',
-                                                        left: isAnonymous ? '20px' : '1px',
-                                                        transition: 'left 0.2s'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
+                                </div>
+                            </div>
+                            <div className="reply-container">
+                                <button
+                                    className="add-new-button"
+                                    onClick={() => console.log('4 Replies clicked')}
+                                >
+                                    Add new
+                                </button>
+                                <ReplyBox
+                                    className="custom-reply-box"
+                                    avatar="path/to/avatar.jpg"
+                                    name="John Doe"
+                                    content="This is another reply."
+                                    timestamp="2023-01-01"
+                                    onPost={() => console.log('Post clicked')}
+                                    onCancel={() => console.log('Cancel clicked')}
+                                />
+                                <div className="toggle-container">
+                                    <label className="toggle-label">Anonymous</label>
+                                    <div className={`toggle-switch ${isAnonymous ? 'active' : ''}`} onClick={handleToggle}>
+                                        <div className="toggle-knob" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 )}
             </div>
         </div>
     );
+};
+
+import { Properties } from 'csstype';
+const styles: { [key: string]: Properties<string | number> } = {
+  container: {
+    padding: '20px',
+  },
+  containerMobile: {
+    padding: '10px',
+  },
+  tabContainer: {
+    display: 'flex',
+    backgroundColor: '#3A6D8C',
+    padding: '10px',
+    width: '14%',
+    marginLeft: '10px',
+    marginTop: '10px',
+    borderRadius: "5px",
+  },
+  tabContainerMobile: {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: '#3A6D8C',
+    padding: '10px',
+    width: '100%',
+    marginLeft: '0px',
+    marginTop: '10px',
+    borderRadius: "5px",
+  },
+  tabButton: {
+    borderRadius: "5px",
+    padding: '10px 20px',
+    cursor: 'pointer',
+    color: 'white',
+    border: 'none',
+    outline: 'none',
+  },
+  tabButtonActive: {
+    backgroundColor: '#00B01A',
+    fontWeight: 'bold',
+  },
+  tabButtonInactive: {
+    backgroundColor: '#3A6D8C',
+    fontWeight: 'normal',
+  },
+  
 };
 
 export default DetailStudent;

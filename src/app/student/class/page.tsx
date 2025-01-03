@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import classApi from "../../../../api/classApi";
 import { formatDate } from "../../../../util/util";
 
-
 const ClassStudent = () => {
     const [data, setData] = useState<any[][]>(
         [["","","","","","","",""]]
@@ -78,6 +77,7 @@ const ClassStudent = () => {
                     onSelect={setSelectedIndex}>
                 </CustomSelect>
             </div>
+          
             <div style={{ marginTop: 20 }}>
                 <Table 
                     tableHeader={tableHeader} 
@@ -111,6 +111,7 @@ const ClassStudent = () => {
 
     );
 };
+
 
 const styles: { [key: string]: React.CSSProperties } = {
     headerContainer:{

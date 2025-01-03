@@ -1,7 +1,7 @@
 import React from "react";
 
 interface TableProps {
-  tableHeader: string[];
+  tableHeader: (string | React.ReactNode)[];
 
   tableData: any[][];
 
@@ -26,9 +26,9 @@ const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
           style={styles.dataRow}
           onClick={() => onRowClick?.(row)}
         >
-          {row.map((cell, cellIndex) => (
+          {tableHeader.map((_, cellIndex) => (
             <div key={cellIndex} style={styles.dataCell}>
-              {cell}
+              {row[cellIndex] !== undefined ? row[cellIndex] : ""}
             </div>
           ))}
         </div>
@@ -58,7 +58,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
     color: "black",
     fontWeight: 700,
-    minWidth: 100,
+    minWidth: 120,
   },
   dataRow: {
     display: "flex",
@@ -69,7 +69,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px",
     textAlign: "center",
     borderBottom: "1px solid #ddd",
-    minWidth: 100,
+    minWidth: 120,
   },
 };
 
