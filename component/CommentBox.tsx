@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface CommentBoxProps {
+    className: string;
     avatar: string;
     name: string;
     content: string;

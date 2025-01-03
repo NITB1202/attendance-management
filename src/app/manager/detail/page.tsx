@@ -41,6 +41,12 @@ useEffect(() => {
     ['2', '2023-01-02'],
   ];
 
+  const tableHeader3 = ['Order', 'Student Code', 'Student Name', 'Attendance Status'];
+  const tableData3 = [
+    ['1', 'S001', 'John Doe', 'Present'],
+    ['2', 'S002', 'Jane Smith', 'Absent'],
+  ];
+
   const handleAddNew = () => {
     setModalVisible(true);
   };
@@ -255,64 +261,48 @@ useEffect(() => {
         )}
         
         {activeTab === 'Session' && (
-          <div style={{ display: 'flex', width: '100%', height: '620px' }}>
-            <div style={{ flex: 1, padding: '10px' }}>
-              <div style={{ marginTop: 20, ...styles.tableContainer }}>
-                <div style={styles.table}>
+          <div className="session-container">
+            <div className="table-wrapper">
+              <div className="table-container">
+                <div className="table2">
                   <Table tableHeader={tableHeader2} tableData={tableData2} />
                 </div>
               </div>
             </div>
-            <div style={{ flex: 6, padding: '10px' }}>
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '10px' }}>
-                <label style={{ fontSize: 16, marginRight: '10px', fontWeight: 'bold' }}>Roll Caller Name:</label>
-                <label style={{ fontSize: 16 }}>John Doe</label>
+            <div className="session-details">
+              <div className="roll-caller-info">
+                <label className="info-label">Roll Caller Name:</label>
+                <label className="info-value">John Doe</label>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '10px' }}>
-                <label style={{ fontSize: 16, marginRight: '10px', fontWeight: 'bold' }}>Student Code:</label>
-                <label style={{ fontSize: 16 }}>S001</label>
+              <div className="student-code-info">
+                <label className="info-label">Student Code:</label>
+                <label className="info-value">S001</label>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', marginTop: '10px' }}>
-                <div style={{ flex: 4, marginBottom: '10px' }}>
-                  <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Student Attendance Status</label>
-                  <Table
-                    tableHeader={['Order', 'Student Code', 'Student Name', 'Attendance Status']}
-                    tableData={[
-                      ['1', 'S001', 'John Doe', 'Present'],
-                      ['2', 'S002', 'Jane Smith', 'Absent'],
-                    ]}
-                  />
-                </div>
-                <div style={{ flex: 6, padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                  <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Discussion</label>
-                  <div style={{ flex:1, border: '1px solid #ccc', padding: '10px', borderRadius: '4px'}}>
-                    <CommentBox 
-                      avatar="path/to/avatar.jpg"
-                      name="John Doe"
-                      content="This is a comment."
-                      timestamp="2023-01-01"
-                      onReply={() => console.log('Reply clicked')}
-                    />
-                    <button
-                      style={{
-                        alignSelf: 'flex-start',
-                        backgroundColor: '#6A9AB0',
-                        border: 'none',
-                        color: '#3A6D8C',
-                        cursor: 'pointer',
-                        padding: '8px 16px',
-                        marginTop: '10px',
-                        borderRadius: '4px'
-                      }}
-                      onClick={() => console.log('4 Replies clicked')}
-                    >
-                      4 Replies
-                    </button>
+              <div className="attendance-status">
+                <label className="status-label">Student Attendance Status</label>
+                <div className="table-container">
+                  <div className="table3">
+                    <Table tableHeader={tableHeader3} tableData={tableData3} />
                   </div>
                 </div>
               </div>
+              <div className="discussion-section">
+                <label className="discussion-label">Discussion</label>
+                <div className="comment-box">
+                  <CommentBox
+                  className="custom-comment-box"
+                  avatar="path/to/avatar.jpg"
+                  name="John Doe"
+                  content="This is a comment."
+                  timestamp="2023-01-01"
+                  onReply={() => console.log('Reply clicked')}
+                  />
+                  <button className="reply-button" onClick={() => console.log('4 Replies clicked')}>
+                  4 Replies
+                  </button>
+                </div>
+              </div>
             </div>
-            
           </div>
         )}
       </div>
@@ -327,12 +317,6 @@ const styles: { [key: string]: Properties<string | number> } = {
   },
   containerMobile: {
     padding: '10px',
-  },
-  tableContainer: {
-    overflowX: 'auto',
-  },
-  table: {
-    minWidth: '120px',
   },
   tabContainer: {
     display: 'flex',
