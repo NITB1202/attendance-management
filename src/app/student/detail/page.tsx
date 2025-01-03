@@ -199,6 +199,7 @@ const DetailStudent = () => {
                                         />
                                         <div style={{ marginLeft: '20px' }}>
                                             <ReplyBox
+                                                className="reply-box"
                                                 avatar="path/to/avatar.jpg"
                                                 name="John Doe"
                                                 content="This is a reply."
@@ -244,6 +245,7 @@ const DetailStudent = () => {
                                     </button>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                                         <ReplyBox
+                                            className="reply-box"
                                             avatar="path/to/avatar.jpg"
                                             name="John Doe"
                                             content="This is another reply."

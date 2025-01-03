@@ -302,6 +302,23 @@ const DetailTeacher = () => {
                                     </button>
                                 </div>
                             </div>
+                            <div className="reply-container">
+                                <button
+                                    className="add-new-button"
+                                    onClick={() => console.log('4 Replies clicked')}
+                                >
+                                    Add new
+                                </button>
+                                <ReplyBox
+                                    className="custom-reply-box"
+                                    avatar="path/to/avatar.jpg"
+                                    name="John Doe"
+                                    content="This is another reply."
+                                    timestamp="2023-01-01"
+                                    onPost={() => console.log('Post clicked')}
+                                    onCancel={() => console.log('Cancel clicked')}
+                                />
+                            </div>
                         </div>
                     </div>
                 )}

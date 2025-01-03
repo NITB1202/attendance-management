@@ -279,6 +279,28 @@
     length: 100%;
 }
 
+.reply-container {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 10px;
+}
+
+.add-new-button {
+    background-color: #008e15;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: 8px 16px;
+    margin-top: 10px;
+    border-radius: 6px;
+    margin-right: 10px;
+    width: 120px;
+}
+
+.custom-reply-box {
+    flex: 1;
+}
+
 @media (max-width: 600px) {
     .table-wrapper {
         flex: 1;
@@ -400,4 +422,19 @@
         font-size: 14px;
         margin-top: 4px;
     }
+
+    .reply-container {
+        flex-direction: column;
+    }
+    
+    .add-new-button {
+        order: 2;
+        margin-top: 10px;
+        margin-right: 0;
+    }
+
+        .custom-reply-box {
+            order: 1;
+            /* Đảm bảo ReplyBox nằm trên nút Add New */
+        }
 }
