@@ -66,6 +66,14 @@
     display: flex;
     flex-direction: column;
     margin-right: 10px;
+    margin-top: 7px;
+}
+
+.input-group-course2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
 }
 
 .input-group-course label {
@@ -105,6 +113,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+.input-group-info2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: -4px;
 }
 
 .input-group-info label {
@@ -257,7 +272,7 @@
 }
 
 .custom-comment-box {
-    width: 100%;
+    length: 100%;
 }
 
 @media (max-width: 600px) {
@@ -304,7 +319,7 @@
     }
 
     .custom-comment-box {
-        width: 300%;
+        width: 100%;
     }
     
     .reply-button {

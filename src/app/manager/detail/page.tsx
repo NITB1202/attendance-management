@@ -91,17 +91,16 @@ useEffect(() => {
                       M501.P22
                     </div>
                   </div>
-                  <div className="input-group-course">
+                  <div className="input-group-course2">
                     <label>Course Name</label>
                     <Dropdown
                       title=""
                       options={['Math', 'Literature', 'Science']}
-                      
                     />
                   </div>
                 </div>
                 <div className="teacher-info-container">
-                  <div className="input-group-info">
+                  <div className="input-group-info2">
                     <label>Teacher Name</label>
                     <Dropdown
                       title=""
@@ -115,7 +114,7 @@ useEffect(() => {
                       Teacher Code
                     </div>
                   </div>
-                  <div className="input-group-info">
+                  <div className="input-group-info2">
                     <label>Class Monitor&apos;s Name</label>
                     <Dropdown
                       title=""
