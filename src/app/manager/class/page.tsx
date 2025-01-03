@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
@@ -10,23 +9,30 @@ import { Colors } from "../../../../constant/Colors";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
 import CustomTimePicker from "../../../../component/CustomTimePicker";
 
-
 const ClassManager = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [, setSelectedDate] = useState<Date | null>(null);
     const [, setSelectedTime] = useState<Date | null>(null);
     const [newClassName] = useState("");
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
+    useEffect(() => {
+        const handleResize = () => {
+            setScreenWidth(window.innerWidth);
+        };
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
 
     const handleSearch = () => {
         console.log("Từ khóa tìm kiếm:");
     };
 
-
     const handleAddNew = () => {
         setModalVisible(true);
     };
-
 
     const handleSave = () => {
         console.log("New Class Name:", newClassName);
@@ -54,16 +60,16 @@ const ClassManager = () => {
             "Luwid Mathra",
         ],
     ];
-
+    
     return (
-        <div style={{ padding: 10 }}>
+        <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
             {/* Search and Filter Section */}
             <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
                 <SearchBar
                     placeholder="Type to search..."
                     onSearch={handleSearch}
                 />
-                <div style={{ marginLeft: 20, height: 37 }}>
+                <div style={{ marginLeft: 20, height: 37, ...(screenWidth < 500 && styles.dropdownMobile) }}>
                     <select
                         style={{
                             height: 40,
@@ -96,12 +102,12 @@ const ClassManager = () => {
                     Add New
                 </button>
             </div>
-
             {/* Table Section */}
-            <div style={{ marginTop: 20 }}>
-                <Table tableHeader={tableHeader} tableData={tableData} />
+            <div style={{ marginTop: 20, ...styles.tableContainer }}>
+                <div style={styles.table}>
+                    <Table tableHeader={tableHeader} tableData={tableData} />
+                </div>
             </div>
-
             {modalVisible && (
                 <div
                     style={{
@@ -140,14 +146,13 @@ const ClassManager = () => {
                             ✕
                         </button>
                         <h1 style={{ marginBottom: 15, marginTop: 30, fontSize: 24, fontWeight: "bold" }}>Create a new class</h1>
-
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
                             <div style={{ height: 90 }}>
                                 <label>Class name</label>
                                 <Input
                                     title=""
                                     placeHolder="Enter class name"
-                                    style={{ marginBottom: '10px'}}
+                                    style={{ marginBottom: '10px' }}
                                 />
                                 <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
                             </div>
@@ -194,7 +199,8 @@ const ClassManager = () => {
                                     <div style={{
                                         marginTop: 10, width: '100%', height: '46px', padding: '10px', borderRadius: "5px",
                                         borderWidth: "1px",
-                                        borderColor: Colors.gray, display: 'flex', alignItems: 'center' }}>
+                                        borderColor: Colors.gray, display: 'flex', alignItems: 'center'
+                                    }}>
                                         TC12345
                                     </div>
                                 </div>
@@ -243,5 +249,39 @@ const ClassManager = () => {
     );
 };
 
+import { Properties } from 'csstype';
+const styles: { [key: string]: Properties<string | number> } = {
+    container: {
+        padding: '20px',
+    },
+    containerMobile: {
+        padding: '10px',
+    },
+    tableContainer: {
+        overflowX: 'auto',
+    },
+    table: {
+        minWidth: '500px',
+    },
+    dropdownMobile: {
+        marginRight: '10px', // Dịch sang bên trái một chút
+    },
+    modalContent: {
+        width: '90%',
+        maxWidth: '500px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
+    modalContentMobile: {
+        width: '90%',
+        maxWidth: '300px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
+};
 
 export default ClassManager;
