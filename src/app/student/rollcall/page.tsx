@@ -22,9 +22,9 @@ export default function RollcallStudent() {
     session: 0,
   });
   const [classes, setClasses] = useState<{id: number, className: string; session: number, startTime: string, allowedLateTime: number}[]>([]);
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [screenWidth, setScreenWidth] = useState(700);
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState(500);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     const getClassess = async () => {
@@ -85,11 +85,7 @@ export default function RollcallStudent() {
   };
 
   const handleConfirm = () => {
-    if(classes.length < 1)
-    {
-      handleCloseModal();
-      return;
-    }
+    console.log(selectedIndex);
     const selectClass = classes.at(selectedIndex);
     if(selectClass){
         setQRContent({
@@ -109,7 +105,6 @@ export default function RollcallStudent() {
   };
 
   const handleScanQRCode = () => {
-    console.log("Scan QR code");
     router.push("/student/camera");
   };
 

@@ -6,4 +6,6 @@ export const Colors = {
   green: "#00B01A",
   focusGreen: "#057616",
   secondary: "#6A9AB0",
+  red: "#EF1F1F",
+  yellow: "#FFC038",
 }

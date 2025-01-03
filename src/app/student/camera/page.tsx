@@ -9,6 +9,7 @@ import RoundedButton from "../../../../component/RoundedButton";
 import { Colors } from "../../../../constant/Colors";
 import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 import ErrorMessage from "../../../../component/ErrorMessage";
+import QuestionMessage from "../../../../component/QuestionMessage";
 
 export default function OpenCamera() {
   const { authState } = useAuth();
@@ -31,10 +32,68 @@ export default function OpenCamera() {
     description: '',
   });
   const [showMessage, setShowMessage] = useState(false);
+  const [cameraPermission, setCameraPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+  const [loadingPermission, setLoadingPermission] = useState(true);
+
+  useEffect(() => {
+    const checkCameraPermission = async () => {
+      try {
+        const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setCameraPermission(status.state);
+        setLoadingPermission(false);
+
+        status.onchange = () => {
+          setCameraPermission(status.state);
+        };
+      } catch (error) {
+        console.error('Error checking camera permission', error);
+        setLoadingPermission(false);
+      }
+    };
+
+    checkCameraPermission();
+  }, []);
+
+  const requestCameraAccess = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCameraStream(stream);
+      setCameraPermission('granted');
+    } catch (error) {
+      setCameraPermission('denied');
+    }
+  };
+
+  useEffect(() => {
+    if (cameraPermission === 'granted' && isScanning) {
+      const startCamera = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setCameraStream(stream);
+        } catch (error) {
+          setShowMessage(true);
+          setMessage({
+            type: "error",
+            title: "Error",
+            description: "Can't open camera"
+          });
+        }
+      };
+
+      startCamera();
+    }
+
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        setCameraStream(null);
+      }
+    };
+  }, [isScanning, cameraPermission]);
 
   useEffect(() => {
     const getUser = async () => {
-      if(authState.id){
+      if (authState.id) {
         try {
           const response = await userApi.getById(authState.id);
           setUser({
@@ -75,32 +134,14 @@ export default function OpenCamera() {
     decodeData();
   }, [data]);
 
-  useEffect(() => {
-    const startCamera = async () => {
-      if (isScanning) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          setCameraStream(stream);
-        } catch (error) {
-          console.error('Không thể mở camera:', error);
-        }
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop());
-        console.log('Camera đã tắt.');
-      }
-    };
-  }, [isScanning]);
-
   const handleCloseModal = () => {
     setShowConfirm(false);
     setIsScanning(true);
   };
+
+  const denyAccess = () =>{
+    setCameraPermission('denied');
+  }
 
   const handleConfirm = async () => {
     try {
@@ -126,11 +167,25 @@ export default function OpenCamera() {
 
   return (
     <div style={styles.container}>
-      <QRScanner
-        style={styles.camera}
-        setData={setData}
-        isScanning={isScanning}
-      />
+      {!loadingPermission && cameraPermission === 'prompt' && (
+        <QuestionMessage
+          title="Access permission"
+          description="You need to allow camera access to scan QR codes."
+          setOpen={setShowMessage}
+          onAgree={requestCameraAccess}
+          onDeny={denyAccess}
+        />
+      )}
+      {cameraPermission === 'granted' && (
+        <QRScanner
+          style={styles.camera}
+          setData={setData}
+          isScanning={isScanning}
+        />
+      )}
+      {cameraPermission === 'denied' && (
+        <p style={styles.deniedMessage}>Camera access denied. Please allow permission in your browser settings.</p>
+      )}
       {showConfirm && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -238,4 +293,8 @@ const styles: { [key: string]: React.CSSProperties } = {
         margin: "10px 0px",
         width: "100%",
       },
+      deniedMessage:{
+        fontSize: 20,
+        color: "red"
+      }
 }
