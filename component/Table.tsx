@@ -1,10 +1,8 @@
 import React from "react";
 
 interface TableProps {
-  tableHeader: string[];
-
+  tableHeader: (string | React.ReactNode)[]; // Hỗ trợ ReactNode cho header
   tableData: (string | React.ReactNode)[][];
-
   onRowClick?: (rowData: (string | React.ReactNode)[]) => void;
 }
 
