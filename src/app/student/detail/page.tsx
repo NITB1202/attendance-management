@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
 import ReplyBox from "../../../../component/ReplyBox";
+import TabSwitcher from "../../../../component/Tabs";
 
 const DetailStudent = () => {
     const [isAnonymous, setIsAnonymous] = useState(false);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
     const handleToggle = () => {
         setIsAnonymous(!isAnonymous);
@@ -15,7 +17,7 @@ const DetailStudent = () => {
     };
 
     const [activeTab, setActiveTab] = useState('General');
-    const tableHeaders = ['Order', 'Student Code', 'Student Name', 'Username'];
+    const tableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'USERNAME'];
     const tableData = [
         ['1', 'S001', 'John Doe', 'johndoe'],
         ['2', 'S002', 'Jane Smith', 'janesmith'],
@@ -27,53 +29,41 @@ const DetailStudent = () => {
         ['2', '2023-01-02'],
     ];
 
+     useEffect(() => {
+        const handleResize = () => {
+          setScreenWidth(window.innerWidth);
+        };
+    
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => {
+          window.removeEventListener("resize", handleResize);
+        };
+      }, []);
+
+    const flexDirection = screenWidth < 700 ? "column" : "row";
+    
     return (
         <div>
-            <div style={{ display: 'flex', backgroundColor: '#3A6D8C', padding: '10px', width: '14%', marginLeft: '10px', marginTop: '10px', borderRadius: "5px" }}>
-                <button
-                    onClick={() => setActiveTab('General')}
-                    style={{
-                        borderRadius: "5px",
-                        padding: '10px 20px',
-                        cursor: 'pointer',
-                        backgroundColor: activeTab === 'General' ? '#00B01A' : '#3A6D8C',
-                        color: 'white',
-                        border: 'none',
-                        outline: 'none',
-                        fontWeight: activeTab === 'General' ? 'bold' : 'normal'
-                    }}
-                >
-                    General
-                </button>
-                <button
-                    onClick={() => setActiveTab('Session')}
-                    style={{
-                        borderRadius: "5px",
-                        padding: '10px 20px',
-                        cursor: 'pointer',
-                        backgroundColor: activeTab === 'Session' ? '#00B01A' : '#3A6D8C',
-                        color: 'white',
-                        border: 'none',
-                        outline: 'none',
-                        fontWeight: activeTab === 'Session' ? 'bold' : 'normal'
-                    }}
-                >
-                    Session
-                </button>
+            <div style={{ display: 'flex', padding: "10px", marginTop: "20px"}}>
+                <TabSwitcher
+                    tabs={["General", "Session"]}
+                    onTabChange={setActiveTab}>
+                </TabSwitcher>
             </div>
             <div style={{ marginTop: '20px' }}>
                 {activeTab === 'General' && (
                     <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
-                        <div style={{ flex: 6, padding: '5px', marginBottom: '10px' }}>
+                        <div style={{ display: "flex", flexDirection: "column", padding: '10px'}}>
                             <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
-                            <div style={{ display: 'flex', flexDirection: 'row', height: '220px' }}>
-                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row' }}>
+                            <div style={{ display: 'flex', flexDirection: flexDirection}}>
+                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row', gap: 20 }}>
                                     <div style={{ flex: 1, padding: '10px' }}>
                                         <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class Name:</label>
                                         <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Course Name:</label>
                                         <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Name:</label>
                                         <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Code:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class Mother&apos;s Name:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class monitor's name:</label>
                                         <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Student Code:</label>
                                     </div>
                                     <div style={{ flex: 1, padding: '10px' }}>
@@ -116,35 +106,6 @@ const DetailStudent = () => {
                         <div style={{ flex: 4, padding: '10px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                 <label style={{ fontSize: 24, fontWeight: 'bold', display: 'block' }}>Student List</label>
-                                <div>
-                                    <button
-                                        style={{
-                                            padding: '8px 16px',
-                                            marginRight: '10px',
-                                            backgroundColor: 'gray',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        Upload Excel File
-                                    </button>
-                                    <button
-                                        style={{
-                                            padding: '8px 16px',
-                                            backgroundColor: '#28a745',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        Add New
-                                    </button>
-                                </div>
                             </div>
                             <Table tableHeader={tableHeaders} tableData={tableData} />
                         </div>

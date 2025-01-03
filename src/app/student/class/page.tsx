@@ -1,23 +1,44 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Table from "../../../../component/Table";
-import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
 import CustomSelect from "../../../../component/CustomSelect";
+import { useRouter } from "next/navigation";
+import classApi from "../../../../api/classApi";
 
 const ClassStudent = () => {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [newClassName, setNewClassName] = useState("");
+    const [data, setData] = useState<any[][]>(
+        [["","","","","","",""]]
+    );
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [searchData, setSearchData] = useState("");
 
-    const handleSearch = () => {
-        console.log("Từ khóa tìm kiếm:");
-    };
-
-    const handleSave = () => {
-        console.log("New Class Name:", newClassName);
-        setModalVisible(false);
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await classApi.getByUser();
+            const formattedData: string[][] = 
+            response.data.map((item: any)=>
+                [
+                    item.name,
+                    item.course.name,
+                    item.beginDate,
+                    item.endDate,
+                    item.startTime,
+                    item.endTime,
+                    item.teacher.name
+                ]
+            );
+            console.log(response);
+            setData(formattedData);
+          } catch (error) {
+            console.log(error);
+          }
+        };
+      
+        fetchData();
+    }, []);
 
     const tableHeader = [
         "CLASS NAME",
@@ -29,113 +50,69 @@ const ClassStudent = () => {
         "TEACHER NAME",
     ];
 
-    const tableData = [
-        [
-            "M120.P22",
-            "MATH BASIC",
-            "01/06/2024",
-            "01/09/2024",
-            "07:00 AM",
-            "10:30 AM",
-            "Luwid Mathra",
-        ],
-    ];
-
+    const id = 1
     const searchTerms = ["Class name", "Course name", "Teacher name"];
+    const router = useRouter();
+
+    const onRowClick = (row: any[]) =>{
+        router.push(`/student/detail?id=${id}`);
+    }
 
     return (
-
         <div style={{ padding: "20px 10px"}}>
-            {/* Search and Filter Section */}
-            <div style={{ display: "flex"}}>
+            <div style={styles.headerContainer}>
                 <SearchBar
                     placeholder="Type to search..."
-                    onSearch={handleSearch}
+                    style={styles.searchBar}
+                    onSearch={setSearchData}
                 />
-                <div style={{ marginLeft: 20, height: 37 }}>
-                    <CustomSelect
-                        options={searchTerms}
-                        onSelect={()=>{}}>
-                    </CustomSelect>
-                </div>
-                
+                <CustomSelect
+                    options={searchTerms}
+                    onSelect={setSelectedIndex}>
+                </CustomSelect>
             </div>
-
-            {/* Table Section */}
             <div style={{ marginTop: 20 }}>
-                <Table tableHeader={tableHeader} tableData={tableData} />
-            </div>
+                <Table 
+                    tableHeader={tableHeader} 
+                    tableData={data.filter((item:any)=> {
+                        if(searchData === "")
+                            return true;
 
-            {modalVisible && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 523,
-                            height: 670,
-                            backgroundColor: "white",
-                            borderRadius: 10,
-                            padding: 20,
-                            position: "relative",
-                        }}
-                    >
-                        <button
-                            style={{
-                                position: "absolute",
-                                top: 10,
-                                right: 10,
-                                fontSize: 24,
-                                backgroundColor: "transparent",
-                                border: "none",
-                            }}
-                            onClick={() => setModalVisible(false)}
-                        >
-                            ✕
-                        </button>
-                        <h3 style={{ marginBottom: 15 }}>Create New Class</h3>
-                        <div>
-                            <label>Class Name</label>
-                            <input
-                                style={{
-                                    width: "70%",
-                                    height: 40,
-                                    border: "1px solid #ccc",
-                                    borderRadius: 5,
-                                    padding: "0 10px",
-                                    marginBottom: 15,
-                                }}
-                                placeholder="Enter class name"
-                                value={newClassName}
-                                onChange={(e) => setNewClassName(e.target.value)}
-                            />
-                        </div>
-                        <RoundedButton
-                            title="CONFIRM"
-                            onClick={handleSave}
-                            style={{
-                                width: "100%",
-                                height: 40,
-                                marginTop: 25,
-                            }}
-                            textStyle={{ fontSize: 20, fontWeight: "bold" }}
-                        />
-                    </div>
-                </div>
-            )}
+                        const formatSearch = searchData.toLocaleLowerCase().trim();
+                        let checkData = "";
+
+                        if(selectedIndex === 0){
+                            checkData = item.at(0).toLocaleLowerCase();
+                        }
+
+                        if(selectedIndex === 1){
+                            checkData = item.at(1).toLocaleLowerCase();
+                        }
+
+                        if(selectedIndex === 2){
+                            checkData = item.at(6).toLocaleLowerCase();
+                        }
+
+                        return checkData.indexOf(formatSearch) !== -1;
+                    })}
+                    onRowClick={onRowClick} />
+            </div>
         </div>
 
     );
 };
+
+const styles: { [key: string]: React.CSSProperties } = {
+    headerContainer:{
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 20,
+    },
+    searchBar:{
+        display: "flex",
+        maxWidth: 350,
+    }
+}
 
 export default ClassStudent;

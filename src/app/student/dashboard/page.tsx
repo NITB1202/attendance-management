@@ -89,6 +89,7 @@ export default function Dashboard() {
   
     fetchAttendances();
   }, []);
+  
 
   // Styles
   const styles: { [key: string]: React.CSSProperties } = {
@@ -173,17 +174,28 @@ export default function Dashboard() {
       fontSize: "26px",
       fontWeight: "bold",
       marginTop: 30,
+      width: "100%",
+      textAlign: "left",
+    },
+    selectContainer:{
+      display: "flex",
+      width: "100%",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      marginBottom: 20,
     }
   };
 
   return (
     <div style={styles.container}>
       {/* Dropdown */}
-      <CustomSelect
-        title="Class"
-        options={classInfo.map((item)=> item.name)}
-        onSelect={setSelectedIndex}>
-      </CustomSelect>
+      <div style={styles.selectContainer}>
+        <CustomSelect
+          title="Class"
+          options={classInfo.map((item)=> item.name)}
+          onSelect={setSelectedIndex}>
+        </CustomSelect>
+      </div>
       <div style={styles.chart}>
         {/* Statistics Section */}
         <div style={styles.statisticsContainer}>

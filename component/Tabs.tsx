@@ -2,13 +2,15 @@ import React, { useState } from "react";
 
 interface TabProps {
   tabs: string[];
+  onTabChange?: (selectTab: string) => void;
 }
 
-const TabSwitcher: React.FC<TabProps> = ({ tabs }) => {
+const TabSwitcher: React.FC<TabProps> = ({ tabs, onTabChange }) => {
   const [activeTab, setActiveTab] = useState<string>(tabs[0]);
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
+    if(onTabChange) onTabChange(tab);
   };
 
   return (
@@ -40,13 +42,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "10px",
   },
   tab: {
-    padding: "10px 20px",
+    padding: "5px 10px",
     borderRadius: "5px",
     cursor: "pointer",
     fontWeight: "bold",
-    fontSize: "16px",
+    fontSize: "18px",
     textAlign: "center",
     userSelect: "none",
+    fontFamily: "Roboto, sans-serif",
   },
 };
 
