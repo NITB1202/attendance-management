@@ -59,7 +59,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: "center",
     color: "black",
     fontWeight: 700,
-    minWidth: 100,
+    minWidth: 120,
   },
   dataRow: {
     display: "flex",
@@ -70,7 +70,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "10px",
     textAlign: "center",
     borderBottom: "1px solid #ddd",
-    minWidth: 100,
+    minWidth: 120,
   },
 };
 

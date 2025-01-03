@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
@@ -8,6 +8,18 @@ import SearchBar from "../../../../component/SearchBar";
 const ClassTeacher = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [newClassName, setNewClassName] = useState("");
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+            const handleResize = () => {
+                setScreenWidth(window.innerWidth);
+            };
+    
+            window.addEventListener("resize", handleResize);
+            return () => {
+                window.removeEventListener("resize", handleResize);
+            };
+        }, []);
 
     const handleSearch = () => {
         console.log("Từ khóa tìm kiếm:");
@@ -42,9 +54,9 @@ const ClassTeacher = () => {
 
     return (
 
-        <div style={{ padding: 10 }}>
+        <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
             {/* Search and Filter Section */}
-            <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
+            <div style={{ display: "flex" }}>
                 <SearchBar
                     placeholder="Type to search..."
                     onSearch={handleSearch}
@@ -71,8 +83,11 @@ const ClassTeacher = () => {
             </div>
 
             {/* Table Section */}
-            <div style={{ marginTop: 20 }}>
-                <Table tableHeader={tableHeader} tableData={tableData} />
+            <div style={{ marginTop: 20, ...styles.tableContainer }}>
+                <div style={styles.table}>
+                    <Table tableHeader={tableHeader} tableData={tableData} />
+                </div>
+
             </div>
 
             {modalVisible && (
@@ -145,6 +160,24 @@ const ClassTeacher = () => {
         </div>
 
     );
+};
+
+const styles = {
+    container: {
+        padding: '20px',
+    },
+    containerMobile: {
+        padding: '10px',
+    },
+    tableContainer: {
+        overflowX: 'auto' as const,
+    },
+    table: {
+        minWidth: '600px', // Đặt chiều rộng tối thiểu cho bảng để buộc cuộn ngang
+    },
+    dropdownMobile: {
+        marginLeft: '10px', // Dịch sang bên trái một chút
+    },
 };
 
 export default ClassTeacher;
