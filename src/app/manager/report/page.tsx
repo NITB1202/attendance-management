@@ -7,7 +7,7 @@ import RoundedButton from "../../../../component/RoundedButton";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import type {} from "@mui/x-data-grid/themeAugmentation";
-
+import { useRouter } from "next/router";
 export default function Report() {
   const [isMobile, setIsMobile] = useState(false);
   const [maxViolations, setMaxViolations] = useState<number>(6); // Giá trị cố định
@@ -154,11 +154,11 @@ export default function Report() {
           icon={<Edit3 size={24} color="white" />}
           style={{
             backgroundColor: "#3A6D8C",
-            padding: "7px 10px", // Tùy chỉnh padding
+            padding: "7px 10px",
           }}
           textStyle={{
-            fontSize: "20px", // Chữ nhỏ hơn
-            fontWeight: "bold", // Font chữ không đậm (nếu cần)
+            fontSize: "20px",
+            fontWeight: "bold",
           }}
         />
       </div>
