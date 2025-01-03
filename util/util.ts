@@ -1,3 +1,5 @@
+import { format } from "date-fns-tz";
+
 export const validateEmail = (email: string): boolean => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
@@ -23,4 +25,8 @@ export const getStatusName = (status: string): string => {
     if (status === "Dung gio") return "On-time";
     if (status === "Vang co phep") return "Absence with permission";
     return "Late";
+};
+
+export const formatDate = (dateString: string): string =>{
+    return format(new Date(dateString), 'dd/MM/yyyy')
 };

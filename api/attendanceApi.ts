@@ -12,7 +12,11 @@ const attendanceApi = {
     },
     get(){
         return axiosInstance.get("/attendance");
-    }
+    },
+    getById(id: number){
+        const url = "attendance/"+id;
+        return axiosInstance.get(url);
+    },
 }
 
 export default attendanceApi;

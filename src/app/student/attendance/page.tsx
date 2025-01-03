@@ -11,6 +11,7 @@ import { format } from "date-fns-tz";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import attendanceApi from "../../../../api/attendanceApi";
 import { extractDate, extractTime, getStatusName } from "../../../../util/util";
+import { Colors } from "../../../../constant/Colors";
 
 export default function AttendancePage(){
     const attendanceStatus = ["All", "On-time", "Late", "Absence with permission", "Absence without permission"];
@@ -212,7 +213,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         fontSize: 20,
     },
     button:{
-        padding: "10px 30px"
+        padding: "10px 30px",
     },
     sortContainer:{
         display: "flex",

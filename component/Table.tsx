@@ -1,9 +1,11 @@
 import React from "react";
 
 interface TableProps {
-  tableHeader: (string | React.ReactNode)[]; // Hỗ trợ ReactNode cho header
-  tableData: (string | React.ReactNode)[][];
-  onRowClick?: (rowData: (string | React.ReactNode)[]) => void;
+  tableHeader: (string | React.ReactNode)[];
+
+  tableData: any[][];
+
+  onRowClick?: (rowData: any[]) => void;
 }
 
 const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
@@ -22,7 +24,7 @@ const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
         <div
           key={rowIndex}
           style={styles.dataRow}
-          onClick={() => onRowClick?.(row)} // Kiểm tra và gọi onRowClick nếu có
+          onClick={() => onRowClick?.(row)}
         >
           {tableHeader.map((_, cellIndex) => (
             <div key={cellIndex} style={styles.dataCell}>
@@ -39,7 +41,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   container: {
     border: "1px solid #ddd",
     borderRadius: "5px",
-    overflow: "hidden",
     width: "100%",
     minWidth: "fit-content",
     marginTop: "20px",

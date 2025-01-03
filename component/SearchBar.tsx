@@ -29,6 +29,7 @@ const styles = {
   container: {
     display: "flex",
     alignItems: "center",
+    minWidth: 230,
   },
   inputContainer: {
     border: "1px solid rgb(149, 149, 149)",

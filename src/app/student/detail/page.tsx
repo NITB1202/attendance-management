@@ -1,101 +1,220 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
 import ReplyBox from "../../../../component/ReplyBox";
-import './styles.css';
+import TabSwitcher from "../../../../component/Tabs";
+import IconButton from "../../../../component/IconButton";
+import { IoIosMore } from "react-icons/io";
+import classApi from "../../../../api/classApi";
+import { useSearchParams } from 'next/navigation';
+import { extractDate, formatDate, getStatusName } from "../../../../util/util";
+import attendanceApi from "../../../../api/attendanceApi";
 
 const DetailStudent = () => {
-    const [activeTab, setActiveTab] = useState('General');
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-    
-        useEffect(() => {
-                const handleResize = () => {
-                    setScreenWidth(window.innerWidth);
-                };
-                window.addEventListener("resize", handleResize);
-                return () => {
-                    window.removeEventListener("resize", handleResize);
-                };
-            }, []);
-
-    const tableHeader = ['Order', 'Student Code', 'Student Name', 'Username'];
-    const tableData = [
-        ['1', 'S001', 'John Doe', 'johndoe'],
-        ['2', 'S002', 'Jane Smith', 'janesmith'],
-    ];
-
-    const tableHeader2 = ['No', 'Date'];
-    const tableData2 = [
-        ['1', '2023-01-01'],
-        ['2', '2023-01-02'],
-    ];
-
-    const tableHeader3 = ['Order', 'Student Code', 'Student Name', 'Attendance Status'];
-    const tableData3 = [
-        ['1', 'S001', 'John Doe', 'Present'],
-        ['2', 'S002', 'Jane Smith', 'Absent'],
-    ];
-
     const [isAnonymous, setIsAnonymous] = useState(false);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const searchParams = useSearchParams(); 
+    const id = searchParams.get('id');
+
+    const options = ["View profile"];
+    const [classData, setClassData] = useState({
+        className: "",
+        courseName: "",
+        teacherName: "",
+        teacherCode: "",
+        monitorName: "",
+        monitorCode: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        maxLate: 0,
+        maxAb: 0,
+    })
+
+    const [students, setStudents] = useState<any[][]>([]);
 
     const handleToggle = () => {
         setIsAnonymous(!isAnonymous);
+        console.log('Anonymous toggled:', !isAnonymous);
     };
 
+    const [activeTab, setActiveTab] = useState('General');
+    const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
+    const sessionTableHeaders = ['No', 'Date'];
+    const [sessionData, setSessionData] = useState<any[][]>([]);
+    const [sessionId, setSessionId] = useState(0);
+    const [attendances, setAttendances] = useState<any[][]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+        if(!id)
+        {
+            console.log("Can't find id");
+            return;
+        } 
+          try {
+            const response = await classApi.getById(Number(id));
+            const classInfo = response.data;
+            const info ={
+                className: classInfo.name,
+                courseName: classInfo.course.name,
+                teacherName: classInfo.teacher.name,
+                teacherCode: classInfo.teacher.teacherCode,
+                monitorName: classInfo.classMonitor.name,
+                monitorCode: classInfo.classMonitor.studentCode,
+                startDate: formatDate(classInfo.beginDate),
+                endDate: formatDate(classInfo.endDate),
+                startTime: classInfo.startTime,
+                endTime: classInfo.endTime,
+                maxLate: classInfo.allowedLateTime,
+                maxAb: classInfo.allowedAbsent,
+            }
+
+            const students = response.data.students;
+            const monitorCode = info.monitorCode;
+
+            const formattedData: string[][] = 
+            students.map((item: any, index: number)=>
+                [
+                    item.id,
+                    index + 1,
+                    item.studentCode,
+                    item.name,
+                    item.studentCode === monitorCode ? "MEMBER": "CLASS MONITOR"
+                ]
+            );
+
+            const sessions = response.data.sessions;
+            const formattedSession: string[][] =
+            sessions.map((item: any) => {
+                if(item.no === 1) setSessionId(item.id);
+
+                return (
+                    [
+                        item.id,
+                        item.no,
+                        extractDate(item.startTime)
+                    ]
+                );
+            }
+            ); 
+
+            setClassData(info);
+            setStudents(formattedData);
+            setSessionData(formattedSession);
+
+          } catch (error) {
+            console.log(error);
+          }
+        };
+      
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+          setScreenWidth(window.innerWidth);
+        };
+    
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => {
+          window.removeEventListener("resize", handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+          try{
+            const response = await attendanceApi.getById(sessionId);
+            const formattedData: string[][] = response.data.map((item:any, index: number)=>
+            [
+                item.student.id,
+                index + 1,
+                item.student.studentCode,
+                item.student.name,
+                getStatusName(item.status)
+            ]);
+
+            setAttendances(formattedData);
+          }
+          catch(error){
+            console.log(error);
+          }
+        };
+    
+        fetchSession();
+    }, [sessionId]);
+
+    const handleSelectUser = (index: number) => {
+        // go to profile 
+    }
+
+    const selectSession = (row: any[])=>{
+        const foundItem = sessionData.find(item => {
+            return item.slice(1).every((value, index) => value === row[index]);
+        });
+        if(foundItem)
+            setSessionId(foundItem.at(0));
+    }
+
+    const viewButton = (id: number)=> {
+        return(
+            <IconButton
+                id={id}
+                icon={<IoIosMore  size={24}/>}
+                options={options}
+                onSelectOption={handleSelectUser}>
+            </IconButton>
+        );
+    }
+
+    const studentTableData = students.map((row)=> row.slice(1));
+    const sessionTableData = sessionData.map((row)=> row.slice(1)).sort((a,b)=> a[0]-b[0]);
+    const attendanceTableData = attendances.map((row)=> row.slice(1));
+
+    const tableDataWithButtons = studentTableData.map((row, index) => [
+        ...row,
+        viewButton(index),
+    ]);
+
+    const flexDirection = screenWidth < 700 ? "column" : "row";;
+    
     return (
-        <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
-            <div style={screenWidth < 500 ? styles.tabContainerMobile : styles.tabContainer}>
-                <button
-                    onClick={() => setActiveTab('General')}
-                    style={{
-                        ...styles.tabButton,
-                        ...(activeTab === 'General' ? styles.tabButtonActive : styles.tabButtonInactive),
-                    }}
-                >
-                    General
-                </button>
-                <button
-                    onClick={() => setActiveTab('Session')}
-                    style={{
-                        ...styles.tabButton,
-                        ...(activeTab === 'Session' ? styles.tabButtonActive : styles.tabButtonInactive),
-                    }}
-                >
-                    Session
-                </button>
+        <div>
+            <div style={{ display: 'flex', padding: "10px", marginTop: "20px"}}>
+                <TabSwitcher
+                    tabs={["General", "Session"]}
+                    onTabChange={setActiveTab}>
+                </TabSwitcher>
             </div>
             <div style={{ marginTop: '20px' }}>
                 {activeTab === 'General' && (
-                    <div className="general-tab">
-                        <div className="class-info">
-                            <label className="class-info-title">Class Information</label>
-                            <div className="class-info-content">
-                                <div className="class-info-column">
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Class Name:</label>
-                                        <label className="class-info-value">M501.P22</label>
+                    <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
+                        <div style={{ display: "flex", flexDirection: "column", padding: '10px'}}>
+                            <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
+                            <div style={{ display: 'flex', flexDirection: flexDirection}}>
+                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row', gap: 20 }}>
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class Name:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Course Name:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Name:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Code:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class monitor's name:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class monitor's code:</label>
                                     </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Course Name:</label>
-                                        <label className="class-info-value">Math</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Teacher Name:</label>
-                                        <label className="class-info-value">Brian Anna</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Teacher Code:</label>
-                                        <label className="class-info-value">T2102</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Class Mother&apos;s Name:</label>
-                                        <label className="class-info-value">Martin Cobe</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Student Code:</label>
-                                        <label className="class-info-value">SV4921412</label>
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.className}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.courseName}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherName}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherCode}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorName}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorCode}</label>
+
                                     </div>
                                 </div>
                                 <div className="class-info-column">
@@ -111,57 +230,100 @@ const DetailStudent = () => {
                                         <label className="class-info-label">Start Time:</label>
                                         <label className="class-info-value">07:00 AM</label>
                                     </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">End Time:</label>
-                                        <label className="class-info-value">09:30 AM</label>
+
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startDate}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endDate}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startTime}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endTime}</label>
                                     </div>
                                 </div>
-                                <div className="class-info-column">
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Maximum allowable late occurrences:</label>
-                                        <label className="class-info-value">6</label>
+                                <div style={{ flex: 2, padding: '10px', display: 'flex', flexDirection: 'row' }}>
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Maximum allowable late occurrences:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Maximum allowable absence occurrences:</label>
                                     </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Maximum allowable absence occurrences:</label>
-                                        <label className="class-info-value">4</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Allowed late time (minute):</label>
-                                        <label className="class-info-value">05:00</label>
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.maxLate}</label>
+                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.maxAb}</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="student-list">
-                            <label className="student-list-title">Student List</label>
-                            <Table tableHeader={tableHeader} tableData={tableData} />
+                        <div style={{ flex: 4, padding: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                <label style={{ fontSize: 24, fontWeight: 'bold', display: 'block' }}>Student List</label>
+                            </div>
+                            <Table 
+                                tableHeader={studentTableHeaders} 
+                                tableData={tableDataWithButtons} />
                         </div>
                     </div>
                 )}
 
                 {activeTab === 'Session' && (
-                    <div className="session-container">
-                        <div className="table-wrapper">
-                            <div className="table-container">
-                                <div className="table2">
-                                    <Table tableHeader={tableHeader2} tableData={tableData2} />
+                    <div style={{ display: 'flex', width: '100%', height: '600px' }}>
+                        <div style={{ flex: 1, padding: '0px 10px' }}>
+                            <Table 
+                                tableHeader={sessionTableHeaders} 
+                                tableData={sessionTableData}
+                                onRowClick={selectSession} />
+                        </div>
+                        <div style={{ flex: 6, padding: '10px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '10px', gap: 50 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column'}}>
+                                    <p style={{ fontWeight: 700}}>Roll caller name:</p>
+                                    <p style={{ fontWeight: 700}}>Student code:</p>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column'}}>
+                                    <p>Jack Tarco</p>
+                                    <p>22527812</p>
                                 </div>
                             </div>
-                        </div>
-                        <div className="session-details">
-                            <div className="roll-caller-info">
-                                <label className="info-label">Roll Caller Name:</label>
-                                <label className="info-value">Jack Tarco</label>
-                            </div>
-                            <div className="student-code-info">
-                                <label className="info-label">Student Code:</label>
-                                <label className="info-value">SV4921412</label>
-                            </div>
-                            <div className="attendance-status">
-                                <label className="status-label">Student Attendance Status</label>
-                                <div className="table-container">
-                                    <div className="table3">
-                                        <Table tableHeader={tableHeader3} tableData={tableData3} />
+
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', marginTop: '10px' }}>
+                                <div style={{ flex: 4, marginBottom: '10px' }}>
+                                    <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Student Attendance Status</label>
+                                    <Table
+                                        tableHeader={['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS']}
+                                        tableData={attendanceTableData}
+                                    />
+                                </div>
+                                <div style={{ flex: 6, padding: '10px', display: 'flex', flexDirection: 'column' }}>
+                                    <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Discussion</label>
+                                    <div style={{ flex: 1, border: '1px solid #ccc', padding: '10px', borderRadius: '4px' }}>
+                                        <CommentBox
+                                            avatar="path/to/avatar.jpg"
+                                            name="John Doe"
+                                            content="This is a comment."
+                                            timestamp="2023-01-01"
+                                            onReply={() => console.log('Reply clicked')}
+                                        />
+                                        <div style={{ marginLeft: '20px' }}>
+                                            <ReplyBox
+                                                avatar="path/to/avatar.jpg"
+                                                name="John Doe"
+                                                content="This is a reply."
+                                                timestamp="2023-01-01"
+                                                onPost={() => console.log('Post clicked')}
+                                                onCancel={() => console.log('Cancel clicked')}
+                                            />
+                                        </div>
+                                        <button
+                                            style={{
+                                                alignSelf: 'flex-start',
+                                                backgroundColor: '#6A9AB0',
+                                                border: 'none',
+                                                color: '#3A6D8C',
+                                                cursor: 'pointer',
+                                                padding: '8px 16px',
+                                                marginTop: '10px',
+                                                borderRadius: '4px'
+                                            }}
+                                            onClick={() => console.log('4 Replies clicked')}
+                                        >
+                                            4 Replies
+                                        </button>
                                     </div>
                                 </div>
                             </div>
