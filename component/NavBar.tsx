@@ -35,6 +35,10 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
         router.push(url);
     };
 
+    const handleAgree = ()=> {
+        setAgree(true);
+    }
+
     useEffect(() => {
         if (agree) {
             onLogout();
@@ -59,7 +63,7 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
                     title="Logout"
                     description="Are you sure you want to logout?"
                     setOpen={setShowQuestion}
-                    setAgree={setAgree}
+                    onAgree={handleAgree}
                 />
             )}
         </>

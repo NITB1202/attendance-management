@@ -10,6 +10,7 @@ import Table from "../../../../component/Table";
 import { format } from "date-fns-tz";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import attendanceApi from "../../../../api/attendanceApi";
+import { extractDate, extractTime, getStatusName } from "../../../../util/util";
 
 export default function AttendancePage(){
     const attendanceStatus = ["All", "On-time", "Late", "Absence with permission", "Absence without permission"];
@@ -102,7 +103,7 @@ export default function AttendancePage(){
         }
 
         try{
-            const response = await attendanceApi.get(searchData.code, searchData.startDate, searchData.endDate);
+            const response = await attendanceApi.search(searchData.code, searchData.startDate, searchData.endDate);
             const history = response.data.history;
             const formattedData: string[][] = history
             .filter((item: any)=>{
@@ -183,32 +184,6 @@ export default function AttendancePage(){
            }
         </div>
     )
-}
-
-function extractDate(dateTimeString: string): string {
-    const [date] = dateTimeString.split("T");
-    const [year, month, day] = date.split("-");
-    return `${day}/${month}/${year}`;
-}
-
-function extractTime(dateTimeString: string): string {
-    if(dateTimeString === null){
-        return "NO RECORD";
-    }
-    const [, time] = dateTimeString.split("T");
-    const [hour, minute, second] = time.split(":");
-    return `${hour}:${minute}:${parseInt(second).toString().padStart(2, "0")}`;
-}
-
-function getStatusName(status: string): string{
-    if(status === "Vang ko phep") return "Absence without permission";
-    if(status === "Dung gio") return "On-time";
-    if(status === "Vang co phep") return "Absence with permission";
-    return "Late";
-}
-
-function filterData(status: string): any{
-
 }
 
 const styles: { [key: string]: React.CSSProperties } = {

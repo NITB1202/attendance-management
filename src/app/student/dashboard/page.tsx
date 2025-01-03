@@ -4,11 +4,18 @@ import React, { useState, useEffect } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { AlarmClock, CircleAlert, UserMinus, UserX } from "lucide-react";
 import Table from "../../../../component/Table";
-import studentApi from "../../../../api/studentApi";
-import Dropdown from "../../../../component/Dropdown";
+import CustomSelect from "../../../../component/CustomSelect";;
+import { extractDate, extractTime, getStatusName } from "../../../../util/util";
+import statisticApi from "../../../../api/statisticApi";
+import { Colors } from "../../../../constant/Colors";
 
 export default function Dashboard() {
+  const tableHeader = ["NO", "DATE", "ARRIVAL TIME", "ATTENDANCE STATUS"];
   const [isMobile, setIsMobile] = useState(false);
+  const [classInfo, setClassInfo] = useState<{name: string, maxLate: number, maxAb: number, numLate: number, numAb: number}[]>([]);
+  const [chartData, setChartData] = useState<{ontime: number, ab: number, late: number}[]>([]);
+  const [tableData, setTableData] = useState<any[][][]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -23,23 +30,67 @@ export default function Dashboard() {
     };
   }, []);
 
-  const tableHeader = ["NO", "DATE", "ARRIVAL TIME", "ATTENDANCE STATUS"];
-  const tableData = [
-    ["1", "12/09/2024", "09:00:00 AM", "Late"],
-    ["2", "13/09/2024", "08:00:00 AM", "On-time"],
-  ];
+  useEffect(() => {
+    const fetchAttendances = async () => {
+      try {
+        const response = await statisticApi.student();
+        const fullClasses = response.data;
+  
+        const newTableData: any[][][] = [];
+        const newClassInfo: { name: string; maxLate: number; maxAb: number; numLate: number; numAb: number }[] = [];
+        const newChartData: { ontime: number; ab: number; late: number }[] = [];
+  
+        fullClasses.forEach((item: any) => {
+          let numAb = 0;
+          let numLate = 0;
+          let ontime = 0;
+  
+          const attendances = item.attendances;
+  
+          const formatted: string[][] = attendances.map((item: any) => {
+            if (item.status.startsWith("Vang")) numAb++;
+            if (item.status.startsWith("Tre")) numLate++;
+            if (item.status.startsWith("Dung")) ontime++;
+  
+            return [
+              item.session.no,
+              extractDate(item.session.startTime),
+              extractTime(item.onClassTime),
+              getStatusName(item.status),
+            ];
+          });
+  
+          const info = {
+            name: item.name,
+            maxLate: item.allowedLateTime,
+            maxAb: item.allowedAbsent,
+            numLate: numLate,
+            numAb: numAb,
+          };
+  
+          const data = {
+            ontime: ontime,
+            ab: numAb,
+            late: numLate,
+          };
+  
+          newTableData.push(formatted);
+          newClassInfo.push(info);
+          newChartData.push(data);
+        });
+  
+        setTableData(newTableData);
+        setClassInfo(newClassInfo);
+        setChartData(newChartData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    fetchAttendances();
+  }, []);
 
-  const handleRowClick = (rowData: string[]) => {
-    console.log("Row clicked:", rowData);
-  };
-
-  const [selectedOption, setSelectedOption] = useState<string>("");
-
-  const handleDropdownChange = (value: string) => {
-    setSelectedOption(value);
-    console.log("Selected option:", value);
-  };
-
+  // Styles
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
       display: "flex",
@@ -47,7 +98,6 @@ export default function Dashboard() {
       alignItems: isMobile ? "center" : "flex-start",
       padding: "1.5rem",
       fontFamily: "Roboto, sans-serif",
-      backgroundColor: "#fff",
       maxWidth: "100%",
     },
     statisticsContainer: {
@@ -57,17 +107,16 @@ export default function Dashboard() {
       alignContent: "center",
       justifyContent: "space-between",
       paddingBottom: "20px",
-      width: isMobile ? "100%" : "40%",
     },
     chart: {
-      paddingTop: 10,
       display: "flex",
+      width: "100%",
       flexDirection: isMobile ? "column" : "row",
       flexWrap: "wrap",
-      width: isMobile ? "100%" : "80%",
-      justifyContent: isMobile ? "center" : "space-between",
+      justifyContent: "center",
       alignItems: "center",
-      margin: "0 auto",
+      margin: "10px 0px",
+      gap: 100,
     },
     statBox1: {
       display: "flex",
@@ -93,12 +142,12 @@ export default function Dashboard() {
       fontWeight: "bold",
       textAlign: "center",
       padding: "10px",
-      width: "100%",
+      width: "250px",
       height: "auto",
     },
     cardTitle: {
       fontSize: "16px",
-      marginBottom: "10px",
+      marginBottom: "5px",
       color: "#000000",
     },
     Value: {
@@ -118,51 +167,59 @@ export default function Dashboard() {
     chartTitle: {
       fontSize: "20px",
       fontWeight: "bold",
-      marginBottom: "10px",
+      marginBottom: "20px",
     },
+    tableTitle:{
+      fontSize: "26px",
+      fontWeight: "bold",
+      marginTop: 30,
+    }
   };
 
   return (
     <div style={styles.container}>
       {/* Dropdown */}
-      <Dropdown
-        title="Class:"
-        options={["SE100.P10", "SE100.P11", "SE100.P13"]}
-        style={{ borderColor: "#959595" }}
-        onChange={handleDropdownChange}
-      />
+      <CustomSelect
+        title="Class"
+        options={classInfo.map((item)=> item.name)}
+        onSelect={setSelectedIndex}>
+      </CustomSelect>
       <div style={styles.chart}>
         {/* Statistics Section */}
         <div style={styles.statisticsContainer}>
           <div style={styles.statBox1}>
-            <div style={{ ...styles.statCard, backgroundColor: "#6A9AB0" }}>
+            {/* Card 1 */}
+            <div style={{ ...styles.statCard, backgroundColor: Colors.green }}>
               <p style={styles.cardTitle}>Number of lateness</p>
               <div style={styles.Value}>
                 <AlarmClock width="50px" height="50px" />
-                <p style={styles.cardValue}>3</p>
+                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.numLate}</p>
               </div>
             </div>
-            <div style={{ ...styles.statCard, backgroundColor: "#00B01A" }}>
+            {/* Card 2 */}
+            <div style={{ ...styles.statCard, backgroundColor: Colors.secondary }}>
               <p style={styles.cardTitle}>Number of absence</p>
               <div style={styles.Value}>
                 <UserMinus width="50px" height="50px" />
-                <p style={styles.cardValue}>2</p>
+                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.numAb}</p>
               </div>
             </div>
           </div>
           <div style={styles.statBox2}>
-            <div style={{ ...styles.statCard, backgroundColor: "#FFC038" }}>
+            {/* Card 3 */}
+            <div style={{ ...styles.statCard, backgroundColor: Colors.yellow }}>
               <p style={styles.cardTitle}>Maximum allowed lateness</p>
               <div style={styles.Value}>
                 <CircleAlert width="50px" height="50px" />
-                <p style={styles.cardValue}>6</p>
+                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.maxLate}</p>
               </div>
             </div>
-            <div style={{ ...styles.statCard, backgroundColor: "#EF1F1F" }}>
+            {/* Card 4 */}
+            <div style={{ ...styles.statCard, backgroundColor: Colors.red }}>
               <p style={styles.cardTitle}>Maximum allowed absence</p>
               <div style={styles.Value}>
                 <UserX width="50px" height="50px" />
-                <p style={styles.cardValue}>4</p>
+                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.maxAb}</p>
               </div>
             </div>
           </div>
@@ -172,13 +229,13 @@ export default function Dashboard() {
         <div style={styles.pieChartContainer}>
           <p style={styles.chartTitle}>Attendance status</p>
           <PieChart
-            colors={["#EF1F1F", "#FFC038", "#6A9AB0"]}
+            colors={[Colors.green, Colors.yellow, Colors.red]}
             series={[
               {
                 data: [
-                  { id: 0, value: 3, label: "On-time" },
-                  { id: 1, value: 2, label: "Late" },
-                  { id: 2, value: 2, label: "Absence" },
+                  { id: 0, value: chartData.at(selectedIndex)?.ontime ?? 0, label: "On-time" },
+                  { id: 1, value: chartData.at(selectedIndex)?.late ?? 0, label: "Late" },
+                  { id: 2, value: chartData.at(selectedIndex)?.ab ?? 0, label: "Absence" },
                 ],
               },
             ]}
@@ -187,112 +244,12 @@ export default function Dashboard() {
           />
         </div>
       </div>
-      {/* Table Section */}
-      <p style={styles.chartTitle}>Attendance record</p>
+
+      <p style={styles.tableTitle}>Attendance record</p>
       <Table
         tableHeader={tableHeader}
-        tableData={tableData}
-        onRowClick={handleRowClick}
+        tableData={tableData.at(selectedIndex) ?? [["","","",""]]}
       />
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    padding: "1.5rem",
-    fontFamily: "Roboto, sans-serif",
-    maxWidth: "100%",
-  },
-
-  dropdownContainer: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "20px",
-    width: "100%",
-    maxWidth: "16.4375rem",
-  },
-  dropdownLabel: {
-    marginRight: "10px",
-    fontWeight: "bold",
-  },
-  dropdownInput: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  statisticsContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "1rem",
-    alignContent: "center",
-    // alignItems: "flex-start",
-    justifyContent: "space-between",
-    paddingBottom: "20px",
-  },
-  chart: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap", // Cho phép các item xuống dòng khi vượt quá chiều rộng
-    gap: "10px", // Khoảng cách giữa các item
-    width: "100%", // Đảm bảo container chiếm toàn bộ chiều rộng
-    justifyContent: "space-between", // Canh đều khoảng cách giữa các item
-    alignItems: "center", // (Tùy chọn) Căn giữa các item theo trục dọc
-  },
-
-  statBox1: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    minWidth: "10.5rem",
-  },
-  statBox2: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    minWidth: "17rem",
-  },
-
-  statCard: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "8px",
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    padding: "10px",
-  },
-
-  cardTitle: {
-    fontSize: "16px",
-    marginBottom: "10px",
-    color: "#000000",
-  },
-  Value: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "10px",
-    alignItems: "center",
-  },
-  cardValue: {
-    fontSize: "45px",
-  },
-  pieChartContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    // width: "100%",
-    // maxWidth: "600px",
-  },
-  chartTitle: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    marginBottom: "10px",
-  },
-};

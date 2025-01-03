@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import validateEmail from "../../../../util/validEmail";
 import authAPI from "../../../../api/authAPI";
 import Input from "../../../../component/Input";
 import RoundedButton from "../../../../component/RoundedButton";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import { Colors } from "../../../../constant/Colors";
+import { validateEmail } from "../../../../util/util";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

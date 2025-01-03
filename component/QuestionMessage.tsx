@@ -5,10 +5,11 @@ interface QuestionMessageProps {
   title: string;
   description: string;
   setOpen: (open: boolean) => void;
-  setAgree: (agree: boolean) => void;
+  onAgree?: () => void;
+  onDeny?: () => void;
 }
 
-const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, setOpen, setAgree }) => {
+const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, setOpen, onAgree, onDeny }) => {
   return (
     <div style={styles.shadow}>
       <div style={styles.messageContainer}>
@@ -16,7 +17,7 @@ const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, s
             style={styles.closeButton} 
             onClick={() => 
                     {
-                        setAgree(false);
+                        if (onDeny) onDeny();
                         setOpen(false);
                     }
                 }
@@ -35,7 +36,7 @@ const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, s
                 textStyle={styles.okText}
                 onClick={() => 
                     {
-                        setAgree(true);
+                        if(onAgree) onAgree();
                         setOpen(false);
                     }
                 }
@@ -47,8 +48,8 @@ const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, s
                 focusColor="#ADACAC"
                 onClick={() => 
                     {
-                        setAgree(false);
-                        setOpen(false);
+                      if (onDeny) onDeny();
+                      setOpen(false);
                     }
                 }
             />
