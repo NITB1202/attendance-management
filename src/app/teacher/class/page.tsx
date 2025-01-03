@@ -10,16 +10,15 @@ const ClassTeacher = () => {
     const [newClassName, setNewClassName] = useState("");
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
-    useEffect(() => {
-            const handleResize = () => {
-                setScreenWidth(window.innerWidth);
-            };
-    
-            window.addEventListener("resize", handleResize);
-            return () => {
-                window.removeEventListener("resize", handleResize);
-            };
-        }, []);
+useEffect(() => {
+        const handleResize = () => {
+            setScreenWidth(window.innerWidth);
+        };
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
 
     const handleSearch = () => {
         console.log("Từ khóa tìm kiếm:");
@@ -162,22 +161,50 @@ const ClassTeacher = () => {
     );
 };
 
-const styles = {
+import { Properties } from 'csstype';
+const styles: { [key: string]: Properties<string | number> } = {
     container: {
         padding: '20px',
     },
     containerMobile: {
         padding: '10px',
     },
-    tableContainer: {
-        overflowX: 'auto' as const,
+    tabContainer: {
+        display: 'flex',
+        backgroundColor: '#3A6D8C',
+        padding: '10px',
+        width: '14%',
+        marginLeft: '10px',
+        marginTop: '10px',
+        borderRadius: "5px",
     },
-    table: {
-        minWidth: '600px', // Đặt chiều rộng tối thiểu cho bảng để buộc cuộn ngang
+    tabContainerMobile: {
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#3A6D8C',
+        padding: '10px',
+        width: '100%',
+        marginLeft: '0px',
+        marginTop: '10px',
+        borderRadius: "5px",
     },
-    dropdownMobile: {
-        marginLeft: '10px', // Dịch sang bên trái một chút
+    tabButton: {
+        borderRadius: "5px",
+        padding: '10px 20px',
+        cursor: 'pointer',
+        color: 'white',
+        border: 'none',
+        outline: 'none',
     },
+    tabButtonActive: {
+        backgroundColor: '#00B01A',
+        fontWeight: 'bold',
+    },
+    tabButtonInactive: {
+        backgroundColor: '#3A6D8C',
+        fontWeight: 'normal',
+    },
+
 };
 
 export default ClassTeacher;

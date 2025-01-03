@@ -190,6 +190,7 @@ const DetailStudent = () => {
                                     <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Discussion</label>
                                     <div style={{ flex: 1, border: '1px solid #ccc', padding: '10px', borderRadius: '4px' }}>
                                         <CommentBox
+                                            className="comment-box"
                                             avatar="path/to/avatar.jpg"
                                             name="John Doe"
                                             content="This is a comment."
