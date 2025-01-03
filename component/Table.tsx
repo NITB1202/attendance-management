@@ -26,9 +26,9 @@ const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
           style={styles.dataRow}
           onClick={() => onRowClick?.(row)} // Kiểm tra và gọi onRowClick nếu có
         >
-          {row.map((cell, cellIndex) => (
+          {tableHeader.map((_, cellIndex) => (
             <div key={cellIndex} style={styles.dataCell}>
-              {cell}
+              {row[cellIndex] !== undefined ? row[cellIndex] : ""}
             </div>
           ))}
         </div>
