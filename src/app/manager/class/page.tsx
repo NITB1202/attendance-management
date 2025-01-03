@@ -266,6 +266,22 @@ const styles: { [key: string]: Properties<string | number> } = {
     dropdownMobile: {
         marginRight: '10px', // Dịch sang bên trái một chút
     },
+    modalContent: {
+        width: '90%',
+        maxWidth: '500px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
+    modalContentMobile: {
+        width: '90%',
+        maxWidth: '300px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
 };
 
 export default ClassManager;
