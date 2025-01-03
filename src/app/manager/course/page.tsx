@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
@@ -12,6 +12,17 @@ const CourseManager = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [newClassName] = useState("");
     const [modal2Visible, setModal2Visible] = useState(false);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    
+        useEffect(() => {
+            const handleResize = () => {
+                setScreenWidth(window.innerWidth);
+            };
+            window.addEventListener("resize", handleResize);
+            return () => {
+                window.removeEventListener("resize", handleResize);
+            };
+        }, []);
 
 
     const handleSearch = () => {
@@ -45,14 +56,14 @@ const CourseManager = () => {
     ];
 
     return (
-        <div style={{ padding: 10 }}>
+        <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
             {/* Search and Filter Section */}
             <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
                 <SearchBar
                     placeholder="Type to search..."
                     onSearch={handleSearch}
                 />
-                <div style={{ marginLeft: 20, height: 37 }}>
+                <div style={{ marginLeft: 20, height: 37, ...(screenWidth < 500 && styles.dropdownMobile) }}>
                     <select
                         style={{
                             height: 42,
@@ -100,8 +111,10 @@ const CourseManager = () => {
             </div>
 
             {/* Table Section */}
-            <div style={{ marginTop: 20 }}>
-                <Table tableHeader={tableHeader} tableData={tableData} />
+            <div style={{ marginTop: 20, ...styles.tableContainer }}>
+                <div style={styles.table}>
+                    <Table tableHeader={tableHeader} tableData={tableData} />
+                </div>
             </div>
 
             {modalVisible && (
@@ -259,5 +272,39 @@ const CourseManager = () => {
     );
 };
 
+import { Properties } from 'csstype';
+const styles: { [key: string]: Properties<string | number> } = {
+    container: {
+        padding: '20px',
+    },
+    containerMobile: {
+        padding: '10px',
+    },
+    tableContainer: {
+        overflowX: 'auto',
+    },
+    table: {
+        minWidth: '500px',
+    },
+    dropdownMobile: {
+        marginRight: '10px', // Dịch sang bên trái một chút
+    },
+    modalContent: {
+        width: '90%',
+        maxWidth: '500px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
+    modalContentMobile: {
+        width: '90%',
+        maxWidth: '300px',
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        padding: '20px',
+        position: 'relative',
+    },
+};
 
 export default CourseManager;
