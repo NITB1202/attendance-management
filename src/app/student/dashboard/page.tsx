@@ -244,7 +244,6 @@ export default function Dashboard() {
           />
         </div>
       </div>
-
       <p style={styles.tableTitle}>Attendance record</p>
       <Table
         tableHeader={tableHeader}

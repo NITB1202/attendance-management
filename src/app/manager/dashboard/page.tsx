@@ -197,11 +197,7 @@ export default function Dashboard() {
         <p style={styles.tableTitle}>
           Top classes with the most absent student
         </p>
-        <Table
-          tableHeader={tableHeader}
-          tableData={tableData}
-          onRowClick={handleRowClick}
-        />
+        <Table tableHeader={tableHeader} tableData={tableData} />
       </div>
     </div>
   );
