@@ -1,13 +1,17 @@
 "use client";
 import { StyledEngineProvider } from "@mui/material";
-import { UserCheck, UserMinus, UserRoundCheck, UserX } from "lucide-react";
+import { Edit3, Send } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import Table from "../../../../component/Table";
 import Dropdown from "../../../../component/Dropdown";
+import RoundedButton from "../../../../component/RoundedButton";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import type {} from "@mui/x-data-grid/themeAugmentation";
 
 export default function Report() {
   const [isMobile, setIsMobile] = useState(false);
   const [maxViolations, setMaxViolations] = useState<number>(6); // Giá trị cố định
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 600);
@@ -21,17 +25,38 @@ export default function Report() {
     };
   }, []);
 
-  const tableHeader = ["NO", "CLASS NAME", "TEACHER", "START TIME", "NUM"];
-  const tableData = [
-    ["1", "SE102.P12", "Adam Levine", "7:30 AM", "12"],
-    ["2", "SE102.P11", "Eva Levine", "7:30 AM", "2"],
-    ["3", "", "", "", ""],
-  ];
   const [selectedOption, setSelectedOption] = useState<string>("");
   const handleDropdownChange = (value: string) => {
     setSelectedOption(value);
     console.log("Selected option:", value);
   };
+
+  const columns: GridColDef[] = [
+    { field: "studentName", headerName: "STUDENT NAME", flex: 1 },
+    { field: "studentCode", headerName: "STUDENT CODE", flex: 1 },
+    { field: "violations", headerName: "NUMBER OF VIOLATIONS", flex: 1 },
+  ];
+
+  const rows = [
+    {
+      id: 1,
+      studentName: "Jacob Wilton",
+      studentCode: "SV230841",
+      violations: 7,
+    },
+    {
+      id: 2,
+      studentName: "Jane Smith",
+      studentCode: "SV123456",
+      violations: 3,
+    },
+    {
+      id: 3,
+      studentName: "Mark Taylor",
+      studentCode: "SV654321",
+      violations: 5,
+    },
+  ];
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -50,7 +75,6 @@ export default function Report() {
       flexDirection: "row",
       gap: 20,
     },
-
     maxViolationsContainer: {
       display: "flex",
       flexDirection: "column",
@@ -72,22 +96,20 @@ export default function Report() {
       fontWeight: 600,
       fontSize: "16px",
     },
-
+    buttonRow: {
+      display: "flex",
+      flexDirection: "row",
+      gap: "20px", // Khoảng cách giữa các nút trong cùng một hàng
+    },
     tableContainer: {
       display: "flex",
-      flexDirection: "column",
       width: "100%",
-    },
-    tableTitle: {
-      paddingTop: 20,
-      fontSize: 20,
-      fontWeight: "600",
     },
   };
 
   return (
     <div style={styles.container}>
-      {/* dropdown */}
+      {/* Dropdown */}
       <div style={styles.dropdown}>
         <Dropdown
           title="Class name"
@@ -112,12 +134,56 @@ export default function Report() {
         </div>
       </div>
 
-      {/* Table Section */}
+      <div style={styles.buttonRow}>
+        <RoundedButton
+          title="Send warning to all selected"
+          onClick={() => console.log("Send warning clicked")}
+          icon={<Send size={24} color="white" />}
+          style={{
+            backgroundColor: "#D32F2F",
+            padding: "7px 10px", // Tùy chỉnh padding
+          }}
+          textStyle={{
+            fontSize: "20px", // Chữ nhỏ hơn
+            fontWeight: "bold", // Font chữ không đậm (nếu cần)
+          }}
+        />
+        <RoundedButton
+          title="Update warning content"
+          onClick={() => console.log("Update warning clicked")}
+          icon={<Edit3 size={24} color="white" />}
+          style={{
+            backgroundColor: "#3A6D8C",
+            padding: "7px 10px", // Tùy chỉnh padding
+          }}
+          textStyle={{
+            fontSize: "20px", // Chữ nhỏ hơn
+            fontWeight: "bold", // Font chữ không đậm (nếu cần)
+          }}
+        />
+      </div>
+
+      {/* DataGrid Section */}
       <div style={styles.tableContainer}>
-        <p style={styles.tableTitle}>
-          Top classes with the most absent student
-        </p>
-        <Table tableHeader={tableHeader} tableData={tableData} />
+        <div style={{ height: "auto", width: "100%" }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            checkboxSelection
+            disableRowSelectionOnClick
+            sx={{
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#6A9AB0", // Màu nền header
+                color: "#FFFFFF",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                fontSize: "16px",
+                color: "#000000",
+                fontWeight: "bold",
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );
