@@ -4,8 +4,12 @@ const classApi = {
     getRollCallClasses(){
         return axiosInstance.get("/classroom/roll-call");
     },
-    getByUser(){
-        return axiosInstance.get("/classroom/user");
+    getByStudentId(){
+        return axiosInstance.get("/classroom/student");
+    },
+    getById(id:number){
+        const url = "/classroom/" + id;
+        return axiosInstance.get(url);
     }
 }
 

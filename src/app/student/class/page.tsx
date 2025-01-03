@@ -6,10 +6,12 @@ import SearchBar from "../../../../component/SearchBar";
 import CustomSelect from "../../../../component/CustomSelect";
 import { useRouter } from "next/navigation";
 import classApi from "../../../../api/classApi";
+import { formatDate } from "../../../../util/util";
+
 
 const ClassStudent = () => {
     const [data, setData] = useState<any[][]>(
-        [["","","","","","",""]]
+        [["","","","","","","",""]]
     );
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [searchData, setSearchData] = useState("");
@@ -17,20 +19,20 @@ const ClassStudent = () => {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            const response = await classApi.getByUser();
+            const response = await classApi.getByStudentId();
             const formattedData: string[][] = 
             response.data.map((item: any)=>
                 [
+                    item.id,
                     item.name,
                     item.course.name,
-                    item.beginDate,
-                    item.endDate,
+                    formatDate(item.beginDate),
+                    formatDate(item.endDate),
                     item.startTime,
                     item.endTime,
                     item.teacher.name
                 ]
             );
-            console.log(response);
             setData(formattedData);
           } catch (error) {
             console.log(error);
@@ -50,12 +52,17 @@ const ClassStudent = () => {
         "TEACHER NAME",
     ];
 
-    const id = 1
     const searchTerms = ["Class name", "Course name", "Teacher name"];
     const router = useRouter();
 
-    const onRowClick = (row: any[]) =>{
-        router.push(`/student/detail?id=${id}`);
+    const handleClickRow = (row: any[]) =>{
+        const foundItem = data.find(item => {
+            return item.slice(1).every((value, index) => value === row[index]);
+        });
+        if(foundItem){
+            const id = foundItem.at(0);
+            router.push(`/student/detail?id=${id}`);
+        }
     }
 
     return (
@@ -74,7 +81,8 @@ const ClassStudent = () => {
             <div style={{ marginTop: 20 }}>
                 <Table 
                     tableHeader={tableHeader} 
-                    tableData={data.filter((item:any)=> {
+                    tableData={data
+                        .filter((item:any)=> {
                         if(searchData === "")
                             return true;
 
@@ -82,20 +90,22 @@ const ClassStudent = () => {
                         let checkData = "";
 
                         if(selectedIndex === 0){
-                            checkData = item.at(0).toLocaleLowerCase();
-                        }
-
-                        if(selectedIndex === 1){
                             checkData = item.at(1).toLocaleLowerCase();
                         }
 
+                        if(selectedIndex === 1){
+                            checkData = item.at(2).toLocaleLowerCase();
+                        }
+
                         if(selectedIndex === 2){
-                            checkData = item.at(6).toLocaleLowerCase();
+                            checkData = item.at(7).toLocaleLowerCase();
                         }
 
                         return checkData.indexOf(formatSearch) !== -1;
-                    })}
-                    onRowClick={onRowClick} />
+                    })
+                    .map((row) => row.slice(1))
+                }
+                    onRowClick={handleClickRow} />
             </div>
         </div>
 
