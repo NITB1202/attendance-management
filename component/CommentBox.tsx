@@ -12,19 +12,19 @@ interface CommentBoxProps {
     content: string;
     timestamp: string;
     replies: any[];
-    onCanCel?: () => void;
+    onCancel?: () => void;
     avatarNumber?: number;
     setUpdate: () => void;
 }
 
-const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, timestamp, replies, onCanCel, avatarNumber = 1, setUpdate}: CommentBoxProps) => {
+const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, timestamp, replies, onCancel, avatarNumber = 1, setUpdate}: CommentBoxProps) => {
     const [clickReply, setClickReply] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const avatarLink = "/reply_avatar/reply_" + avatarNumber + ".jpg";
 
     const handleCancel = () =>{
         setClickReply(false);
-        if(onCanCel) onCanCel();
+        if(onCancel) onCancel();
     }
 
     const handlePost = () =>{

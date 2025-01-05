@@ -137,7 +137,6 @@ const DetailStudent = () => {
 
     useEffect(() => {
         const fetchSession = async () => {
-        console.log(update);
         if(sessionId === 0) return;
           try{
             const response = await attendanceApi.getById(sessionId);
@@ -151,7 +150,7 @@ const DetailStudent = () => {
             ]);
 
             const quesionResponse = await questionApi.getBySessionId(sessionId);
-            if(!update) setUpdate(false);
+            setUpdate(false);
 
             setAttendances(formattedData);
             setQuestions(quesionResponse.data);
