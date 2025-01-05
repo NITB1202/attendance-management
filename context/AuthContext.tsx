@@ -86,6 +86,8 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
         sessionStorage.setItem('accessToken', accessToken);
         sessionStorage.setItem('refreshToken', refreshToken);
+
+        localStorage.setItem("username", username);
   
         const decodedToken = decodeToken(accessToken);
   
@@ -140,6 +142,7 @@ const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       sessionStorage.removeItem('refreshToken');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem("username");
     };
   
     return (

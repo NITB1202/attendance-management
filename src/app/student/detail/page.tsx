@@ -13,14 +13,13 @@ import attendanceApi from "../../../../api/attendanceApi";
 import ReplyBox from "../../../../component/ReplyBox";
 import { CiCirclePlus } from "react-icons/ci";
 import { Colors } from "../../../../constant/Colors";
+import questionApi from "../../../../api/questionApi";
 
 const DetailStudent = () => {
-    const [isAnonymous, setIsAnonymous] = useState(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const searchParams = useSearchParams(); 
     const id = searchParams.get('id');
     const [openComment, setOpenComment] = useState(false);
-
     const options = ["View profile"];
     const [classData, setClassData] = useState({
         className: "",
@@ -36,7 +35,6 @@ const DetailStudent = () => {
         maxLate: 0,
         maxAb: 0,
     })
-
     const [students, setStudents] = useState<any[][]>([]);
     const [activeTab, setActiveTab] = useState('General');
     const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
@@ -49,6 +47,8 @@ const DetailStudent = () => {
         code: "",
         name: ""
     });
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [update, setUpdate] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -137,6 +137,7 @@ const DetailStudent = () => {
 
     useEffect(() => {
         const fetchSession = async () => {
+        console.log(update);
         if(sessionId === 0) return;
           try{
             const response = await attendanceApi.getById(sessionId);
@@ -149,7 +150,11 @@ const DetailStudent = () => {
                 getStatusName(item.status)
             ]);
 
+            const quesionResponse = await questionApi.getBySessionId(sessionId);
+            if(!update) setUpdate(false);
+
             setAttendances(formattedData);
+            setQuestions(quesionResponse.data);
           }
           catch(error){
             console.log(error);
@@ -157,7 +162,7 @@ const DetailStudent = () => {
         };
     
         fetchSession();
-    }, [sessionId]);
+    }, [sessionId, update]);
 
     const handleSelectUser = (index: number) => {
         // go to profile 
@@ -296,15 +301,22 @@ const DetailStudent = () => {
                                 <div style={styles.dicussionContainer}>
                                     <label style={styles.header}>Discussion</label>
                                     <div style={styles.commentSection}>
-                                        <CommentBox
-                                            user="John Doe"
-                                            content="This is a comment."
-                                            timestamp="01/01/2025"
-                                            replies={[{
-                                                user: "Micheal",
-                                                content: "Hello World",
-                                                askedTime: "24/12/2024",
-                                            }]}/>
+                                        {
+                                            questions.map((item)=>{
+                                                return (
+                                                    <CommentBox
+                                                        key={item.id}
+                                                        id= {item.id}
+                                                        sessionId={sessionId}
+                                                        user={item.user}
+                                                        content={item.content}
+                                                        timestamp={extractDate(item.askedTime)}
+                                                        replies={item.replies}
+                                                        setUpdate={() => setUpdate(true)}>
+                                                    </CommentBox>
+                                                );
+                                            })
+                                        }
                                     </div>
                                 </div>
 
@@ -318,8 +330,12 @@ const DetailStudent = () => {
                                     {
                                         openComment &&
                                         <ReplyBox
+                                            sessionId={sessionId}
                                             onCancel={()=> setOpenComment(false)}
-                                            onPost={()=>{}}>
+                                            onPost={()=>{
+                                                setUpdate(true);
+                                                setOpenComment(false);
+                                            }}>
                                         </ReplyBox>
                                     }
                                 </div>
@@ -412,12 +428,15 @@ const styles: { [key: string]: React.CSSProperties } = {
         gap: 20,
     },
     commentSection:{ 
+        display: "flex",
+        flexDirection: "column",
         border: '1px solid #ccc', 
         borderRadius: 10,
         height: 500,
         padding: 20,
         minWidth: "fit-content",
         overflow: "auto",
+        gap: 20,
     },
     addButton:{
         display: "flex",

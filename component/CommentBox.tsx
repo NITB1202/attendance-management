@@ -3,29 +3,40 @@ import { Colors } from '../constant/Colors';
 import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import ReplyBox from './ReplyBox';
+import { extractDate } from '../util/util';
 
 interface CommentBoxProps {
+    sessionId: number;
+    id: number;
     user: string;
     content: string;
     timestamp: string;
-    replies?: any[];
+    replies: any[];
     onCanCel?: () => void;
+    avatarNumber?: number;
+    setUpdate: () => void;
 }
 
-const CommentBox: React.FC<CommentBoxProps> = ({ user, content, timestamp, replies, onCanCel}: CommentBoxProps) => {
+const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, timestamp, replies, onCanCel, avatarNumber = 1, setUpdate}: CommentBoxProps) => {
     const [clickReply, setClickReply] = useState(false);
     const [showAll, setShowAll] = useState(false);
+    const avatarLink = "/reply_avatar/reply_" + avatarNumber + ".jpg";
 
     const handleCancel = () =>{
         setClickReply(false);
         if(onCanCel) onCanCel();
     }
 
+    const handlePost = () =>{
+        setClickReply(false);
+        setUpdate();
+    }
+
     return (
         <div style={styles.container}>
         <div style={{...styles.commentContainer}}>
             <div style={{ display: 'flex'}}>
-                <img src= "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTq91WKSjpZovs5tFF-Q5fs5GBB4RIvoaKGug&s"
+                <img src= {avatarLink}
                     alt="avatar" 
                     style={styles.avatar}/>
                 <div>
@@ -49,12 +60,14 @@ const CommentBox: React.FC<CommentBoxProps> = ({ user, content, timestamp, repli
         {
             clickReply &&
            <ReplyBox
+                parentId={id}
+                sessionId={sessionId}
                 onCancel={handleCancel}
-                onPost={()=>{}}>
+                onPost={handlePost}>
            </ReplyBox> 
         }
         {
-            replies && !showAll &&
+            replies.length > 0 && !showAll &&
             <button
                 style={styles.allReplyButton}
                 onClick={()=>setShowAll(true)}>
@@ -63,17 +76,21 @@ const CommentBox: React.FC<CommentBoxProps> = ({ user, content, timestamp, repli
             </button>
         }
         {
-            replies && showAll &&
+            replies.length > 0 && showAll &&
             (
                 <div style={styles.repliesContainer}>
                 {
-                    replies.map((item, index)=>(
+                    replies.map((item)=>(
                     <CommentBox
-                        key={"m" + index}
+                        key={item.id}
+                        id= {item.id}
+                        sessionId={sessionId}
                         user={item.user}
                         content={item.content}
-                        timestamp={item.askedTime}
-                        replies={item.replies}>
+                        timestamp={extractDate(item.askedTime)}
+                        replies={item.replies}
+                        avatarNumber={avatarNumber+1}
+                        setUpdate={setUpdate}>
                     </CommentBox>
                     ))
                 }

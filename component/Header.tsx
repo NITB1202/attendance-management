@@ -1,36 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Colors } from "../constant/Colors";
 import { useAuth } from "../context/AuthContext";
 import NavBar from "./NavBar";
 import { FaRegBell } from "react-icons/fa";
-import userApi from "../api/userApi";
 
 export default function Header(){
     const {authState} = useAuth();
-    const [user, setUser] = useState<{ username: string; avatar: string }>({
-        username: "",
-        avatar: "",
-    });
-
-    useEffect(() => {
-        const loadUser = async () => {
-          try{
-            if(!authState.id) return;
-            const response = await userApi.getById(authState.id);
-            setUser({
-                username: response.data.username,
-                avatar: response.data.avatar,
-            })
-          }
-          catch(error){
-            console.log(error);
-          }
-        };
-
-        loadUser();
-    }, []);
+    const username = localStorage.getItem("username");
 
     return (
         <div style={styles.container}>
@@ -41,10 +18,10 @@ export default function Header(){
                 </button>
                 <div style={styles.infoContainer}>
                     <h1 style={styles.role}>{authState.role}</h1>
-                    <h2 style={styles.username}>{user.username}</h2>
+                    <h2 style={styles.username}>{username}</h2>
                 </div>
                 <img 
-                    src={user.avatar? user.avatar : "/Avatar.png"} 
+                    src="/Avatar.png"
                     alt="avatar">
                 </img>
            </div>

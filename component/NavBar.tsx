@@ -25,6 +25,7 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
     const {authState, onLogout} = useAuth();
     const [showQuestion, setShowQuestion] = useState(false);
     const [agree, setAgree] = useState(false);
+    const [disable, setDisable] = useState(false);
 
     const handleClick = async () => {
         if (label === "Logout") {
@@ -37,6 +38,7 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
         if(setNavigate)
         {
             setNavigate(true);
+            setDisable(true);
 
             try {
                 await router.push(url);
@@ -65,7 +67,8 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
         <>
             <button
                 style={itemStyle} 
-                onClick={handleClick}>
+                onClick={handleClick}
+                disabled={disable}>
                 {icon}
                 <p style={styles.label}>{label}</p>
             </button>
@@ -195,7 +198,8 @@ export default function NavBar({role}: NavBarProps){
                     (
                         <button
                             style={styles.openButton}
-                            onClick={()=>setShow(true)}>
+                            onClick={()=>setShow(true)}
+                            disabled={navigate}>
                             <FaAlignJustify size={20} color="white"/>
                         </button>
                     )

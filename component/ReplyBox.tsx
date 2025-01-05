@@ -1,24 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Colors } from '../constant/Colors';
+import QuestionMessage from './QuestionMessage';
+import questionApi from '../api/questionApi';
+import ErrorMessage from './ErrorMessage';
 
 interface CommentBoxProps {
+    sessionId: number;
+    parentId?: number;
     onPost: () => void;
     onCancel: () => void;
 }
 
-const ReplyBox: React.FC<CommentBoxProps> = ({ onPost, onCancel }) => {
+const ReplyBox: React.FC<CommentBoxProps> = ({ sessionId, parentId, onPost, onCancel }) => {
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [content, setContent] = useState("");
+    const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setContent(event.target.value);
+    };
+    const [showError, setShowError] = useState(false);
 
+    const handleAgree = async () => {
+        if(content === ""){
+            setShowError(true);
+            return;
+        }
+
+        try{
+           await questionApi.create(sessionId, content, parentId);
+        }
+        catch(error){
+            console.log(error);
+        }
+
+        if(onPost)  onPost();
+    }
+    
     return (
-           <div style={styles.container}>
+        <div style={styles.container}>
            <div style={{...styles.commentContainer}}>
                <div style={{ display: 'flex'}}>
-                   <img src= "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTq91WKSjpZovs5tFF-Q5fs5GBB4RIvoaKGug&s"
+                   <img src= "/Avatar.png"
                        alt="avatar" 
                        style={styles.avatar}/>
                    <div style={{ flex: 1 }}>
                        <textarea
                            style={styles.input}
-                           placeholder='Write your reply here..'>
+                           placeholder='Write your reply here..'
+                           onChange={handleChange}>
                        </textarea>
                    </div>
                </div>
@@ -28,10 +56,28 @@ const ReplyBox: React.FC<CommentBoxProps> = ({ onPost, onCancel }) => {
                         style={styles.cancelButton}>Cancel
                     </button>
                     <button
+                        onClick={()=> setShowConfirm(true)}
                         style={styles.postButton}>Post
                     </button>
                 </div>
            </div>
+           {
+                showConfirm && 
+                <QuestionMessage
+                    title='Confirmation'
+                    description='Are you sure you want to post this question?'
+                    setOpen={setShowConfirm}
+                    onAgree={handleAgree}>
+                </QuestionMessage>
+           }
+           {
+                showError &&
+                <ErrorMessage
+                    title='Error'
+                    description="Your question content is empty."
+                    setOpen={setShowError}>
+                </ErrorMessage> 
+           }
        </div>
     );
 };
