@@ -48,6 +48,10 @@ const DetailStudent = () => {
     const [sessionData, setSessionData] = useState<any[][]>([]);
     const [sessionId, setSessionId] = useState(0);
     const [attendances, setAttendances] = useState<any[][]>([]);
+    const [rollCaller, setRollcaller] = useState({
+        code: "",
+        name: ""
+    });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -91,17 +95,24 @@ const DetailStudent = () => {
             const sessions = response.data.sessions;
             const formattedSession: string[][] =
             sessions.map((item: any) => {
-                if(item.no === 1) setSessionId(item.id);
-
+                if(item.no === 1) {
+                    setSessionId(item.id);
+                    setRollcaller({
+                        name: item.representative_id.name,
+                        code: item.representative_id.studentCode,
+                    });
+                }
                 return (
                     [
                         item.id,
+                        item.representative_id.name,
+                        item.representative_id.studentCode,
                         item.no,
                         extractDate(item.startTime)
                     ]
                 );
             }
-            ); 
+            );
 
             setClassData(info);
             setStudents(formattedData);
@@ -129,6 +140,7 @@ const DetailStudent = () => {
 
     useEffect(() => {
         const fetchSession = async () => {
+        if(sessionId === 0) return;
           try{
             const response = await attendanceApi.getById(sessionId);
             const formattedData: string[][] = response.data.map((item:any, index: number)=>
@@ -156,10 +168,15 @@ const DetailStudent = () => {
 
     const selectSession = (row: any[])=>{
         const foundItem = sessionData.find(item => {
-            return item.slice(1).every((value, index) => value === row[index]);
+            return item.slice(3).every((value, index) => value === row[index]);
         });
-        if(foundItem)
+        if(foundItem){
             setSessionId(foundItem.at(0));
+            setRollcaller({
+                name: foundItem.at(1),
+                code: foundItem.at(2)
+            });
+        }
     }
 
     const viewButton = (id: number)=> {
@@ -174,7 +191,7 @@ const DetailStudent = () => {
     }
 
     const studentTableData = students.map((row)=> row.slice(1));
-    const sessionTableData = sessionData.map((row)=> row.slice(1)).sort((a,b)=> a[0]-b[0]);
+    const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
     const attendanceTableData = attendances.map((row)=> row.slice(1));
 
     const tableDataWithButtons = studentTableData.map((row, index) => [
@@ -252,8 +269,7 @@ const DetailStudent = () => {
                         </div>
                     </div>
                 )}
-
-                {activeTab === 'Session' && (
+                 {activeTab === 'Session' && (
                     <div style={{ display: 'flex', width: '100%', height: '600px' }}>
                         <div style={{ flex: 1, padding: '0px 10px' }}>
                             <Table 
@@ -268,8 +284,8 @@ const DetailStudent = () => {
                                     <p style={{ fontWeight: 700}}>Student code:</p>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column'}}>
-                                    <p>Jack Tarco</p>
-                                    <p>22527812</p>
+                                    <p>{rollCaller.name}</p>
+                                    <p>{rollCaller.code}</p>
                                 </div>
                             </div>
 
@@ -316,56 +332,64 @@ const DetailStudent = () => {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="discussion-section">
-                                <label className="discussion-label">Discussion</label>
-                                <div className="comment-box">
-                                    <CommentBox
-                                        className="custom-comment-box"
-                                        avatar="path/to/avatar.jpg"
-                                        name="John Doe"
-                                        content="This is a comment."
-                                        timestamp="2023-01-01"
-                                        onReply={() => console.log('Reply clicked')}
-                                    />
-                                    <ReplyBox
-                                        className="custom-reply-box"
-                                        avatar="path/to/avatar.jpg"
-                                        name="John Doe"
-                                        content="This is another reply."
-                                        timestamp="2023-01-01"
-                                        onPost={() => console.log('Post clicked')}
-                                        onCancel={() => console.log('Cancel clicked')}
-                                    />
-                                    <button className="reply-button" onClick={() => console.log('4 Replies clicked')}>
-                                        4 Replies
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <button
+                                        style={{
+                                            alignSelf: 'flex-start',
+                                            backgroundColor: '#008e15',
+                                            border: 'none',
+                                            color: '#FFFFFF',
+                                            cursor: 'pointer',
+                                            padding: '8px 16px',
+                                            marginTop: '10px',
+                                            borderRadius: '6px',
+                                            marginRight: '10px',
+                                            width: '120px',
+                                        }}
+                                        onClick={() => console.log('4 Replies clicked')}
+                                    >
+                                        Add new
                                     </button>
-                                </div>
-                            </div>
-                            <div className="reply-container">
-                                <button
-                                    className="add-new-button"
-                                    onClick={() => console.log('4 Replies clicked')}
-                                >
-                                    Add new
-                                </button>
-                                <ReplyBox
-                                    className="custom-reply-box"
-                                    avatar="path/to/avatar.jpg"
-                                    name="John Doe"
-                                    content="This is another reply."
-                                    timestamp="2023-01-01"
-                                    onPost={() => console.log('Post clicked')}
-                                    onCancel={() => console.log('Cancel clicked')}
-                                />
-                                <div className="toggle-container">
-                                    <label className="toggle-label">Anonymous</label>
-                                    <div className={`toggle-switch ${isAnonymous ? 'active' : ''}`} onClick={handleToggle}>
-                                        <div className="toggle-knob" />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                        <ReplyBox
+                                            avatar="path/to/avatar.jpg"
+                                            name="John Doe"
+                                            content="This is another reply."
+                                            timestamp="2023-01-01"
+                                            onPost={() => console.log('Post clicked')}
+                                            onCancel={() => console.log('Cancel clicked')} className={""}                                        />
+                                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                                            <label style={{ marginRight: '10px' }}>Anonymous</label>
+                                            <div
+                                                onClick={handleToggle}
+                                                style={{
+                                                    width: '40px',
+                                                    height: '20px',
+                                                    backgroundColor: isAnonymous ? '#6a9ab0' : '#ccc',
+                                                    borderRadius: '20px',
+                                                    position: 'relative',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: '18px',
+                                                        height: '18px',
+                                                        backgroundColor: 'white',
+                                                        borderRadius: '50%',
+                                                        position: 'absolute',
+                                                        top: '1px',
+                                                        left: isAnonymous ? '20px' : '1px',
+                                                        transition: 'left 0.2s'
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 )}
             </div>
@@ -373,50 +397,5 @@ const DetailStudent = () => {
     );
 };
 
-import { Properties } from 'csstype';
-const styles: { [key: string]: Properties<string | number> } = {
-  container: {
-    padding: '20px',
-  },
-  containerMobile: {
-    padding: '10px',
-  },
-  tabContainer: {
-    display: 'flex',
-    backgroundColor: '#3A6D8C',
-    padding: '10px',
-    width: '14%',
-    marginLeft: '10px',
-    marginTop: '10px',
-    borderRadius: "5px",
-  },
-  tabContainerMobile: {
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: '#3A6D8C',
-    padding: '10px',
-    width: '100%',
-    marginLeft: '0px',
-    marginTop: '10px',
-    borderRadius: "5px",
-  },
-  tabButton: {
-    borderRadius: "5px",
-    padding: '10px 20px',
-    cursor: 'pointer',
-    color: 'white',
-    border: 'none',
-    outline: 'none',
-  },
-  tabButtonActive: {
-    backgroundColor: '#00B01A',
-    fontWeight: 'bold',
-  },
-  tabButtonInactive: {
-    backgroundColor: '#3A6D8C',
-    fontWeight: 'normal',
-  },
-  
-};
 
 export default DetailStudent;
