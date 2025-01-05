@@ -8,6 +8,7 @@ import { Role } from "../enum/RoleEnum";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import QuestionMessage from "./QuestionMessage";
+import Loading from "./Loading";
 
 interface MenuItemProps{
     label: string;
@@ -16,15 +17,16 @@ interface MenuItemProps{
     active?: boolean;
     index?: number;
     setSelectedIndex?: (index:number) => void;
+    setNavigate?: (navigate: boolean) => void;
 }
 
-const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedIndex}: MenuItemProps) => {
+const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedIndex, setNavigate}: MenuItemProps) => {
     const router = useRouter();
     const {authState, onLogout} = useAuth();
     const [showQuestion, setShowQuestion] = useState(false);
     const [agree, setAgree] = useState(false);
 
-    const handleClick = () => {
+    const handleClick = async () => {
         if (label === "Logout") {
             setShowQuestion(true);
             return;
@@ -32,7 +34,16 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
 
         if (setSelectedIndex) setSelectedIndex(index);
         const url = "/" + authState.role?.toLowerCase() + path;
-        router.push(url);
+        if(setNavigate)
+        {
+            setNavigate(true);
+
+            try {
+                await router.push(url);
+            } finally {
+                setNavigate(false);
+            }
+        } 
     };
 
     const handleAgree = ()=> {
@@ -69,8 +80,6 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
         </>
     );
 };
-
-
 
 const data: MenuItemProps[] = [
     {
@@ -120,70 +129,78 @@ export default function NavBar({role}: NavBarProps){
     const studentHiddenPath = ["Account","Course","Report"];
     const managerHiddenPath = ["Roll call"];
     const teacherHiddenPath = ["Account", "Course", "Report", "Roll call"];
+    const [navigate, setNavigate] = useState(false);
 
     return (
         <>
-        {show ? 
-            (
-            <div 
-                style={styles.overlay}
-                onClick={()=> setShow(false)}>
-                <div 
-                    style={styles.bar}
-                    onClick={(e) => e.stopPropagation()}>
-                    <img src="/LogoHeader.png" alt="logo header"></img>
-                    <button
-                        onClick={()=>{setShow(false)}}
-                        style={styles.hideButton}>
-                        <MdOutlineKeyboardArrowLeft size={26} width={2} color="white"/>
-                    </button>
-                    <hr style={styles.divider}/>
-                    <div style={styles.itemContainer}>
-                    {
-                        data
-                            .filter((item) =>{
-                                if(role && role === Role.STUDENT && studentHiddenPath.includes(item.label))
-                                    return false;
-                                if(role && role === Role.MANAGER && managerHiddenPath.includes(item.label))
-                                    return false;
-                                if(role && role === Role.TEACHER && teacherHiddenPath.includes(item.label))
-                                    return false;
+            {
+                navigate?
+                    <Loading/>:
+                <>
+                    {show ? 
+                    (
+                    <div 
+                        style={styles.overlay}
+                        onClick={()=> setShow(false)}>
+                        <div 
+                            style={styles.bar}
+                            onClick={(e) => e.stopPropagation()}>
+                            <img src="/LogoHeader.png" alt="logo header"></img>
+                            <button
+                                onClick={()=>{setShow(false)}}
+                                style={styles.hideButton}>
+                                <MdOutlineKeyboardArrowLeft size={26} width={2} color="white"/>
+                            </button>
+                            <hr style={styles.divider}/>
+                            <div style={styles.itemContainer}>
+                            {
+                                data
+                                    .filter((item) =>{
+                                        if(role && role === Role.STUDENT && studentHiddenPath.includes(item.label))
+                                            return false;
+                                        if(role && role === Role.MANAGER && managerHiddenPath.includes(item.label))
+                                            return false;
+                                        if(role && role === Role.TEACHER && teacherHiddenPath.includes(item.label))
+                                            return false;
 
-                                return true;
-                            })
-                            .map((item,index) =>{
-                            return(
-                                <MenuItem
-                                    key={"item-"+index}
-                                    index={index}
-                                    label={item.label}
-                                    icon={item.icon}
-                                    path={item.path}
-                                    active={selectedIndex === index}
-                                    setSelectedIndex={setSelectedIndex}>
-                                </MenuItem>
-                            );
-                        })
+                                        return true;
+                                    })
+                                    .map((item,index) =>{
+                                    return(
+                                        <MenuItem
+                                            key={"item-"+index}
+                                            index={index}
+                                            label={item.label}
+                                            icon={item.icon}
+                                            path={item.path}
+                                            active={selectedIndex === index}
+                                            setSelectedIndex={setSelectedIndex}
+                                            setNavigate={setNavigate}>
+                                        </MenuItem>
+                                    );
+                                })
+                            }
+                            </div>
+                            <hr style={styles.divider}/>
+                            <MenuItem
+                                label="Logout"
+                                icon={<FaArrowRightFromBracket size={24} width={2}  color="white"/>}
+                                path="/auth/login"
+                                index={data.length + 1}
+                                setSelectedIndex={setSelectedIndex}>
+                            </MenuItem>
+                        </div>
+                    </div>)
+                    :
+                    (
+                        <button
+                            style={styles.openButton}
+                            onClick={()=>setShow(true)}>
+                            <FaAlignJustify size={20} color="white"/>
+                        </button>
+                    )
                     }
-                    </div>
-                    <hr style={styles.divider}/>
-                    <MenuItem
-                        label="Logout"
-                        icon={<FaArrowRightFromBracket size={24} width={2}  color="white"/>}
-                        path="/auth/login"
-                        index={data.length + 1}
-                        setSelectedIndex={setSelectedIndex}>
-                    </MenuItem>
-                </div>
-            </div>)
-            :
-            (
-                <button
-                    style={styles.openButton}
-                    onClick={()=>setShow(true)}>
-                    <FaAlignJustify size={20} color="white"/>
-                </button>
-            )
+                </>
             }
         </>
     );

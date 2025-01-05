@@ -104,7 +104,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         top: 30,
         left: 0,
         borderRadius: 5,
-        border: "1px solid #959595",
+        border: "1px solid #ccc",
         backgroundColor: "white",
         boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.2)",
         width: 120,

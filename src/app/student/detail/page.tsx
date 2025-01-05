@@ -193,7 +193,7 @@ const DetailStudent = () => {
                 </TabSwitcher>
             </div>
             <div style={{ marginTop: '20px' }}>
-            {activeTab === 'General' && (
+                {activeTab === 'General' && (
                     <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
                         <div style={{ display: "flex", flexDirection: "column", padding: '10px'}}>
                             <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
@@ -214,23 +214,15 @@ const DetailStudent = () => {
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherCode}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorName}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorCode}</label>
-
                                     </div>
                                 </div>
-                                <div className="class-info-column">
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Start Date:</label>
-                                        <label className="class-info-value">12/09/2024</label>
+                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row' }}>
+                                    <div style={{ flex: 1, padding: '10px' }}>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Date:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Date:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Time:</label>
+                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Time:</label>
                                     </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">End Date:</label>
-                                        <label className="class-info-value">02/04/2025</label>
-                                    </div>
-                                    <div className="class-info-item">
-                                        <label className="class-info-label">Start Time:</label>
-                                        <label className="class-info-value">07:00 AM</label>
-                                    </div>
-
                                     <div style={{ flex: 1, padding: '10px' }}>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startDate}</label>
                                         <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endDate}</label>

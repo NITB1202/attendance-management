@@ -11,15 +11,12 @@ import { format } from "date-fns-tz";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import attendanceApi from "../../../../api/attendanceApi";
 import { extractDate, extractTime, getStatusName } from "../../../../util/util";
-import { Colors } from "../../../../constant/Colors";
 
 export default function AttendancePage(){
     const attendanceStatus = ["All", "On-time", "Late", "Absence with permission", "Absence without permission"];
     const tableHeaders = ["STUDENT CODE", "STUDENT NAME", "DATE", "CLASS START TIME", "ARIVAL TIME", "STATUS"];
-    const [screenWidth, setScreenWidth] = useState(500);
-    const [data, setData] = useState<any[][]>(
-        [["","","","","",""]]
-    );
+    const [screenWidth, setScreenWidth] = useState(700);
+    const [data, setData] = useState<any[][]>([]);
 
     const [showError, setShowError] = useState(false);
     const [error, setError] = useState<{ title: string; description: string }>({
@@ -47,7 +44,7 @@ export default function AttendancePage(){
         };
     }, []);
 
-    const flexDirection = screenWidth > 720 ? "row" : "column";
+    const flexDirection = screenWidth > 600 ? "row" : "column";
 
     const updateCode = (value: string) =>{
         setSearchData((prevData) => ({

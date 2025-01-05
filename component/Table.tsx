@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { Colors } from "../constant/Colors";
 
 interface TableProps {
   tableHeader: (string | React.ReactNode)[];
@@ -9,6 +10,15 @@ interface TableProps {
 }
 
 const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  const handleSelectRow = (row: any[], index: number) => {
+    if(onRowClick){
+      setSelectedIndex(index);
+      onRowClick(row);
+    }  
+  }
+
   return (
     <div style={styles.container}>
       {/* Table Header */}
@@ -23,8 +33,8 @@ const Table = ({ tableHeader, tableData, onRowClick }: TableProps) => {
       {tableData.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          style={styles.dataRow}
-          onClick={() => onRowClick?.(row)}
+          style={selectedIndex === rowIndex? {...styles.dataRow, border: "3px solid #00B01A"} : styles.dataRow}
+          onClick={() => handleSelectRow(row, rowIndex)}
         >
           {tableHeader.map((_, cellIndex) => (
             <div key={cellIndex} style={styles.dataCell}>

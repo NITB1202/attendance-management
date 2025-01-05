@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { Role } from "../../enum/RoleEnum";
+import Login from "./auth/login/page";
+import Loading from "../../component/Loading";
 
 export default function Home() {
   const router = useRouter();
   const { authState } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [getRoute, setGetRoute] = useState(false);
 
   useEffect(() => {
     const handleRedirect = () => {
@@ -30,7 +32,7 @@ export default function Home() {
         }
       }
 
-      setLoading(false);
+      setGetRoute(true);
     };
 
     if (authState.authenticated !== undefined) {
@@ -39,9 +41,11 @@ export default function Home() {
   }, [authState, router]);
 
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!getRoute) {
+    return <Login/>;
   }
 
-  return null;
+  return (
+    <Loading/>  
+  );
 }
