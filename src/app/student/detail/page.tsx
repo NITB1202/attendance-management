@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
-import ReplyBox from "../../../../component/ReplyBox";
 import TabSwitcher from "../../../../component/Tabs";
 import IconButton from "../../../../component/IconButton";
 import { IoIosMore } from "react-icons/io";
@@ -12,12 +10,16 @@ import classApi from "../../../../api/classApi";
 import { useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
+import ReplyBox from "../../../../component/ReplyBox";
+import { CiCirclePlus } from "react-icons/ci";
+import { Colors } from "../../../../constant/Colors";
 
 const DetailStudent = () => {
     const [isAnonymous, setIsAnonymous] = useState(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const searchParams = useSearchParams(); 
     const id = searchParams.get('id');
+    const [openComment, setOpenComment] = useState(false);
 
     const options = ["View profile"];
     const [classData, setClassData] = useState({
@@ -36,15 +38,10 @@ const DetailStudent = () => {
     })
 
     const [students, setStudents] = useState<any[][]>([]);
-
-    const handleToggle = () => {
-        setIsAnonymous(!isAnonymous);
-        console.log('Anonymous toggled:', !isAnonymous);
-    };
-
     const [activeTab, setActiveTab] = useState('General');
     const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
     const sessionTableHeaders = ['No', 'Date'];
+    const attendanceTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS'];
     const [sessionData, setSessionData] = useState<any[][]>([]);
     const [sessionId, setSessionId] = useState(0);
     const [attendances, setAttendances] = useState<any[][]>([]);
@@ -199,11 +196,12 @@ const DetailStudent = () => {
         viewButton(index),
     ]);
 
-    const flexDirection = screenWidth < 700 ? "column" : "row";;
+    const isMobile = screenWidth < 700;
+    const flexDirection = isMobile ? "column" : "row";
     
     return (
-        <div>
-            <div style={{ display: 'flex', padding: "10px", marginTop: "20px"}}>
+        <div style={styles.container}>
+            <div style={styles.tabContainer}>
                 <TabSwitcher
                     tabs={["General", "Session"]}
                     onTabChange={setActiveTab}>
@@ -211,58 +209,56 @@ const DetailStudent = () => {
             </div>
             <div style={{ marginTop: '20px' }}>
                 {activeTab === 'General' && (
-                    <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
-                        <div style={{ display: "flex", flexDirection: "column", padding: '10px'}}>
-                            <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
+                    <div style={styles.generalPage}>
+                        <div style={styles.classInfo}>
+                            <label style={styles.header}>Class Information</label>
                             <div style={{ display: 'flex', flexDirection: flexDirection}}>
-                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row', gap: 20 }}>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class Name:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Course Name:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Name:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Teacher Code:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class monitor's name:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Class monitor's code:</label>
+                                <div style={styles.textColumn}>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.boldText}>Class Name:</label>
+                                        <label style={styles.boldText}>Course Name:</label>
+                                        <label style={styles.boldText}>Teacher Name:</label>
+                                        <label style={styles.boldText}>Teacher Code:</label>
+                                        <label style={styles.boldText}>Class monitor's name:</label>
+                                        <label style={styles.boldText}>Class monitor's code:</label>
                                     </div>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.className}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.courseName}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherName}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.teacherCode}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorName}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.monitorCode}</label>
-                                    </div>
-                                </div>
-                                <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'row' }}>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Date:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Date:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Start Time:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>End Time:</label>
-                                    </div>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startDate}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endDate}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.startTime}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.endTime}</label>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.normalText}>{classData.className}</label>
+                                        <label style={styles.normalText}>{classData.courseName}</label>
+                                        <label style={styles.normalText}>{classData.teacherName}</label>
+                                        <label style={styles.normalText}>{classData.teacherCode}</label>
+                                        <label style={styles.normalText}>{classData.monitorName}</label>
+                                        <label style={styles.normalText}>{classData.monitorCode}</label>
                                     </div>
                                 </div>
-                                <div style={{ flex: 2, padding: '10px', display: 'flex', flexDirection: 'row' }}>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Maximum allowable late occurrences:</label>
-                                        <label style={{ fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Maximum allowable absence occurrences:</label>
+                                <div style={styles.textColumn}>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.boldText}>Start Date:</label>
+                                        <label style={styles.boldText}>End Date:</label>
+                                        <label style={styles.boldText}>Start Time:</label>
+                                        <label style={styles.boldText}>End Time:</label>
                                     </div>
-                                    <div style={{ flex: 1, padding: '10px' }}>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.maxLate}</label>
-                                        <label style={{ marginBottom: '10px', display: 'block' }}>{classData.maxAb}</label>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.normalText}>{classData.startDate}</label>
+                                        <label style={styles.normalText}>{classData.endDate}</label>
+                                        <label style={styles.normalText}>{classData.startTime}</label>
+                                        <label style={styles.normalText}>{classData.endTime}</label>
+                                    </div>
+                                </div>
+                                <div style={styles.textColumn}>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.boldText}>Maximum allowable late occurrences:</label>
+                                        <label style={styles.boldText}>Maximum allowable absence occurrences:</label>
+                                    </div>
+                                    <div style={styles.leftColumn}>
+                                        <label style={styles.normalText}>{classData.maxLate}</label>
+                                        <label style={{...styles.normalText, marginTop: isMobile? 35 : 0 }}>{classData.maxAb}</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div style={{ flex: 4, padding: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                <label style={{ fontSize: 24, fontWeight: 'bold', display: 'block' }}>Student List</label>
-                            </div>
+                        <div style={{ padding: '0px 10px' }}>
+                            <label style={styles.header}>Student List</label>
                             <Table 
                                 tableHeader={studentTableHeaders} 
                                 tableData={tableDataWithButtons} />
@@ -270,132 +266,181 @@ const DetailStudent = () => {
                     </div>
                 )}
                  {activeTab === 'Session' && (
-                    <div style={{ display: 'flex', width: '100%', height: '600px' }}>
-                        <div style={{ flex: 1, padding: '0px 10px' }}>
+                    <div style={styles.sessionPage}>
+                        <div style={styles.sessionTableContainer}>
                             <Table 
                                 tableHeader={sessionTableHeaders} 
                                 tableData={sessionTableData}
                                 onRowClick={selectSession} />
                         </div>
-                        <div style={{ flex: 6, padding: '10px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '10px', gap: 50 }}>
-                                <div style={{ display: 'flex', flexDirection: 'column'}}>
+                        <div style={styles.sessionDetailsContainer}>
+                            <div style={styles.rollCallerContainer}>
+                                <div style={styles.smallColumn}>
                                     <p style={{ fontWeight: 700}}>Roll caller name:</p>
                                     <p style={{ fontWeight: 700}}>Student code:</p>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column'}}>
+                                <div style={styles.smallColumn}>
                                     <p>{rollCaller.name}</p>
                                     <p>{rollCaller.code}</p>
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', marginTop: '10px' }}>
-                                <div style={{ flex: 4, marginBottom: '10px' }}>
-                                    <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Student Attendance Status</label>
-                                    <Table
-                                        tableHeader={['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS']}
-                                        tableData={attendanceTableData}
-                                    />
-                                </div>
-                                <div style={{ flex: 6, padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                                    <label style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px', display: 'block' }}>Discussion</label>
-                                    <div style={{ flex: 1, border: '1px solid #ccc', padding: '10px', borderRadius: '4px' }}>
+                            <div style={styles.atttedanceTableContainer}>
+                                <label style={styles.header}>Student attendance status</label>
+                                <Table
+                                    tableHeader={attendanceTableHeaders}
+                                    tableData={attendanceTableData}
+                                />
+                            </div>
+
+                                <div style={styles.dicussionContainer}>
+                                    <label style={styles.header}>Discussion</label>
+                                    <div style={styles.commentSection}>
                                         <CommentBox
-                                            avatar="path/to/avatar.jpg"
-                                            name="John Doe"
+                                            user="John Doe"
                                             content="This is a comment."
-                                            timestamp="2023-01-01"
-                                            onReply={() => console.log('Reply clicked')} className={""}                                        />
-                                        <div style={{ marginLeft: '20px' }}>
-                                            <ReplyBox
-                                                avatar="path/to/avatar.jpg"
-                                                name="John Doe"
-                                                content="This is a reply."
-                                                timestamp="2023-01-01"
-                                                onPost={() => console.log('Post clicked')}
-                                                onCancel={() => console.log('Cancel clicked')} className={""}                                            />
-                                        </div>
-                                        <button
-                                            style={{
-                                                alignSelf: 'flex-start',
-                                                backgroundColor: '#6A9AB0',
-                                                border: 'none',
-                                                color: '#3A6D8C',
-                                                cursor: 'pointer',
-                                                padding: '8px 16px',
-                                                marginTop: '10px',
-                                                borderRadius: '4px'
-                                            }}
-                                            onClick={() => console.log('4 Replies clicked')}
-                                        >
-                                            4 Replies
-                                        </button>
+                                            timestamp="01/01/2025"
+                                            replies={[{
+                                                user: "Micheal",
+                                                content: "Hello World",
+                                                askedTime: "24/12/2024",
+                                            }]}/>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
+
+                                <div style={styles.addCommentContainer}>
                                     <button
-                                        style={{
-                                            alignSelf: 'flex-start',
-                                            backgroundColor: '#008e15',
-                                            border: 'none',
-                                            color: '#FFFFFF',
-                                            cursor: 'pointer',
-                                            padding: '8px 16px',
-                                            marginTop: '10px',
-                                            borderRadius: '6px',
-                                            marginRight: '10px',
-                                            width: '120px',
-                                        }}
-                                        onClick={() => console.log('4 Replies clicked')}
-                                    >
+                                        style={styles.addButton}
+                                        onClick={() => setOpenComment(!openComment)}>
+                                        <CiCirclePlus size={24} width={3}/>
                                         Add new
                                     </button>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                    {
+                                        openComment &&
                                         <ReplyBox
-                                            avatar="path/to/avatar.jpg"
-                                            name="John Doe"
-                                            content="This is another reply."
-                                            timestamp="2023-01-01"
-                                            onPost={() => console.log('Post clicked')}
-                                            onCancel={() => console.log('Cancel clicked')} className={""}                                        />
-                                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-                                            <label style={{ marginRight: '10px' }}>Anonymous</label>
-                                            <div
-                                                onClick={handleToggle}
-                                                style={{
-                                                    width: '40px',
-                                                    height: '20px',
-                                                    backgroundColor: isAnonymous ? '#6a9ab0' : '#ccc',
-                                                    borderRadius: '20px',
-                                                    position: 'relative',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        width: '18px',
-                                                        height: '18px',
-                                                        backgroundColor: 'white',
-                                                        borderRadius: '50%',
-                                                        position: 'absolute',
-                                                        top: '1px',
-                                                        left: isAnonymous ? '20px' : '1px',
-                                                        transition: 'left 0.2s'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                            onCancel={()=> setOpenComment(false)}
+                                            onPost={()=>{}}>
+                                        </ReplyBox>
+                                    }
                                 </div>
                             </div>
                         </div>
-
-                    </div>
                 )}
             </div>
         </div>
     );
 };
+
+const styles: { [key: string]: React.CSSProperties } = {
+    container:{
+        display: "flex",
+        flexDirection: "column",
+        width: "100vw",
+        height: "100hw",
+    },
+    tabContainer:{ 
+        display: 'flex', 
+        padding: "10px", 
+        marginTop: "20px"
+    },
+    boldText:{
+        fontWeight: 'bold', 
+        marginBottom: '10px', 
+        display: 'block'
+    },
+    normalText:{ 
+        marginBottom: '10px', 
+        display: 'block' 
+    },
+    header:{ 
+        fontSize: 24, 
+        fontWeight: 'bold', 
+        display: 'block' 
+    },
+    textColumn:{ 
+        padding: '10px', 
+        display: 'flex', 
+        flexDirection: 'row', 
+        gap: 30
+    },
+    leftColumn:{ 
+        padding: '10px',
+        width: "fit-content",
+        minWidth: 200,
+    },
+    generalPage:{ 
+        display: 'flex', 
+        width: '100%', 
+        flexDirection: 'column'
+    },
+    classInfo:{ 
+        display: "flex", 
+        flexDirection: "column", 
+        padding: '0px 10px'
+    },
+    sessionPage:{ 
+        display: 'flex',
+        width: "100%",
+        height: "100%"
+    },
+    sessionTableContainer:{ 
+        padding: '0px 10px' 
+    },
+    atttedanceTableContainer:{
+        padding: '10px', 
+        height: 400
+    },
+    sessionDetailsContainer:{
+        padding: '10px',
+        width: "100%"
+    },
+    rollCallerContainer:{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        marginBottom: '10px', 
+        gap: 50
+    },
+    smallColumn:{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        padding: "0px 10px"
+    },
+    dicussionContainer:{ 
+        padding: '10px', 
+        display: 'flex', 
+        flexDirection: 'column',
+        gap: 20,
+    },
+    commentSection:{ 
+        border: '1px solid #ccc', 
+        borderRadius: 10,
+        height: 500,
+        padding: 20,
+        minWidth: "fit-content",
+        overflow: "auto",
+    },
+    addButton:{
+        display: "flex",
+        backgroundColor: Colors.green,
+        border: 'none',
+        color: '#FFFFFF',
+        cursor: 'pointer',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        marginRight: '10px',
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 5,
+    },
+    addCommentContainer:{ 
+        display: 'flex', 
+        alignItems: 'flex-start',
+        justifyContent: "flex-start",
+        marginTop: 20,
+        paddingLeft: 10,
+        height: 200,
+    }
+}
 
 
 export default DetailStudent;
