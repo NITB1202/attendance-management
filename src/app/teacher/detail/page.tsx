@@ -81,7 +81,6 @@ const DetailTeacher = () => {
         teacherId: 0,
         courseId: 0
     })
-    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -156,7 +155,7 @@ const DetailTeacher = () => {
         };
       
         fetchData();
-    }, [updated]);
+    }, [update]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -198,8 +197,25 @@ const DetailTeacher = () => {
         fetchSession();
     }, [sessionId, update]);
 
-    const handleSelectUser = (index: number, id: number) => {
+    const handleSelectUser = async (index: number, userId: number) => {
         if(index === 0){
+            try{
+                setUpdate(true);
+                await classApi.updateClassMonitor(id, userId);
+                setShowMessage(true);
+                setMessage({
+                    type: "success",
+                    title: "Update successfully",
+                    description: "The class's monitor has changed."
+                })
+            }
+            catch(error)
+            {
+                console.log(error);
+            }
+            finally{
+                setUpdate(false);
+            }
         }
     }
 
@@ -239,7 +255,8 @@ const DetailTeacher = () => {
         }
         
         try{
-            setUpdated(true);
+            setUpdate(true);
+            await classApi.updateClassMonitor(id, monitor.id);
             await classApi.update(id, formatRequest);
             setShowMessage(true);
             setMessage({
@@ -252,7 +269,7 @@ const DetailTeacher = () => {
             console.log(error);
         }
         finally{
-            setUpdated(false);
+            setUpdate(false);
         }
     }
 
@@ -340,7 +357,7 @@ const DetailTeacher = () => {
                                         monitor.name !== "" &&
                                         <CustomSelect
                                             title="Class monitor's name"
-                                            options={selectOptions}
+                                            options={update !== true? selectOptions : []}
                                             onSelect={handleSelect}>
                                         </CustomSelect>
                                     }

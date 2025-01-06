@@ -17,6 +17,10 @@ const classApi = {
     update(id: any, body: any){
         const url = "/classroom/update/"+id;
         return axiosInstance.put(url, body);
+    },
+    updateClassMonitor(classId: any, studentId: any){
+        const url = "/classroom/"+ classId +"/"+ studentId;
+        return axiosInstance.post(url);
     }
 }
 
