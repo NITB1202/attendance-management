@@ -143,7 +143,7 @@ export default function NavBar({role}: NavBarProps){
     return (
         <>
             {
-                navigate?
+                role === null?
                     <Loading/>:
                 <>
                     {show ? 
