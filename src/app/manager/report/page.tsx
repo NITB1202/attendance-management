@@ -159,13 +159,12 @@ export default function Report() {
         />
       </div>
 
-      {/* Table Section */}
       <div style={styles.tableContainer}>
         <Table
           tableHeader={tableHeaders}
           tableData={tableData}
-          itemsPerPage={3} // Hiển thị 3 hàng trên mỗi trang
-          showHeaderCheckbox={true} // Hiển thị checkbox ở header
+          itemsPerPage={4}
+          showHeaderCheckbox={true}
           onSelectedRowsChange={handleSelectedRowsChange}
         />
       </div>

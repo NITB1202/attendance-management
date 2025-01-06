@@ -14,7 +14,7 @@ interface TableProps {
 const Table = ({
   tableHeader,
   tableData,
-  itemsPerPage = 10,
+  itemsPerPage = 5,
   onRowClick,
   onSelectedRowsChange,
   showHeaderCheckbox = false,
@@ -24,7 +24,7 @@ const Table = ({
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [isHeaderChecked, setIsHeaderChecked] = useState(false);
 
-  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(tableData.length / itemsPerPage));
 
   const handleSelectRow = (row: any[], index: number) => {
     if (onRowClick) {
@@ -108,40 +108,52 @@ const Table = ({
             </div>
           ))}
         </div>
-        {currentData.map((row, rowIndex) => {
-          const globalIndex = startIndex + rowIndex;
-          return (
-            <div
-              key={rowIndex}
-              style={
-                selectedIndex === globalIndex
-                  ? { ...styles.dataRow, border: "3px solid #00B01A" }
-                  : styles.dataRow
-              }
-              onClick={() => handleSelectRow(row, globalIndex)}
-            >
-              {showHeaderCheckbox && (
-                <div style={{ ...styles.dataCell, flex: 0.5 }}>
-                  <CheckBox
-                    checked={selectedRows.has(globalIndex)}
-                    onPress={(isChecked) =>
-                      handleRowCheckboxClick(globalIndex, isChecked)
-                    }
-                  />
-                </div>
-              )}
-              {tableHeader.map((_, cellIndex) => (
-                <div key={cellIndex} style={styles.dataCell}>
-                  {row[cellIndex] !== undefined ? row[cellIndex] : ""}
-                </div>
-              ))}
-            </div>
-          );
-        })}
+        {currentData.length > 0 ? (
+          currentData.map((row, rowIndex) => {
+            const globalIndex = startIndex + rowIndex;
+            return (
+              <div
+                key={rowIndex}
+                style={
+                  selectedIndex === globalIndex
+                    ? { ...styles.dataRow, border: "3px solid #00B01A" }
+                    : styles.dataRow
+                }
+                onClick={() => handleSelectRow(row, globalIndex)}
+              >
+                {showHeaderCheckbox && (
+                  <div style={{ ...styles.dataCell, flex: 0.5 }}>
+                    <CheckBox
+                      checked={selectedRows.has(globalIndex)}
+                      onPress={(isChecked) =>
+                        handleRowCheckboxClick(globalIndex, isChecked)
+                      }
+                    />
+                  </div>
+                )}
+                {tableHeader.map((_, cellIndex) => (
+                  <div key={cellIndex} style={styles.dataCell}>
+                    {row[cellIndex] !== undefined ? row[cellIndex] : ""}
+                  </div>
+                ))}
+              </div>
+            );
+          })
+        ) : (
+          <div
+            style={{
+              ...styles.dataRow,
+              justifyContent: "center",
+              padding: "10px",
+            }}
+          >
+            No data available.
+          </div>
+        )}
       </div>
 
       {/* Phân trang */}
-      {totalPages > 1 && (
+      {totalPages >= 1 && (
         <div style={styles.paginationContainer}>
           <button
             style={styles.pageButton}
