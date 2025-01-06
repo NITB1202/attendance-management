@@ -3,10 +3,11 @@ import { DatePicker } from "@mui/x-date-pickers";
 interface CustomDatePickerProps{
     title: string;
     setSelectedDate: (newValue: Date | null) => void;
-    defaultValue?: string
+    defaultValue?: string;
+    disable?: boolean;
 }
 
-export default function CustomDatePicker({title, setSelectedDate, defaultValue}: CustomDatePickerProps){
+export default function CustomDatePicker({title, setSelectedDate, defaultValue, disable = false}: CustomDatePickerProps){
     const handleDateChange = (newDate: Date | null) => {
         setSelectedDate(newDate);
     };
@@ -18,6 +19,7 @@ export default function CustomDatePicker({title, setSelectedDate, defaultValue}:
             <h1 style={styles.title}>{title}</h1>
             <DatePicker
             value={initialDate}
+            disabled={disable}
             format="dd/MM/yyyy"
             onChange={handleDateChange}
             slotProps={{

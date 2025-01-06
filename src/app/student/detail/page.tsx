@@ -7,7 +7,7 @@ import TabSwitcher from "../../../../component/Tabs";
 import IconButton from "../../../../component/IconButton";
 import { IoIosMore } from "react-icons/io";
 import classApi from "../../../../api/classApi";
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
 import ReplyBox from "../../../../component/ReplyBox";
@@ -49,6 +49,7 @@ const DetailStudent = () => {
     });
     const [questions, setQuestions] = useState<any[]>([]);
     const [update, setUpdate] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -163,8 +164,11 @@ const DetailStudent = () => {
         fetchSession();
     }, [sessionId, update]);
 
-    const handleSelectUser = (index: number) => {
-        // go to profile 
+    const handleSelectUser = (index: number, id: number) => {
+        if(index === 0){
+            const url = "/general/profile?id="+id;
+            router.push(url);
+        }
     }
 
     const selectSession = (row: any[])=>{
@@ -186,7 +190,7 @@ const DetailStudent = () => {
                 id={id}
                 icon={<IoIosMore  size={24}/>}
                 options={options}
-                onSelectOption={handleSelectUser}>
+                onSelectWithId={handleSelectUser}>
             </IconButton>
         );
     }
