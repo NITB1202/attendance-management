@@ -1,16 +1,14 @@
 "use client";
-import { StyledEngineProvider } from "@mui/material";
-import { Edit3, Send } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Edit3, Send } from "lucide-react";
 import Dropdown from "../../../../component/Dropdown";
 import RoundedButton from "../../../../component/RoundedButton";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import type {} from "@mui/x-data-grid/themeAugmentation";
-import { useRouter } from "next/router";
+import Table from "../../../../component/Table"; // Import Table component có pagination và checkbox
+
 export default function Report() {
   const [isMobile, setIsMobile] = useState(false);
   const [maxViolations, setMaxViolations] = useState<number>(6); // Giá trị cố định
+  const [selectedRows, setSelectedRows] = useState<any[][]>([]); // Hàng được chọn
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,37 +24,35 @@ export default function Report() {
   }, []);
 
   const [selectedOption, setSelectedOption] = useState<string>("");
+
   const handleDropdownChange = (value: string) => {
     setSelectedOption(value);
     console.log("Selected option:", value);
   };
 
-  const columns: GridColDef[] = [
-    { field: "studentName", headerName: "STUDENT NAME", flex: 1 },
-    { field: "studentCode", headerName: "STUDENT CODE", flex: 1 },
-    { field: "violations", headerName: "NUMBER OF VIOLATIONS", flex: 1 },
+  const tableHeaders = ["STUDENT NAME", "STUDENT CODE", "NUMBER OF VIOLATIONS"];
+  const tableData = [
+    ["Jacob Wilton", "SV230841", 7],
+    ["Jane Smith", "SV123456", 3],
+    ["Mark Taylor", "SV654321", 5],
+    ["Emily Davis", "SV789012", 2],
+    ["John Doe", "SV345678", 4],
   ];
 
-  const rows = [
-    {
-      id: 1,
-      studentName: "Jacob Wilton",
-      studentCode: "SV230841",
-      violations: 7,
-    },
-    {
-      id: 2,
-      studentName: "Jane Smith",
-      studentCode: "SV123456",
-      violations: 3,
-    },
-    {
-      id: 3,
-      studentName: "Mark Taylor",
-      studentCode: "SV654321",
-      violations: 5,
-    },
-  ];
+  const handleSelectedRowsChange = (rows: any[][]) => {
+    setSelectedRows(rows);
+    console.log("Selected rows:", rows);
+  };
+
+  const handleSendWarning = () => {
+    console.log("Send warning to:", selectedRows);
+    // Thêm logic gửi cảnh báo ở đây
+  };
+
+  const handleUpdateWarning = () => {
+    console.log("Update warning content");
+    // Thêm logic cập nhật nội dung cảnh báo ở đây
+  };
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -137,7 +133,7 @@ export default function Report() {
       <div style={styles.buttonRow}>
         <RoundedButton
           title="Send warning to all selected"
-          onClick={() => console.log("Send warning clicked")}
+          onClick={handleSendWarning}
           icon={<Send size={24} color="white" />}
           style={{
             backgroundColor: "#D32F2F",
@@ -150,7 +146,7 @@ export default function Report() {
         />
         <RoundedButton
           title="Update warning content"
-          onClick={() => console.log("Update warning clicked")}
+          onClick={handleUpdateWarning}
           icon={<Edit3 size={24} color="white" />}
           style={{
             backgroundColor: "#3A6D8C",
@@ -163,27 +159,15 @@ export default function Report() {
         />
       </div>
 
-      {/* DataGrid Section */}
+      {/* Table Section */}
       <div style={styles.tableContainer}>
-        <div style={{ height: "auto", width: "100%" }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            checkboxSelection
-            disableRowSelectionOnClick
-            sx={{
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#6A9AB0", // Màu nền header
-                color: "#FFFFFF",
-              },
-              "& .MuiDataGrid-columnHeaderTitle": {
-                fontSize: "16px",
-                color: "#000000",
-                fontWeight: "bold",
-              },
-            }}
-          />
-        </div>
+        <Table
+          tableHeader={tableHeaders}
+          tableData={tableData}
+          itemsPerPage={3} // Hiển thị 3 hàng trên mỗi trang
+          showHeaderCheckbox={true} // Hiển thị checkbox ở header
+          onSelectedRowsChange={handleSelectedRowsChange}
+        />
       </div>
     </div>
   );
