@@ -60,7 +60,7 @@ const ClassTeacher = () => {
         });
         if(foundItem){
             const id = foundItem.at(0);
-            router.push(`/student/detail?id=${id}`);
+            router.push(`/teacher/detail?id=${id}`);
         }
     }
 
