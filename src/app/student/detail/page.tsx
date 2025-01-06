@@ -86,7 +86,7 @@ const DetailStudent = () => {
                     index + 1,
                     item.studentCode,
                     item.name,
-                    item.studentCode === monitorCode ? "MEMBER": "CLASS MONITOR"
+                    item.studentCode === monitorCode ? "CLASS MONITOR": "MEMBER"
                 ]
             );
 
@@ -195,13 +195,12 @@ const DetailStudent = () => {
         );
     }
 
-    const studentTableData = students.map((row)=> row.slice(1));
     const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
     const attendanceTableData = attendances.map((row)=> row.slice(1));
 
-    const tableDataWithButtons = studentTableData.map((row, index) => [
-        ...row,
-        viewButton(index),
+    const tableDataWithButtons = students.map((row) => [
+        ...row.slice(1),
+        viewButton(row.at(0)),
     ]);
 
     const isMobile = screenWidth < 700;
