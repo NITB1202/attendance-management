@@ -10,6 +10,9 @@ const classApi = {
     getById(id:number){
         const url = "/classroom/" + id;
         return axiosInstance.get(url);
+    },
+    getByTeacherId(){
+        return axiosInstance.get("/classroom/teacher");
     }
 }
 

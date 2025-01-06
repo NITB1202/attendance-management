@@ -1,19 +1,32 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
-import {
-  AlarmClock,
-  CircleAlert,
-  Rows4,
-  TrendingUp,
-  UserMinus,
-  UserX,
-} from "lucide-react";
-import Table from "../../../../component/Table";
-import Dropdown from "../../../../component/Dropdown";
+import { TrendingUp } from "lucide-react";
+import CustomSelect from "../../../../component/CustomSelect";
+import { MdOutlineTextSnippet } from "react-icons/md";
+import classApi from "../../../../api/classApi";
+import { Colors } from "../../../../constant/Colors";
+import statisticApi from "../../../../api/statisticApi";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
+  const [classes, setClasses] = useState<{
+    id: number;
+    name: string;
+  }[]>([]);
+  const [selectId, setSelectId] = useState(-1);
+  const [classData, setClassData] = useState({
+    respondReceived: 0,
+    efficientOfLesson: 0,
+    late: 0,
+    absentWithPermission: 0,
+    absentWithoutPermission: 3,
+    onTime: 0,
+    wellUnderstand: 0,
+    normalUnderstand: 0,
+    notWellUnderStand: 0,
+    badUnderstand: 0
+  })
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,11 +40,60 @@ export default function Dashboard() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  const handleDropdownChange = (value: string) => {
-    setSelectedOption(value);
-    console.log("Selected option:", value);
-  };
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try{
+        const response = await classApi.getByTeacherId();
+        const formattedData: any[] = response.data.map((item: any)=>
+        ({
+            id: item.id,
+            name: item.name,
+        }));
+        setClasses(formattedData);
+        setSelectId(formattedData.at(0).id);
+      }
+      catch(error){
+        console.log(error);
+      }
+    };
+
+    fetchClasses();
+  }, []);
+
+  useEffect(() => {
+    const fetchStatistic = async () => {
+      if(selectId === -1) return;
+      try{
+        const response = await statisticApi.teacher(selectId);
+        setClassData({
+          respondReceived: response.data.respondReceived,
+          efficientOfLesson: response.data.efficientOfLesson,
+          late: response.data.late,
+          absentWithPermission: response.data.absentWithPermission,
+          absentWithoutPermission: response.data.absentWithoutPermission,
+          onTime: response.data.onTime,
+          wellUnderstand: response.data.wellUnderstand,
+          normalUnderstand: response.data.normalUnderstand,
+          notWellUnderStand: response.data.notWellUnderStand,
+          badUnderstand: response.data.badUnderstand,
+        })
+      }
+      catch(error){
+        console.log(error);
+      }
+    };
+
+    fetchStatistic();
+  }, [selectId]);
+
+
+  const classNames = classes.map((item) => item.name);
+  const handleSelect = (index: number) =>{
+    const id = classes.at(index)?.id;
+    console.log(id);  
+    if(id) setSelectId(id);
+  }
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -46,7 +108,7 @@ export default function Dashboard() {
     },
     dropdown: {
       display: "flex",
-      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      flexDirection: isMobile ? "column" : "row",
       width: "100%",
       gap: isMobile ? 20 : 50,
       paddingLeft: 20,
@@ -60,12 +122,13 @@ export default function Dashboard() {
 
     report: {
       display: "flex",
-      flexDirection: isMobile ? "column" : "row", // Responsive layout
-      alignItems: "center",
+      flexDirection: isMobile ? "column" : "row",
       gap: isMobile ? "20px" : "50px",
       padding: "1.5rem",
       width: "100%",
       flexWrap: "wrap",
+      justifyContent: "flex-start",
+      alignItems: "center", 
     },
     label: {
       fontSize: 20,
@@ -84,7 +147,7 @@ export default function Dashboard() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      width: isMobile ? "100%" : "auto", // Adjust width for mobile
+      width: isMobile ? "100%" : "auto",
       backgroundColor: "#6A9AB0",
       borderRadius: 10,
       padding: 20,
@@ -94,7 +157,7 @@ export default function Dashboard() {
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      width: isMobile ? "100%" : "auto", // Adjust width for mobile
+      width: isMobile ? "100%" : "auto",
       backgroundColor: "rgba(0, 176, 26, 0.7)",
       borderRadius: 10,
       padding: 20,
@@ -103,13 +166,15 @@ export default function Dashboard() {
 
     pieChartContainer: {
       display: "flex",
-      flexDirection: isMobile ? "column" : "row", // Responsive layout
+      flexDirection: isMobile ? "column" : "row",
       gap: "80px",
       flexWrap: "wrap",
       backgroundColor: "#F5F5F5",
       borderRadius: 10,
       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
       margin: isMobile ? "0 auto" : "0",
+      justifyContent: "center",
+      alignItems: "center"
     },
     pieChart: {
       display: "flex",
@@ -127,19 +192,11 @@ export default function Dashboard() {
       {/* Dropdown */}
       <div style={styles.dropdown}>
         {/* Dropdown */}
-        <Dropdown
-          title="Class:"
-          options={["SE100.P10", "SE100.P11", "SE100.P13"]}
-          style={{ borderColor: "#959595" }}
-          onChange={handleDropdownChange}
-        />
-
-        <Dropdown
-          title="Session:"
-          options={["All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]}
-          style={{ borderColor: "#959595" }}
-          onChange={handleDropdownChange}
-        />
+        <CustomSelect
+          title="Class"
+          options={classNames}
+          onSelect={handleSelect}>
+        </CustomSelect>
       </div>
 
       {/* Report */}
@@ -147,15 +204,15 @@ export default function Dashboard() {
         <div style={styles.box_respond}>
           <div style={styles.label}>Respond received</div>
           <div style={styles.row}>
-            <Rows4 color="#FFFFFF" size={80} />
-            <div style={styles.value}>48</div>
+            <MdOutlineTextSnippet color="#FFFFFF" size={82} />
+            <div style={styles.value}>{classData.respondReceived}</div>
           </div>
         </div>
         <div style={styles.box_efficacy}>
           <div style={styles.label}> The efficacy of the lesson</div>
           <div style={styles.row}>
-            <TrendingUp color="#FFFFFF" size={80} />
-            <div style={styles.value}>72</div>
+            <TrendingUp color="#FFFFFF" size={82} />
+            <div style={styles.value}>{Number(classData.efficientOfLesson)? classData.efficientOfLesson: "100"}%</div>
           </div>
         </div>
       </div>
@@ -167,14 +224,14 @@ export default function Dashboard() {
             Students’ understanding level
           </label>
           <PieChart
-            colors={["#EF1F1F", "#FFC038", "#6A9AB0", "#00B01A"]}
+            colors={[Colors.green, Colors.primary, Colors.yellow, Colors.red]}
             series={[
               {
                 data: [
-                  { id: 0, value: 1, label: "Well" },
-                  { id: 1, value: 1, label: "Normal" },
-                  { id: 2, value: 1, label: "Not well" },
-                  { id: 3, value: 2, label: "Bad" },
+                  { id: 0, value: classData.wellUnderstand || 0.1, label: "Well" },
+                  { id: 1, value: classData.normalUnderstand || 0.1, label: "Normal" },
+                  { id: 2, value: classData.notWellUnderStand || 0.1, label: "Not well" },
+                  { id: 3, value: classData.badUnderstand || 0.1, label: "Bad" },
                 ],
               },
             ]}
@@ -183,15 +240,15 @@ export default function Dashboard() {
           />
         </div>
         <div style={styles.pieChart}>
-          <label style={styles.dropdownLabel}>Presence rate </label>
+          <label style={styles.dropdownLabel}>Presence rate</label>
           <PieChart
-            colors={["#EF1F1F", "#FFC038", "#6A9AB0"]}
+            colors={[Colors.green, Colors.yellow, Colors.red]}
             series={[
               {
                 data: [
-                  { id: 0, value: 3, label: "On-time" },
-                  { id: 1, value: 2, label: "Late" },
-                  { id: 2, value: 2, label: "Absence" },
+                  { id: 0, value: classData.onTime, label: "On-time" },
+                  { id: 1, value: classData.late, label: "Late" },
+                  { id: 2, value: classData.absentWithoutPermission+ classData.absentWithPermission, label: "Absence" },
                 ],
               },
             ]}
