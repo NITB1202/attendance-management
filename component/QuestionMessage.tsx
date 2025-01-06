@@ -36,8 +36,8 @@ const QuestionMessage: React.FC<QuestionMessageProps> = ({ title, description, s
                 textStyle={styles.okText}
                 onClick={() => 
                     {
-                        if(onAgree) onAgree();
                         setOpen(false);
+                        if(onAgree) onAgree();
                     }
                 }
             />

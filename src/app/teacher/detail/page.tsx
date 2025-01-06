@@ -13,13 +13,16 @@ import { IoIosMore } from "react-icons/io";
 import questionApi from "../../../../api/questionApi";
 import attendanceApi from "../../../../api/attendanceApi";
 import classApi from "../../../../api/classApi";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import SmallInput from "../../../../component/SmallInput";
 import CustomSelect from "../../../../component/CustomSelect";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
 import CustomTimePicker from "../../../../component/CustomTimePicker";
 import RoundedButton from "../../../../component/RoundedButton";
 import { FaRegEdit } from "react-icons/fa";
+import QuestionMessage from "../../../../component/QuestionMessage";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
+import ErrorMessage from "../../../../component/ErrorMessage";
 
 const DetailTeacher = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -41,6 +44,7 @@ const DetailTeacher = () => {
         maxLate: -1,
         maxAb: -1,
     })
+
     const [students, setStudents] = useState<any[][]>([]);
     const [activeTab, setActiveTab] = useState('General');
     const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
@@ -55,12 +59,29 @@ const DetailTeacher = () => {
     });
     const [questions, setQuestions] = useState<any[]>([]);
     const [update, setUpdate] = useState(false);
-    const router = useRouter();
     const [monitor, setMonitor] = useState({
         id: 0,
         name: "",
         code: "",
     });
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState({
+        type: "",
+        title: "",
+        description: "",
+    })
+
+    const [updateRequest, setUpdateRequest] = useState({
+        name: "",
+        beginDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        allowedLateTime: 0,
+        teacherId: 0,
+        courseId: 0
+    })
+    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,7 +108,16 @@ const DetailTeacher = () => {
                 maxAb: classInfo.allowedAbsent,
             }
 
-            
+            const request = {
+                name: info.className,
+                beginDate: info.startDate,
+                endDate: info.endDate,
+                startTime: info.startTime,
+                endTime: info.endTime,
+                allowedLateTime: info.maxLate,
+                teacherId: classInfo.teacher.id,
+                courseId: classInfo.course.id,
+            }
 
             const students = response.data.students;
             const monitorCode = info.monitorCode;
@@ -118,6 +148,7 @@ const DetailTeacher = () => {
             setClassData(info);
             setStudents(formattedData);
             setSessionData(formattedSession);
+            setUpdateRequest(request);
 
           } catch (error) {
             console.log(error);
@@ -125,7 +156,7 @@ const DetailTeacher = () => {
         };
       
         fetchData();
-    }, []);
+    }, [updated]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -169,8 +200,6 @@ const DetailTeacher = () => {
 
     const handleSelectUser = (index: number, id: number) => {
         if(index === 0){
-            const url = "/general/profile?id="+id;
-            router.push(url);
         }
     }
 
@@ -187,11 +216,58 @@ const DetailTeacher = () => {
         }
     }
 
+    const handleConfirm = async ()=>{
+        if(updateRequest.allowedLateTime === -1){
+            setShowMessage(true);
+            setMessage({
+                type: "error",
+                title: "Error",
+                description: "The maximum allowable late occurences must be a number.",
+            });
+            return;
+        }
+
+        const formatRequest = {
+            name: updateRequest.name,
+            beginDate: updateRequest.beginDate,
+            endDate: updateRequest.endDate,
+            startTime: updateRequest.startTime.slice(0, 5),
+            endTime: updateRequest.endTime.slice(0, 5),
+            allowedLateTime: updateRequest.allowedLateTime,
+            teacherId: updateRequest.teacherId,
+            courseId: updateRequest.courseId,
+        }
+        
+        try{
+            setUpdated(true);
+            await classApi.update(id, formatRequest);
+            setShowMessage(true);
+            setMessage({
+            type: "success",
+            title: "Success",
+            description: "The classroom's information has been updated.",
+            })
+        }
+        catch(error){
+            console.log(error);
+        }
+        finally{
+            setUpdated(false);
+        }
+    }
+
+    const updateField = (field: string, value: any) => {
+        setUpdateRequest(prevState => ({
+            ...prevState,
+            [field]: value
+        }));
+    };
+
     const viewButton = (id: number)=> {
         return(
             <IconButton
                 id={id}
-                icon={<IoIosMore  size={24}/>}
+                icon={<IoIosMore size={24}/>}
                 options={options}
                 onSelectWithId={handleSelectUser}>
             </IconButton>
@@ -205,6 +281,7 @@ const DetailTeacher = () => {
         viewButton(row.at(0)),
     ]);
     const selectOptions = students.map((row) => row.at(3));
+
     const handleSelect = (index: number) => {
         const selectStudent = students.at(index);
         setMonitor({
@@ -313,7 +390,8 @@ const DetailTeacher = () => {
                                 <div style={styles.row}>
                                     <SmallInput
                                         title="Maximum allowable late occurences"
-                                        defaultValue={classData.maxLate.toString()}>
+                                        defaultValue={classData.maxLate.toString()}
+                                        onChangeText={(text)=> updateField("allowedLateTime", Number(text)? Number(text): -1)}>
                                     </SmallInput>
                                     <SmallInput
                                         title="Maximum allowable absence occurences"
@@ -328,7 +406,14 @@ const DetailTeacher = () => {
                                 style={styles.saveButton}
                                 textStyle={styles.buttonText}
                                 icon={<FaRegEdit size={24} color="white" />}
-                                onClick={()=>{}}>
+                                onClick={()=> {
+                                    setShowMessage(true);
+                                    setMessage({
+                                        type: "question",
+                                        title: "Confirmation",
+                                        description: "Are you sure you want to update class's information?"
+                                    })
+                                }}>
                             </RoundedButton>
                         </div>
                         <div style={{ padding: "20px 10px" }}>
@@ -410,7 +495,33 @@ const DetailTeacher = () => {
                                 </div>
                             </div>
                         </div>
-                )}
+                    )}
+                    {
+                        showMessage && message.type === "question" &&
+                        <QuestionMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}
+                            onAgree={handleConfirm}>
+                        </QuestionMessage>
+                    }
+                    {
+                        showMessage && message.type === "success" &&
+                        <SuccessfulMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}>
+                        </SuccessfulMessage>
+                    }
+                    {
+                        showMessage && message.type === "error" &&
+                        <ErrorMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}>
+                        </ErrorMessage>
+                    }
+                    
             </div>
         </div>
     );

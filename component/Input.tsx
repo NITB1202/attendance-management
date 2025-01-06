@@ -17,7 +17,6 @@ interface InputProps {
 const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, icon, textStyle, defaultValue, disable = false }) => {
 
   const handleChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Change text");
     if (onChangeText) onChangeText(event.target.value);
   };
   

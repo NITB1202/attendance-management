@@ -13,6 +13,10 @@ const classApi = {
     },
     getByTeacherId(){
         return axiosInstance.get("/classroom/teacher");
+    },
+    update(id: any, body: any){
+        const url = "/classroom/update/"+id;
+        return axiosInstance.put(url, body);
     }
 }
 
