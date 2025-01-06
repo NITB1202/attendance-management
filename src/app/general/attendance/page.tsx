@@ -191,7 +191,6 @@ const styles: { [key: string]: React.CSSProperties } = {
         justifyContent: "flex-start",
         alignItems: "flex-start",
         padding: "20px 10px",
-        
         gap: 35,
     },
     headerContainer:{

@@ -3,17 +3,21 @@ import { DatePicker } from "@mui/x-date-pickers";
 interface CustomDatePickerProps{
     title: string;
     setSelectedDate: (newValue: Date | null) => void;
+    defaultValue?: string
 }
 
-export default function CustomDatePicker({title, setSelectedDate}: CustomDatePickerProps){
+export default function CustomDatePicker({title, setSelectedDate, defaultValue}: CustomDatePickerProps){
     const handleDateChange = (newDate: Date | null) => {
         setSelectedDate(newDate);
     };
-    
+
+    const initialDate = defaultValue ? new Date(defaultValue) : null;
+
     return(
         <div style={styles.container}>
             <h1 style={styles.title}>{title}</h1>
             <DatePicker
+            value={initialDate}
             format="dd/MM/yyyy"
             onChange={handleDateChange}
             slotProps={{

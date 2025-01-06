@@ -10,9 +10,11 @@ interface InputProps {
   textStyle?: React.CSSProperties;
   onChangeText?: (text: string) => void;
   icon?: React.ReactNode;
+  defaultValue?: string;
+  disable?: boolean
 }
 
-const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, icon, textStyle }) => {
+const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, icon, textStyle, defaultValue, disable = false }) => {
 
   const handleChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChangeText) onChangeText(event.target.value);
@@ -27,7 +29,9 @@ const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, 
           type="text"
           placeholder={placeHolder}
           style={{...styles.input, ... textStyle}}
+          defaultValue={defaultValue}
           onChange={handleChangeText}
+          disabled={disable}
         />
       </div>
     </div>

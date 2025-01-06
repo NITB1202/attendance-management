@@ -4,17 +4,22 @@ interface SmallInputProps{
     title?: string;
     placeHolder?: string;
     onChangeText?: (text: string) => void;
+    style?: React.CSSProperties;
+    defaultValue?: string;
+    disable?: boolean;
 }
 
-export default function SmallInput({title, placeHolder, onChangeText}: SmallInputProps){
+export default function SmallInput({title, placeHolder, onChangeText, style, defaultValue, disable = false}: SmallInputProps){
     return(
         <div style={styles.container}>
             <h1 style={styles.title}>{title}</h1>
             <Input
-                style={styles.inputContainer}
+                style={{...styles.inputContainer,...style}}
                 textStyle={styles.inputText}
                 placeHolder={placeHolder}
-                onChangeText={onChangeText}>
+                onChangeText={onChangeText}
+                defaultValue={defaultValue}
+                disable={disable}>
             </Input>
         </div>
     )

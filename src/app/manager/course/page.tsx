@@ -5,8 +5,8 @@ import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
 import Input from "../../../../component/Input";
-import { EllipsisOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+// import { EllipsisOutlined } from '@ant-design/icons';
+// import { Button } from 'antd';
 
 const CourseManager = () => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -51,7 +51,7 @@ const CourseManager = () => {
             "1",
             "MATH BASIC TO ADVANCE",
             "M100",
-            <Button key="ellipsis-button" icon={<EllipsisOutlined />} onClick={() => setModal2Visible(true)} />
+            // <Button key="ellipsis-button" icon={<EllipsisOutlined />} onClick={() => setModal2Visible(true)} />
         ],
     ];
 

@@ -1,33 +1,49 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Colors } from "../constant/Colors";
 import { useAuth } from "../context/AuthContext";
 import NavBar from "./NavBar";
 import { FaRegBell } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
-export default function Header(){
-    const {authState} = useAuth();
-    const username = localStorage.getItem("username");
+export default function Header() {
+    const { authState } = useAuth();
+    const [username, setUsername] = useState<string | null>(null);
+    const router = useRouter();
+  
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const storedUsername = localStorage.getItem("username");
+        setUsername(storedUsername);
+      }
+    }, []);
 
+    const handleClick = async ()=> {
+        try {
+            await router.push("/general/profile");
+        }
+        catch(error){
+            console.log("Navigate error");
+        }
+    }
+  
     return (
-        <div style={styles.container}>
-            <NavBar role={authState.role}/>
-           <div style={styles.rightContainer}>
-                <button style={styles.bellButton}>
-                    <FaRegBell size={24} color="white"/>
-                </button>
-                <div style={styles.infoContainer}>
-                    <h1 style={styles.role}>{authState.role}</h1>
-                    <h2 style={styles.username}>{username}</h2>
-                </div>
-                <img 
-                    src="/Avatar.png"
-                    alt="avatar">
-                </img>
-           </div>
+      <div style={styles.container}>
+        <NavBar role={authState.role} />
+        <div style={styles.rightContainer} onClick={handleClick}>
+          <button style={styles.bellButton}>
+            <FaRegBell size={24} color="white" />
+          </button>
+          <div style={styles.infoContainer}>
+            <h1 style={styles.role}>{authState.role}</h1>
+            <h2 style={styles.username}>{username || "Guest"}</h2>
+          </div>
+          <img src="/Avatar.png" alt="avatar" />
         </div>
+      </div>
     );
-}
+  }
 
 const styles: { [key: string]: React.CSSProperties } = {
     container:{
@@ -49,6 +65,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         flexDirection: "column",
         justifyContent: "flex-end",
         alignItems: "center",
+        cursor: "pointer",
     },
     role:{
         fontFamily: "Roboto, sans-serif",

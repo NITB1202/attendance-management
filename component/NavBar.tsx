@@ -34,7 +34,13 @@ const MenuItem = ({label, icon, path, index = -1, active = false, setSelectedInd
         }
 
         if (setSelectedIndex) setSelectedIndex(index);
-        const url = "/" + authState.role?.toLowerCase() + path;
+
+        let url;
+        if(path !== "/attendance")
+            url = "/" + authState.role?.toLowerCase() + path;
+        else
+            url = "/general" + path;
+        
         if(setNavigate)
         {
             setNavigate(true);

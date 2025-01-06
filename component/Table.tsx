@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Colors } from "../constant/Colors";
 
 interface TableProps {
-  tableHeader: (string | React.ReactNode)[];
+  tableHeader: any[];
 
   tableData: any[][];
 
@@ -75,7 +74,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "row",
   },
   dataCell: {
+    display: "flex",
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     padding: "10px",
     textAlign: "center",
     borderBottom: "1px solid #ddd",
