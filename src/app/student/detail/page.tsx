@@ -11,9 +11,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
 import ReplyBox from "../../../../component/ReplyBox";
-import { CiCirclePlus } from "react-icons/ci";
 import { Colors } from "../../../../constant/Colors";
 import questionApi from "../../../../api/questionApi";
+import { FiPlusCircle } from "react-icons/fi";
 
 const DetailStudent = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -273,12 +273,12 @@ const DetailStudent = () => {
                         <div style={styles.sessionDetailsContainer}>
                             <div style={styles.rollCallerContainer}>
                                 <div style={styles.smallColumn}>
-                                    <p style={{ fontWeight: 700}}>Roll caller name:</p>
-                                    <p style={{ fontWeight: 700}}>Student code:</p>
+                                    <p style={{ fontSize: 20,fontWeight: 700}}>Roll caller name:</p>
+                                    <p style={{ fontSize: 20, fontWeight: 700}}>Student code:</p>
                                 </div>
                                 <div style={styles.smallColumn}>
-                                    <p>{rollCaller.name}</p>
-                                    <p>{rollCaller.code}</p>
+                                    <p style={{fontSize: 20}}>{rollCaller.name}</p>
+                                    <p style={{fontSize: 20}}>{rollCaller.code}</p>
                                 </div>
                             </div>
 
@@ -316,7 +316,7 @@ const DetailStudent = () => {
                                     <button
                                         style={styles.addButton}
                                         onClick={() => setOpenComment(!openComment)}>
-                                        <CiCirclePlus size={24} width={3}/>
+                                        <FiPlusCircle size={22} width={3}/>
                                         Add new
                                     </button>
                                     {
