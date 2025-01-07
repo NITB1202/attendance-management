@@ -19,16 +19,15 @@ const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, 
   const handleChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChangeText) onChangeText(event.target.value);
   };
-
+  
   return (
     <div style={styles.container}>
       {title && <label style={styles.title}>{title}</label>}
-      <div style={{ ...styles.inputContainer, ...style }}>
+      <div style={{ ...styles.inputContainer, ...style, background: disable? Colors.disable: "white" }}>
         {icon}
         <input
-          type="text"
           placeholder={placeHolder}
-          style={{...styles.input, ... textStyle}}
+          style={{...styles.input, ... textStyle, background: disable? Colors.disable: "white"}}
           defaultValue={defaultValue}
           onChange={handleChangeText}
           disabled={disable}

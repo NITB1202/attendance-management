@@ -8,4 +8,5 @@ export const Colors = {
   secondary: "#6A9AB0",
   red: "#EF1F1F",
   yellow: "#FFC038",
+  disable: "#CFCFCF",
 }

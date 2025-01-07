@@ -8,7 +8,7 @@ import RoundedButton from "../../../../component/RoundedButton";
 import userApi from "../../../../api/userApi";
 import { useAuth } from "../../../../context/AuthContext";
 import QuestionMessage from "../../../../component/QuestionMessage";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const ProfileScreen = () => {
   const {authState} = useAuth();
@@ -19,7 +19,9 @@ const ProfileScreen = () => {
     phone: "",
     code: ""
   });
-
+  
+  const searchParams = useSearchParams(); 
+  const id = searchParams.get('id');
   const [avatar, setAvatar] = useState("/Avatar-big.png");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -28,7 +30,7 @@ const ProfileScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try{
-        const response = await userApi.getById(authState.id);
+        const response = await userApi.getById(id? id : authState.id);
         const email = response.data.roleCode + "@gmail.com";
 
         setData({
@@ -132,9 +134,12 @@ const updateValue = (key: string, value: string) =>{
       {/* Avatar Section */}
       <div style={styles.avatarContainer}>
         <img src={avatar} alt="Avatar" style={styles.avatar} />
-        <button style={styles.iconContainer} onClick={handleIconClick}>
-          <Camera color="white" size={28} />
-        </button>
+        {
+          id === null &&
+          <button style={styles.iconContainer} onClick={handleIconClick}>
+            <Camera color="white" size={28} />
+          </button>
+        }
         <input
           type="file"
           accept="image/*"
@@ -157,20 +162,23 @@ const updateValue = (key: string, value: string) =>{
         title="Full name"
         onChangeText={(name)=> updateValue("name", name)}
         defaultValue={data.name}
-        style={{width: 380}}>
+        style={{width: 380}}
+        disable={id !== null}>
       </SmallInput>
 
       <div style={styles.row}>
         <CustomDatePicker
           title="Date of birth"
           setSelectedDate={handleSelectDate}
-          defaultValue={data.dob}>
+          defaultValue={data.dob}
+          disable={id !== null}>
         </CustomDatePicker>
 
         <SmallInput
           title="Phone"
           onChangeText={(phone)=> updateValue("phone", phone)}
-          defaultValue={data.phone}>
+          defaultValue={data.phone}
+          disable={id !== null}>
         </SmallInput>
       </div>
 
@@ -182,15 +190,21 @@ const updateValue = (key: string, value: string) =>{
         defaultValue={data.code}>
       </SmallInput>
       
-      <u style={styles.resetPassword} onClick={handleNavigate}>
-        Reset password
-      </u>
+      {
+        id === null &&
+        <u style={styles.resetPassword} onClick={handleNavigate}>
+          Reset password
+        </u>
+      }
 
-      <RoundedButton
-        title="Save"
-        onClick={()=>setShowConfirm(true)}
-        style={{width: 380}}>
-      </RoundedButton>
+      {
+        id === null &&
+        <RoundedButton
+          title="Save"
+          onClick={()=>setShowConfirm(true)}
+          style={{width: 380}}>
+        </RoundedButton>
+      }
       {
         showConfirm &&
         <QuestionMessage

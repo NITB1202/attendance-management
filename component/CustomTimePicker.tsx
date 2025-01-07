@@ -4,18 +4,23 @@ import { Colors } from "../constant/Colors";
 interface CustomTimePickerProps{
     title: string;
     setSelectedTime: (newValue: Date | null) => void;
+    defaultValue?: string;
+    disable?: boolean;
 }
 
-
-export default function CustomTimePicker({title, setSelectedTime}: CustomTimePickerProps){
+export default function CustomTimePicker({title, setSelectedTime, defaultValue, disable = false}: CustomTimePickerProps){
     const handleTimeChange = (newTime: Date | null) => {
         setSelectedTime(newTime);
     };
+
+    const initialTime = defaultValue ? new Date(new Date(`${new Date().toLocaleDateString()} ${defaultValue}`)) : null;
     
     return(
         <div style={styles.container}>
             <h1 style={styles.title}>{title}</h1>
             <TimePicker
+            value={initialTime}
+            disabled={disable}
             onChange={handleTimeChange}
             slotProps={{
             textField: {

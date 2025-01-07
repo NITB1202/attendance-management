@@ -7,7 +7,7 @@ import TabSwitcher from "../../../../component/Tabs";
 import IconButton from "../../../../component/IconButton";
 import { IoIosMore } from "react-icons/io";
 import classApi from "../../../../api/classApi";
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
 import ReplyBox from "../../../../component/ReplyBox";
@@ -49,6 +49,7 @@ const DetailStudent = () => {
     });
     const [questions, setQuestions] = useState<any[]>([]);
     const [update, setUpdate] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -77,17 +78,7 @@ const DetailStudent = () => {
 
             const students = response.data.students;
             const monitorCode = info.monitorCode;
-
-            const formattedData: string[][] = 
-            students.map((item: any, index: number)=>
-                [
-                    item.id,
-                    index + 1,
-                    item.studentCode,
-                    item.name,
-                    item.studentCode === monitorCode ? "MEMBER": "CLASS MONITOR"
-                ]
-            );
+            const formattedData: string[][] = sortStudents(students, monitorCode);
 
             const sessions = response.data.sessions;
             const formattedSession: string[][] =
@@ -163,8 +154,11 @@ const DetailStudent = () => {
         fetchSession();
     }, [sessionId, update]);
 
-    const handleSelectUser = (index: number) => {
-        // go to profile 
+    const handleSelectUser = (index: number, id: number) => {
+        if(index === 0){
+            const url = "/general/profile?id="+id;
+            router.push(url);
+        }
     }
 
     const selectSession = (row: any[])=>{
@@ -186,18 +180,17 @@ const DetailStudent = () => {
                 id={id}
                 icon={<IoIosMore  size={24}/>}
                 options={options}
-                onSelectOption={handleSelectUser}>
+                onSelectWithId={handleSelectUser}>
             </IconButton>
         );
     }
 
-    const studentTableData = students.map((row)=> row.slice(1));
     const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
     const attendanceTableData = attendances.map((row)=> row.slice(1));
 
-    const tableDataWithButtons = studentTableData.map((row, index) => [
-        ...row,
-        viewButton(index),
+    const tableDataWithButtons = students.map((row) => [
+        ...row.slice(1),
+        viewButton(row.at(0)),
     ]);
 
     const isMobile = screenWidth < 700;
@@ -345,6 +338,39 @@ const DetailStudent = () => {
         </div>
     );
 };
+
+function sortStudents(students: any, monitorCode: number){
+    const result = students.map((item: any) => {
+        const isMonitor = item.studentCode === monitorCode;
+
+        return {
+            id: item.id,
+            studentCode: item.studentCode,
+            name: item.name,
+            role: isMonitor ? "CLASS MONITOR" : "MEMBER"
+        };
+    });
+
+    const sortedStudents = result.sort((a: any, b: any) => {
+        if (a.role === "CLASS MONITOR" && b.role !== "CLASS MONITOR") {
+            return -1;
+        } else if (a.role !== "CLASS MONITOR" && b.role === "CLASS MONITOR") {
+            return 1;
+        } else {
+            return a.name.localeCompare(b.name);
+        }
+    });
+
+    const finalResult = sortedStudents.map((item: any, index: number) => [
+        item.id,
+        index + 1,
+        item.studentCode,
+        item.name,
+        item.role
+    ]);
+
+    return finalResult;
+}
 
 const styles: { [key: string]: React.CSSProperties } = {
     container:{

@@ -1,376 +1,766 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
 import ReplyBox from "../../../../component/ReplyBox";
-import RoundedButton from "../../../../component/RoundedButton";
-import Input from "../../../../component/Input";
+import { Colors } from "../../../../constant/Colors";
+import { CiCirclePlus } from "react-icons/ci";
+import { extractDate, getStatusName } from "../../../../util/util";
+import TabSwitcher from "../../../../component/Tabs";
+import IconButton from "../../../../component/IconButton";
+import { IoIosMore } from "react-icons/io";
+import questionApi from "../../../../api/questionApi";
+import attendanceApi from "../../../../api/attendanceApi";
+import classApi from "../../../../api/classApi";
+import { useRouter, useSearchParams } from 'next/navigation';
+import SmallInput from "../../../../component/SmallInput";
+import CustomSelect from "../../../../component/CustomSelect";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
 import CustomTimePicker from "../../../../component/CustomTimePicker";
-import './styles.css';
+import RoundedButton from "../../../../component/RoundedButton";
+import { FaRegEdit } from "react-icons/fa";
+import QuestionMessage from "../../../../component/QuestionMessage";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
+import ErrorMessage from "../../../../component/ErrorMessage";
 
 const DetailTeacher = () => {
-    const [activeTab, setActiveTab] = useState('General');
-    const [newClassName] = useState("");
-    const [modalVisible, setModalVisible] = useState(false);
-    const [, setSelectedDate] = useState<Date | null>(null);
-    const [, setSelectedTime] = useState<Date | null>(null);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const searchParams = useSearchParams(); 
+    const id = searchParams.get('id');
+    const [openComment, setOpenComment] = useState(false);
+    const options = ["Assign as class monitor", "Profile"];
+    const [classData, setClassData] = useState({
+        className: "",
+        courseName: "",
+        teacherName: "",
+        teacherCode: "",
+        monitorName: "",
+        monitorCode: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        maxLate: -1,
+        maxAb: -1,
+    })
+
+    const [students, setStudents] = useState<any[][]>([]);
+    const [activeTab, setActiveTab] = useState('General');
+    const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
+    const sessionTableHeaders = ['No', 'Date'];
+    const attendanceTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS'];
+    const [sessionData, setSessionData] = useState<any[][]>([]);
+    const [sessionId, setSessionId] = useState(0);
+    const [attendances, setAttendances] = useState<any[][]>([]);
+    const [rollCaller, setRollcaller] = useState({
+        code: "",
+        name: ""
+    });
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [update, setUpdate] = useState(false);
+    const [monitor, setMonitor] = useState({
+        id: 0,
+        name: "",
+        code: "",
+    });
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState({
+        type: "",
+        title: "",
+        description: "",
+    })
+
+    const [updateRequest, setUpdateRequest] = useState({
+        name: "",
+        beginDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        allowedLateTime: 0,
+        teacherId: 0,
+        courseId: 0
+    })
+    const router = useRouter();
+    const attendanceStatus = ["On-time","Absence with permission", "Absence without permission", "late"];
 
     useEffect(() => {
-            const handleResize = () => {
-                setScreenWidth(window.innerWidth);
-            };
-            window.addEventListener("resize", handleResize);
-            return () => {
-                window.removeEventListener("resize", handleResize);
-            };
-        }, []);
+        const fetchData = async () => {
+        if(!id)
+        {
+            console.log("Can't find id");
+            return;
+        } 
+          try {
+            const response = await classApi.getById(Number(id));
+            const classInfo = response.data;
+            const info ={
+                className: classInfo.name,
+                courseName: classInfo.course.name,
+                teacherName: classInfo.teacher.name,
+                teacherCode: classInfo.teacher.teacherCode,
+                monitorName: classInfo.classMonitor.name,
+                monitorCode: classInfo.classMonitor.studentCode,
+                startDate: classInfo.beginDate,
+                endDate: classInfo.endDate,
+                startTime: classInfo.startTime,
+                endTime: classInfo.endTime,
+                maxLate: classInfo.allowedLateTime,
+                maxAb: classInfo.allowedAbsent,
+            }
 
-    const tableHeader = ['Order', 'Student Code', 'Student Name', 'Username'];
-    const tableData = [
-        ['1', 'S001', 'John Doe', 'johndoe'],
-        ['2', 'S002', 'Jane Smith', 'janesmith'],
-    ];
+            const request = {
+                name: info.className,
+                beginDate: info.startDate,
+                endDate: info.endDate,
+                startTime: info.startTime,
+                endTime: info.endTime,
+                allowedLateTime: info.maxLate,
+                teacherId: classInfo.teacher.id,
+                courseId: classInfo.course.id,
+            }
 
-    const tableHeader2 = ['No', 'Date'];
-    const tableData2 = [
-        ['1', '2023-01-01'],
-        ['2', '2023-01-02'],
-    ];
+            const students = response.data.students;
+            const monitorCode = info.monitorCode;
+            const formattedData: string[][] = sortStudents(students, monitorCode, setMonitor);
 
-    const tableHeader3 = ['Order', 'Student Code', 'Student Name', 'Attendance Status'];
-    const tableData3 = [
-        ['1', 'S001', 'John Doe', 'Present'],
-        ['2', 'S002', 'Jane Smith', 'Absent'],
-    ];
+            const sessions = response.data.sessions;
+            const formattedSession: string[][] =
+            sessions.map((item: any) => {
+                if(item.no === 1) {
+                    setSessionId(item.id);
+                    setRollcaller({
+                        name: item.representative_id.name,
+                        code: item.representative_id.studentCode,
+                    });
+                }
+                return (
+                    [
+                        item.id,
+                        item.representative_id.name,
+                        item.representative_id.studentCode,
+                        item.no,
+                        extractDate(item.startTime)
+                    ]
+                );
+            }
+            );
 
-    const handleSave = () => {
-        console.log("New Class Name:", newClassName);
-        setModalVisible(false);
+            setClassData(info);
+            setStudents(formattedData);
+            setSessionData(formattedSession);
+            setUpdateRequest(request);
+
+          } catch (error) {
+            console.log(error);
+          }
+        };
+      
+        fetchData();
+    }, [update]);
+
+    useEffect(() => {
+        const handleResize = () => {
+          setScreenWidth(window.innerWidth);
+        };
+    
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => {
+          window.removeEventListener("resize", handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+        if(sessionId === 0) return;
+          try{
+            const response = await attendanceApi.getById(sessionId);
+            const formattedData: string[][] = response.data.map((item:any, index: number)=>
+            [
+                item.student.id,
+                index + 1,
+                item.student.studentCode,
+                item.student.name,
+                getStatusName(item.status)
+            ]);
+
+            const quesionResponse = await questionApi.getBySessionId(sessionId);
+            setUpdate(false);
+
+            setAttendances(formattedData);
+            setQuestions(quesionResponse.data);
+          }
+          catch(error){
+            console.log(error);
+          }
+        };
+    
+        fetchSession();
+    }, [sessionId, update]);
+
+    const handleSelectUser = async (index: number, userId: number) => {
+        if(index === 0){
+            try{
+                setUpdate(true);
+                await classApi.updateClassMonitor(id, userId);
+                setShowMessage(true);
+                setMessage({
+                    type: "success",
+                    title: "Update successfully",
+                    description: "The class's monitor has changed."
+                })
+            }
+            catch(error)
+            {
+                console.log(error);
+            }
+            finally{
+                setUpdate(false);
+            }
+        }
+
+        if(index === 1){
+            const url = "/general/profile?id="+id;
+            router.push(url);
+        }
+    }
+
+    const selectSession = (row: any[])=>{
+        const foundItem = sessionData.find(item => {
+            return item.slice(3).every((value, index) => value === row[index]);
+        });
+        if(foundItem){
+            setSessionId(foundItem.at(0));
+            setRollcaller({
+                name: foundItem.at(1),
+                code: foundItem.at(2)
+            });
+        }
+    }
+
+    const handleConfirm = async ()=>{
+        if(updateRequest.allowedLateTime === -1){
+            setShowMessage(true);
+            setMessage({
+                type: "error",
+                title: "Error",
+                description: "The maximum allowable late occurences must be a number.",
+            });
+            return;
+        }
+
+        const formatRequest = {
+            name: updateRequest.name,
+            beginDate: updateRequest.beginDate,
+            endDate: updateRequest.endDate,
+            startTime: updateRequest.startTime.slice(0, 5),
+            endTime: updateRequest.endTime.slice(0, 5),
+            allowedLateTime: updateRequest.allowedLateTime,
+            teacherId: updateRequest.teacherId,
+            courseId: updateRequest.courseId,
+        }
+        
+        try{
+            setUpdate(true);
+            await classApi.updateClassMonitor(id, monitor.id);
+            await classApi.update(id, formatRequest);
+            setShowMessage(true);
+            setMessage({
+            type: "success",
+            title: "Success",
+            description: "The classroom's information has been updated.",
+            })
+        }
+        catch(error){
+            console.log(error);
+        }
+        finally{
+            setUpdate(false);
+        }
+    }
+
+    const updateField = (field: string, value: any) => {
+        setUpdateRequest(prevState => ({
+            ...prevState,
+            [field]: value
+        }));
     };
 
+    const viewButton = (id: number)=> {
+        return(
+            <IconButton
+                id={id}
+                icon={<IoIosMore size={24}/>}
+                options={options}
+                onSelectWithId={handleSelectUser}>
+            </IconButton>
+        );
+    }
+
+    const attendanceSelect = (id: number) =>{
+        return (
+            <CustomSelect
+                options={attendanceStatus}
+                onSelect={()=> {}}>
+            </CustomSelect>
+        );
+    }
+
+    const attendanceButton = (id: number)=> {
+        return(
+            <IconButton
+                id={id}
+                icon={<IoIosMore size={24}/>}
+                options={["Assign as this session roll-caller", "Profile"]}
+                onSelectWithId={handleSelectUser}>
+            </IconButton>
+        );
+    }
+
+
+
+    const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
+    const attendanceTableData = attendances.map((row)=> row.slice(1));
+    const tableDataWithButtons = students.map((row) => [
+        ...row.slice(1),
+        viewButton(row.at(0)),
+    ]);
+    const selectOptions = students.map((row) => row.at(3));
+
+    const handleSelect = (index: number) => {
+        const selectStudent = students.at(index);
+        setMonitor({
+            id: selectStudent?.at(0),
+            code: selectStudent?.at(2),
+            name: selectStudent?.at(3),
+        })
+    }
+
+    const isMobile = screenWidth < 700;
+    const flexDirection = isMobile ? "column" : "row";
+    
     return (
-        <div style={screenWidth < 500 ? styles.containerMobile : styles.container} >
-            <div style={screenWidth < 500 ? styles.tabContainerMobile : styles.tabContainer}>
-                <button
-                    onClick={() => setActiveTab('General')}
-                    style={{
-                        ...styles.tabButton,
-                        ...(activeTab === 'General' ? styles.tabButtonActive : styles.tabButtonInactive),
-                    }}
-                >
-                    General
-                </button>
-                <button
-                    onClick={() => setActiveTab('Session')}
-                    style={{
-                        ...styles.tabButton,
-                        ...(activeTab === 'Session' ? styles.tabButtonActive : styles.tabButtonInactive),
-                    }}
-                >
-                    Session
-                </button>
+        <div style={styles.container}>
+            <div style={styles.tabContainer}>
+                <TabSwitcher
+                    tabs={["General", "Session"]}
+                    onTabChange={setActiveTab}>
+                </TabSwitcher>
             </div>
             <div style={{ marginTop: '20px' }}>
                 {activeTab === 'General' && (
-                    <div style={{ display: 'flex', width: '100%', height: '10%', flexDirection: 'column' }}>
-                        <div style={{ flex: 6, padding: '5px', marginBottom: '10px' }}>
-                            <label style={{ fontWeight: 'bold', fontSize: 24 }}>Class Information</label>
-                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                <div className="class-course-container">
-                                    <div className="input-group-course">
-                                        <label>Class Name</label>
-                                        <div className="input-box">
-                                            M501.P22
-                                        </div>
-                                    </div>
-                                    <div className="input-group-course2">
-                                        <label>Course Name</label>
-                                        <Dropdown
-                                            title=""
-                                            options={['Math', 'Literature', 'Science']}
-                                        />
-                                    </div>
+                    <div style={styles.generalPage}>
+                        <div style={styles.classInfo}>
+                            <label style={styles.header}>Class Information</label>
+                            
+                            <div style={styles.row}>
+                                <SmallInput
+                                    title="Class name"
+                                    defaultValue={classData.className}
+                                    disable={true}>
+                                </SmallInput>
+                                <SmallInput
+                                    title="Course name"
+                                    defaultValue={classData.courseName}
+                                    disable={true}>
+                                </SmallInput>
+                            </div>
+
+                            <div style={{...styles.row, flexDirection: flexDirection}}> 
+                                <div style={styles.row}>
+                                    <SmallInput
+                                        title="Teacher name"
+                                        defaultValue={classData.teacherName}
+                                        disable={true}>
+                                    </SmallInput>
+                                    <SmallInput
+                                        title="Teacher code"
+                                        defaultValue={classData.teacherCode}
+                                        disable={true}>
+                                    </SmallInput>
                                 </div>
-                                <div className="teacher-info-container">
-                                    <div className="input-group-info2">
-                                        <label>Teacher Name</label>
-                                        <Dropdown
-                                            title=""
-                                            options={['Math', 'Literature', 'Science']}
-                                            style={{ height: 40, padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}
-                                        />
-                                    </div>
-                                    <div className="input-group-info">
-                                        <label>Teacher Code</label>
-                                        <div style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}>
-                                            Teacher Code
-                                        </div>
-                                    </div>
-                                    <div className="input-group-info2">
-                                        <label>Class Monitor&apos;s Name</label>
-                                        <Dropdown
-                                            title=""
-                                            options={['Math', 'Literature', 'Science']}
-                                            style={{ height: 40, padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}
-                                        />
-                                    </div>
-                                    <div className="input-group-info">
-                                        <label>Student Code</label>
-                                        <div style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}>
-                                            Student Code
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="date-time-container">
-                                    <div className="input-group-datetime">
-                                        <label>Start Date</label>
-                                        <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
-                                    </div>
-                                    <div className="input-group-datetime">
-                                        <label>End Date</label>
-                                        <CustomDatePicker title="" setSelectedDate={(newValue: Date | null) => setSelectedDate(newValue)} />
-                                    </div>
-                                    <div className="input-group-datetime">
-                                        <label>Start Time</label>
-                                        <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
-                                    </div>
-                                    <div className="input-group-datetime">
-                                        <label>End Time</label>
-                                        <CustomTimePicker title="" setSelectedTime={(newValue: Date | null) => setSelectedTime(newValue)} />
-                                    </div>
-                                </div>
-                                <div className="input-container">
-                                    <div className="input-group">
-                                        <label>Maximum allowable late occurrences</label>
-                                        <input type="text" placeholder="Input 1" />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>Maximum allowable absence occurrences</label>
-                                        <input type="text" placeholder="Input 2" />
-                                    </div>
-                                    <div className="input-group2">
-                                        <label>Allowed late time (minute)</label>
-                                        <input type="text" placeholder="Input 3" />
-                                    </div>
+
+                                <div style={styles.row}>
+                                    {
+                                        monitor.name !== "" &&
+                                        <CustomSelect
+                                            title="Class monitor's name"
+                                            options={update !== true? selectOptions : []}
+                                            onSelect={handleSelect}>
+                                        </CustomSelect>
+                                    }
+                                    <SmallInput
+                                        title="Class monitor's code"
+                                        defaultValue={monitor.code}
+                                        disable={true}>
+                                    </SmallInput>
                                 </div>
                             </div>
+
+
+                            <div style={{...styles.row, flexDirection: flexDirection}}> 
+                                <div style={styles.row}>
+                                    <CustomDatePicker
+                                        title="Start date"
+                                        defaultValue={classData.startDate}
+                                        setSelectedDate={()=>{}}
+                                        disable={true}>
+                                    </CustomDatePicker>
+                                    <CustomDatePicker
+                                        title="End date"
+                                        defaultValue={classData.endDate}
+                                        setSelectedDate={()=>{}}
+                                        disable={true}>
+                                    </CustomDatePicker>
+                                </div>
+
+                                <div style={styles.row}>
+                                    <CustomTimePicker
+                                        title="Start time"
+                                        defaultValue={classData.startTime}
+                                        setSelectedTime={()=>{}}
+                                        disable={true}>
+                                    </CustomTimePicker>
+                                    <CustomTimePicker
+                                        title="End time"
+                                        defaultValue={classData.endTime}
+                                        setSelectedTime={()=>{}}
+                                        disable={true}>
+                                    </CustomTimePicker> 
+                                </div>
+                            </div>
+
+                            {
+                                classData.maxAb > -1 &&
+                                <div style={styles.row}>
+                                    <SmallInput
+                                        title="Maximum allowable late occurences"
+                                        defaultValue={classData.maxLate.toString()}
+                                        onChangeText={(text)=> updateField("allowedLateTime", Number(text)? Number(text): -1)}>
+                                    </SmallInput>
+                                    <SmallInput
+                                        title="Maximum allowable absence occurences"
+                                        defaultValue={classData.maxAb.toString()}>
+                                    </SmallInput>
+                                </div>
+                            }
                         </div>
-                        <div className="student-list-container">
-                            <div className="student-list-header">
-                                <label className="student-list-title">Student List</label>
-                    
-                            </div>
-                            <div className="table-container">
-                                <div className="table">
-                                    <Table tableHeader={tableHeader} tableData={tableData} />
-                                </div>
-                            </div>
+                        <div style={styles.buttonContainer}>
+                            <RoundedButton
+                                title="SAVE CHANGES"
+                                style={styles.saveButton}
+                                textStyle={styles.buttonText}
+                                icon={<FaRegEdit size={24} color="white" />}
+                                onClick={()=> {
+                                    setShowMessage(true);
+                                    setMessage({
+                                        type: "question",
+                                        title: "Confirmation",
+                                        description: "Are you sure you want to update class's information?"
+                                    })
+                                }}>
+                            </RoundedButton>
+                        </div>
+                        <div style={{ padding: "20px 10px" }}>
+                            <label style={styles.header}>Student List</label>
+                            <Table 
+                                tableHeader={studentTableHeaders} 
+                                tableData={tableDataWithButtons} />
                         </div>
                     </div>
                 )}
-                {modalVisible && (
-                    <div
-                        style={{
-                            position: "fixed",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            backgroundColor: "rgba(0, 0, 0, 0.5)",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: screenWidth < 500 ? 'auto' : 297,
-                                height: screenWidth < 500 ? 'auto' : 341,
-                                backgroundColor: "white",
-                                borderRadius: 10,
-                                padding: 20,
-                                position: "relative",
-                            }}
-                        >
-                            <button
-                                style={{
-                                    position: "absolute",
-                                    top: 10,
-                                    right: 10,
-                                    fontSize: 24,
-                                    backgroundColor: "transparent",
-                                    border: "none",
-                                }}
-                                onClick={() => setModalVisible(false)}
-                            >
-                                ✕
-                            </button>
-                            <h1 style={{ marginBottom: 15, marginTop: 30, fontSize: 24, fontWeight: "bold" }}>Select a student</h1>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                                <div style={{ height: 90 }}>
-                                    <label>Student name</label>
-                                    <Dropdown
-                                        title=""
-                                        options={['Martin Blue', 'Martin Gray', 'Martin Green']}
-                                        style={{ marginBottom: '10px' }}
-                                    />
-                                    <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
-                                </div>
-                                <div style={{ height: 90 }}>
-                                    <label>Student code</label>
-                                    <Input
-                                        title=""
-                                        placeHolder="SV12345"
-                                        style={{ marginBottom: '10px' }}
-                                    />
-                                    <input type="text" style={{ width: '100%', marginBottom: '10px' }} />
-                                </div>
-
-                                <div style={{ flex: 1 }}>
-                                    <RoundedButton
-                                        title="CONFIRM"
-                                        onClick={handleSave}
-                                        style={{
-                                            width: "100%",
-                                            height: 46,
-                                            marginTop: "auto"
-                                        }}
-                                        textStyle={{ fontSize: 24, fontWeight: "bold" }}
-                                    />
-                                </div>
-                            </div>
+                 {activeTab === 'Session' && (
+                    <div style={styles.sessionPage}>
+                        <div style={styles.sessionTableContainer}>
+                            <Table 
+                                tableHeader={sessionTableHeaders} 
+                                tableData={sessionTableData}
+                                onRowClick={selectSession} />
                         </div>
-                    </div>
-                )}
-
-                {activeTab === 'Session' && (
-                    <div className="session-container">
-                        <div className="table-wrapper">
-                            <div className="table-container">
-                                <div className="table2">
-                                    <Table tableHeader={tableHeader2} tableData={tableData2} />
-                                </div>
+                        <div style={styles.sessionDetailsContainer}>
+                            <div style={styles.rollCallerContainer}>
+                                <CustomSelect
+                                    title="Roll caller name"
+                                    options={selectOptions}
+                                    onSelect={()=>{}}>
+                                </CustomSelect>
+                                <SmallInput
+                                    title="Student code"
+                                    defaultValue={"2232132"}
+                                    disable={true}>
+                                </SmallInput>
+                                <RoundedButton
+                                    title="Save changes"
+                                    style={styles.saveButton}
+                                    textStyle={styles.buttonText}
+                                    icon={<FaRegEdit size={22} color="white" />}
+                                    onClick={()=>{}}>
+                                </RoundedButton>
                             </div>
-                        </div>
-                        <div className="session-details">
-                            <div className="roll-caller-info">
-                                <label className="info-label">Roll Caller Name:</label>
-                                <Dropdown
-                                    title=""
-                                    options={['Jack Tarco', 'John Doe', 'Jane Smith']}
+
+                            <div style={styles.atttedanceTableContainer}>
+                                <label style={styles.header}>Student attendance status</label>
+                                <Table
+                                    tableHeader={attendanceTableHeaders}
+                                    tableData={attendanceTableData}
                                 />
                             </div>
-                            <div className="student-code-info">
-                                <label className="info-label">Student Code:</label>
-                                <input type="text" className="student-code-input" placeholder="SV14227949" />
-                            </div>
-                            <div className="attendance-status">
-                                <label className="status-label">Student Attendance Status</label>
-                                <div className="table-container">
-                                    <div className="table3">
-                                        <Table tableHeader={tableHeader3} tableData={tableData3} />
+
+                                <div style={styles.dicussionContainer}>
+                                    <label style={styles.header}>Discussion</label>
+                                    <div style={styles.commentSection}>
+                                        {
+                                            questions.map((item)=>{
+                                                return (
+                                                    <CommentBox
+                                                        key={item.id}
+                                                        id= {item.id}
+                                                        sessionId={sessionId}
+                                                        user={item.user}
+                                                        content={item.content}
+                                                        timestamp={extractDate(item.askedTime)}
+                                                        replies={item.replies}
+                                                        setUpdate={() => setUpdate(true)}>
+                                                    </CommentBox>
+                                                );
+                                            })
+                                        }
                                     </div>
                                 </div>
-                            </div>
-                            <div className="discussion-section">
-                                <label className="discussion-label">Discussion</label>
-                                <div className="comment-box">
-                                    <CommentBox
-                                        className="custom-comment-box"
-                                        avatar="path/to/avatar.jpg"
-                                        name="John Doe"
-                                        content="This is a comment."
-                                        timestamp="2023-01-01"
-                                        onReply={() => console.log('Reply clicked')}
-                                    />
-                                    <ReplyBox
-                                        className="custom-reply-box"
-                                        avatar="path/to/avatar.jpg"
-                                        name="John Doe"
-                                        content="This is another reply."
-                                        timestamp="2023-01-01"
-                                        onPost={() => console.log('Post clicked')}
-                                        onCancel={() => console.log('Cancel clicked')}
-                                    />
-                                    <button className="reply-button" onClick={() => console.log('4 Replies clicked')}>
-                                        4 Replies
+
+                                <div style={styles.addCommentContainer}>
+                                    <button
+                                        style={styles.addButton}
+                                        onClick={() => setOpenComment(!openComment)}>
+                                        <CiCirclePlus size={24} width={3}/>
+                                        Add new
                                     </button>
+                                    {
+                                        openComment &&
+                                        <ReplyBox
+                                            sessionId={sessionId}
+                                            onCancel={()=> setOpenComment(false)}
+                                            onPost={()=>{
+                                                setUpdate(true);
+                                                setOpenComment(false);
+                                            }}>
+                                        </ReplyBox>
+                                    }
                                 </div>
                             </div>
-                            <div className="reply-container">
-                                <button
-                                    className="add-new-button"
-                                    onClick={() => console.log('4 Replies clicked')}
-                                >
-                                    Add new
-                                </button>
-                                <ReplyBox
-                                    className="custom-reply-box"
-                                    avatar="path/to/avatar.jpg"
-                                    name="John Doe"
-                                    content="This is another reply."
-                                    timestamp="2023-01-01"
-                                    onPost={() => console.log('Post clicked')}
-                                    onCancel={() => console.log('Cancel clicked')}
-                                />
-                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                    {
+                        showMessage && message.type === "question" &&
+                        <QuestionMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}
+                            onAgree={handleConfirm}>
+                        </QuestionMessage>
+                    }
+                    {
+                        showMessage && message.type === "success" &&
+                        <SuccessfulMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}>
+                        </SuccessfulMessage>
+                    }
+                    {
+                        showMessage && message.type === "error" &&
+                        <ErrorMessage
+                            title={message.title}
+                            description={message.description}
+                            setOpen={setShowMessage}>
+                        </ErrorMessage>
+                    }
+                    
             </div>
         </div>
     );
 };
 
-import { Properties } from 'csstype';
-const styles: { [key: string]: Properties<string | number> } = {
-  container: {
-    padding: '20px',
-  },
-  containerMobile: {
-    padding: '10px',
-  },
-  tabContainer: {
-    display: 'flex',
-    backgroundColor: '#3A6D8C',
-    padding: '10px',
-    width: '14%',
-    marginLeft: '10px',
-    marginTop: '10px',
-    borderRadius: "5px",
-  },
-  tabContainerMobile: {
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: '#3A6D8C',
-    padding: '10px',
-    width: '100%',
-    marginLeft: '0px',
-    marginTop: '10px',
-    borderRadius: "5px",
-  },
-  tabButton: {
-    borderRadius: "5px",
-    padding: '10px 20px',
-    cursor: 'pointer',
-    color: 'white',
-    border: 'none',
-    outline: 'none',
-  },
-  tabButtonActive: {
-    backgroundColor: '#00B01A',
-    fontWeight: 'bold',
-  },
-  tabButtonInactive: {
-    backgroundColor: '#3A6D8C',
-    fontWeight: 'normal',
-  },
-  
-};
+function sortStudents(students: any, monitorCode: number, setMonitor: any){
+    const result = students.map((item: any) => {
+        const isMonitor = item.studentCode === monitorCode;
+        
+        if (isMonitor) {
+            setMonitor({
+                id: item.id,
+                name: item.name,
+                code: item.studentCode,
+            });
+        }
+
+        return {
+            id: item.id,
+            studentCode: item.studentCode,
+            name: item.name,
+            role: isMonitor ? "CLASS MONITOR" : "MEMBER"
+        };
+    });
+
+    const sortedStudents = result.sort((a: any, b: any) => {
+        if (a.role === "CLASS MONITOR" && b.role !== "CLASS MONITOR") {
+            return -1;
+        } else if (a.role !== "CLASS MONITOR" && b.role === "CLASS MONITOR") {
+            return 1;
+        } else {
+            return a.name.localeCompare(b.name);
+        }
+    });
+
+    const finalResult = sortedStudents.map((item: any, index: number) => [
+        item.id,
+        index + 1,
+        item.studentCode,
+        item.name,
+        item.role
+    ]);
+
+    return finalResult;
+}
+
+
+const styles: { [key: string]: React.CSSProperties } = {
+    container:{
+        display: "flex",
+        flexDirection: "column",
+        width: "100vw",
+        height: "100hw",
+    },
+    tabContainer:{ 
+        display: 'flex', 
+        padding: "10px", 
+        marginTop: "20px"
+    },
+    boldText:{
+        fontWeight: 'bold', 
+        marginBottom: '10px', 
+        display: 'block'
+    },
+    normalText:{ 
+        marginBottom: '10px', 
+        display: 'block' 
+    },
+    header:{ 
+        fontSize: 24, 
+        fontWeight: 'bold', 
+        display: 'block' 
+    },
+    textColumn:{ 
+        padding: '10px', 
+        display: 'flex', 
+        flexDirection: 'row', 
+        gap: 30
+    },
+    leftColumn:{ 
+        padding: '10px',
+        width: "fit-content",
+        minWidth: 200,
+    },
+    generalPage:{ 
+        display: 'flex', 
+        width: '100%', 
+        flexDirection: 'column'
+    },
+    classInfo:{ 
+        display: "flex", 
+        flexDirection: "column", 
+        padding: '0px 10px',
+        gap: 30,
+    },
+    sessionPage:{ 
+        display: 'flex',
+        width: "100%",
+        height: "100%"
+    },
+    sessionTableContainer:{ 
+        padding: '0px 10px' 
+    },
+    atttedanceTableContainer:{
+        padding: '10px', 
+        height: 400
+    },
+    sessionDetailsContainer:{
+        padding: '10px',
+        width: "100%"
+    },
+    rollCallerContainer:{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        marginBottom: '10px', 
+        gap: 30,
+        alignItems: "flex-end",
+        padding: "0px 10px"
+    },
+    smallColumn:{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        padding: "0px 10px"
+    },
+    dicussionContainer:{ 
+        padding: '10px', 
+        display: 'flex', 
+        flexDirection: 'column',
+        gap: 20,
+    },
+    commentSection:{ 
+        display: "flex",
+        flexDirection: "column",
+        border: '1px solid #ccc', 
+        borderRadius: 10,
+        height: 500,
+        padding: 20,
+        minWidth: "fit-content",
+        overflow: "auto",
+        gap: 20,
+    },
+    addButton:{
+        display: "flex",
+        backgroundColor: Colors.green,
+        border: 'none',
+        color: '#FFFFFF',
+        cursor: 'pointer',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        marginRight: '10px',
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 5,
+    },
+    addCommentContainer:{ 
+        display: 'flex', 
+        alignItems: 'flex-start',
+        justifyContent: "flex-start",
+        marginTop: 20,
+        paddingLeft: 10,
+        height: 200,
+    },
+    row:{
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 40,
+    },
+    saveButton:{
+        padding: "10px 30px",
+        backgroundColor: Colors.green,
+        height: "fit-content"
+    },
+    buttonContainer:{
+        width: "100%",
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        padding: 10,
+        marginTop: 20,
+    },
+    buttonText:{
+        fontSize: 18,
+    },
+}
 
 export default DetailTeacher;
