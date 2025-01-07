@@ -6,6 +6,10 @@ const courseApi = {
     },
     create(body: any){
         return axiosInstance.post("/course", body);
+    },
+    update(id: number, name: string, courseCode: string){
+        const url = "/course/"+id;
+        return axiosInstance.put(url, {name, courseCode});
     }
 }
 

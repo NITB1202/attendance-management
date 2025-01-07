@@ -37,6 +37,11 @@ const CourseManager = () => {
     decription: "",
   })
   const [update, setUpdate] = useState(false);
+  const [updateRequest, setUpdateRequest] = useState({
+    id: 0,
+    name: "",
+    courseCode: ""
+  })
 
   useEffect(() => {
     const handleResize = () => {
@@ -83,7 +88,7 @@ const CourseManager = () => {
       setShowError(true);
       setMessage({
         title: "Dupplicated",
-        decription: "This course with the same code has already existed."
+        decription: "The course with the same code has already existed."
       });
     }
     finally{
@@ -116,12 +121,68 @@ const CourseManager = () => {
     }));
   };
 
+  const updateUpdateFormField = (field: string, value: any) => {
+    setUpdateRequest(prevState => ({
+        ...prevState,
+        [field]: value
+    }));
+  };
+
   const closeCreateModal = () =>{
     setCreateRequest({
       name: "",
       courseCode: "",
     })
     setModalVisible(false);
+  }
+
+  const handleClickRow = (row: any[]) => {
+    setUpdateRequest({
+      id: row.at(0),
+      name: row.at(1),
+      courseCode: row.at(2),
+    })
+
+    setModal2Visible(true);
+  }
+
+  const handleCloseUpdateModal = () =>{
+    setModal2Visible(false);
+    setUpdateRequest({
+      id: 0,
+      name: "",
+      courseCode: ""
+    })
+
+  }
+
+  const handleUpdate= async () =>{
+    if(Object.values(updateRequest).some(value => value === ""))
+      {
+        setShowError(true);
+        setMessage({
+          title: "Error",
+          decription: "All fields must be filled."
+        })
+        return;
+      }
+  
+      try{
+        setUpdate(true);
+        await courseApi.update(updateRequest.id, updateRequest.name, updateRequest.courseCode);
+        handleCloseUpdateModal();
+      }
+      catch(error){
+        console.log(error);
+        setShowError(true);
+        setMessage({
+          title: "Dupplicated",
+          decription: "The course with the same code has already existed."
+        });
+      }
+      finally{
+        setUpdate(false);
+      }
   }
 
   return (
@@ -159,6 +220,7 @@ const CourseManager = () => {
         <div style={styles.table}>
           <Table
             tableHeader={tableHeader}
+            onRowClick={handleClickRow}
             tableData={data.filter((item)=>{
               if(searchTerm === "")
                 return true;
@@ -233,7 +295,7 @@ const CourseManager = () => {
           <div style={styles.form}>
           <button
             style={styles.closeButton}
-            onClick={() => setModalVisible(false)}
+            onClick={handleCloseUpdateModal}
           >
             <IoMdClose size={30}/>
           </button>
@@ -250,19 +312,21 @@ const CourseManager = () => {
             >
               <SmallInput
                 title="Course name"
-                placeHolder="Enter course name"
-                style={{ width: 360}}>
+                defaultValue={updateRequest.name}
+                style={{ width: 360}}
+                onChangeText={(text)=> updateUpdateFormField("name", text) }>
               </SmallInput>
               <SmallInput
                 title="Course code"
-                placeHolder="Enter course code"
-                style={{ width: 360}}>
+                defaultValue={updateRequest.courseCode}
+                style={{ width: 360}}
+                onChangeText={(text)=> updateUpdateFormField("courseCode", text)}>
               </SmallInput>
 
               <div style={{ flex: 1, marginTop: 10 }}>
                 <RoundedButton
                   title="CONFIRM"
-                  onClick={handleSave}
+                  onClick={handleUpdate}
                   style={{
                     width: "100%",
                     height: 46,
