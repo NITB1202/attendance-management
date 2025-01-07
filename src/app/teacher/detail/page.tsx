@@ -5,7 +5,6 @@ import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
 import ReplyBox from "../../../../component/ReplyBox";
 import { Colors } from "../../../../constant/Colors";
-import { CiCirclePlus } from "react-icons/ci";
 import { extractDate, getStatusName } from "../../../../util/util";
 import TabSwitcher from "../../../../component/Tabs";
 import IconButton from "../../../../component/IconButton";
@@ -23,6 +22,8 @@ import { FaRegEdit } from "react-icons/fa";
 import QuestionMessage from "../../../../component/QuestionMessage";
 import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 import ErrorMessage from "../../../../component/ErrorMessage";
+import { FiPlusCircle } from "react-icons/fi";
+
 
 const DetailTeacher = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -176,20 +177,29 @@ const DetailTeacher = () => {
         if(sessionId === 0) return;
           try{
             const response = await attendanceApi.getById(sessionId);
-            const formattedData: string[][] = response.data.map((item:any, index: number)=>
-            [
-                item.student.id,
-                index + 1,
-                item.student.studentCode,
-                item.student.name,
-                getStatusName(item.status)
-            ]);
+            const formattedData: string[][] = response.data.map((item: any, index: number) => {
+                if (index === 0) {
+                    setRollcaller({
+                        code: item.session.representative_id.studentCode,
+                        name: item.session.representative_id.name,
+                    });
+                }
+                
+                return [
+                    item.student.id,
+                    (index + 1).toString(),
+                    item.student.studentCode,
+                    item.student.name,
+                    getStatusName(item.status)
+                ];
+            });
 
             const quesionResponse = await questionApi.getBySessionId(sessionId);
             setUpdate(false);
 
             setAttendances(formattedData);
             setQuestions(quesionResponse.data);
+            console.log(rollCaller);
           }
           catch(error){
             console.log(error);
@@ -298,28 +308,6 @@ const DetailTeacher = () => {
         );
     }
 
-    const attendanceSelect = (id: number) =>{
-        return (
-            <CustomSelect
-                options={attendanceStatus}
-                onSelect={()=> {}}>
-            </CustomSelect>
-        );
-    }
-
-    const attendanceButton = (id: number)=> {
-        return(
-            <IconButton
-                id={id}
-                icon={<IoIosMore size={24}/>}
-                options={["Assign as this session roll-caller", "Profile"]}
-                onSelectWithId={handleSelectUser}>
-            </IconButton>
-        );
-    }
-
-
-
     const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
     const attendanceTableData = attendances.map((row)=> row.slice(1));
     const tableDataWithButtons = students.map((row) => [
@@ -339,6 +327,18 @@ const DetailTeacher = () => {
 
     const isMobile = screenWidth < 700;
     const flexDirection = isMobile ? "column" : "row";
+
+    const handleSelectRollCaller = (index: number)=>{
+        const rollCallerSelectList = sortRollcallerToTop(selectOptions, rollCaller.name);
+        const selectName = rollCallerSelectList.at(index);
+        const selectStudent = students.find((item)=> item.at(3)=== selectName);
+        if(selectStudent){
+            setRollcaller({
+                code: selectStudent.at(2),
+                name: selectStudent.at(3),
+            })
+        }
+    }
     
     return (
         <div style={styles.container}>
@@ -480,18 +480,18 @@ const DetailTeacher = () => {
                         </div>
                         <div style={styles.sessionDetailsContainer}>
                             <div style={styles.rollCallerContainer}>
-                                <CustomSelect
-                                    title="Roll caller name"
-                                    options={selectOptions}
-                                    onSelect={()=>{}}>
-                                </CustomSelect>
-                                <SmallInput
-                                    title="Student code"
-                                    defaultValue={"2232132"}
-                                    disable={true}>
-                                </SmallInput>
+                                <div style={{ display: "flex"}}>
+                                    <div style={styles.smallColumn}>
+                                        <p style={{ fontSize: 20,fontWeight: 700}}>Roll caller name:</p>
+                                        <p style={{ fontSize: 20, fontWeight: 700}}>Student code:</p>
+                                    </div>
+                                    <div style={styles.smallColumn}>
+                                        <p style={{fontSize: 20}}>{rollCaller.name}</p>
+                                        <p style={{fontSize: 20}}>{rollCaller.code}</p>
+                                    </div>
+                                </div>
                                 <RoundedButton
-                                    title="Save changes"
+                                    title="Update attendance status"
                                     style={styles.saveButton}
                                     textStyle={styles.buttonText}
                                     icon={<FaRegEdit size={22} color="white" />}
@@ -533,7 +533,7 @@ const DetailTeacher = () => {
                                     <button
                                         style={styles.addButton}
                                         onClick={() => setOpenComment(!openComment)}>
-                                        <CiCirclePlus size={24} width={3}/>
+                                        <FiPlusCircle size={24} width={3}/>
                                         Add new
                                     </button>
                                     {
@@ -623,6 +623,12 @@ function sortStudents(students: any, monitorCode: number, setMonitor: any){
     return finalResult;
 }
 
+function sortRollcallerToTop(options: string[], name: string){
+    const nameItem = options.filter(item => item === name);
+    const otherItems = options.filter(item => item !== name);
+    return [...nameItem, ...otherItems];
+}
+
 
 const styles: { [key: string]: React.CSSProperties } = {
     container:{
@@ -689,12 +695,14 @@ const styles: { [key: string]: React.CSSProperties } = {
         width: "100%"
     },
     rollCallerContainer:{ 
-        display: 'flex', 
+        display: 'flex',
+        width: "100%", 
         flexDirection: 'row', 
         marginBottom: '10px', 
         gap: 30,
         alignItems: "flex-end",
-        padding: "0px 10px"
+        padding: "0px 10px",
+        justifyContent: "space-between",
     },
     smallColumn:{ 
         display: 'flex', 
@@ -747,8 +755,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     saveButton:{
         padding: "10px 30px",
-        backgroundColor: Colors.green,
-        height: "fit-content"
+        height: "fit-content",
+        background: Colors.green,
     },
     buttonContainer:{
         width: "100%",
@@ -761,6 +769,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     buttonText:{
         fontSize: 18,
     },
+    input:{
+        background: Colors.red,
+    }
 }
 
 export default DetailTeacher;
