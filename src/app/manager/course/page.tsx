@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
-import Input from "../../../../component/Input";
 import { Properties } from "csstype";
 import CustomSelect from "../../../../component/CustomSelect";
 import { FileUp } from "lucide-react";
@@ -13,24 +12,31 @@ import { Colors } from "../../../../constant/Colors";
 import { IoMdClose } from "react-icons/io";
 import SmallInput from "../../../../component/SmallInput";
 import { LuUpload } from "react-icons/lu";
+import courseApi from "../../../../api/courseApi";
+import { title } from "process";
+import ErrorMessage from "../../../../component/ErrorMessage";
 
 const CourseManager = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [newClassName] = useState("");
   const [modal2Visible, setModal2Visible] = useState(false);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const [openFileInput,setOpenFileInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState("");
   const tableHeader = ["ID", "COURSE NAME", "COURSE CODE"];
-
-  const tableData = [
-    [
-      "1",
-      "MATH BASIC TO ADVANCE",
-      "M100",
-    ],
-  ];
+  const [data, setData] = useState<any[][]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIndex, setSelectedIndex] =  useState(0);
+  const [createRequest, setCreateRequest] = useState({
+    name:"",
+    courseCode: ""
+  })
+  const [showError, setShowError] = useState(false);
+  const [message, setMessage] = useState({
+    title: "",
+    decription: "",
+  })
+  const [update, setUpdate] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,17 +48,47 @@ const CourseManager = () => {
     };
   }, []);
 
-  const handleSearch = () => {
-    console.log("Từ khóa tìm kiếm:");
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await courseApi.getAll();
+      const formattedData = response.data.map((item:any)=>[
+        item.id,
+        item.name,
+        item.courseCode
+      ]);
 
-  const handleAddNew = () => {
-    setModalVisible(true);
-  };
+      setData(formattedData);
+    };
+    fetchData();
+  }, [update]);
 
-  const handleSave = () => {
-    console.log("New Class Name:", newClassName);
-    setModalVisible(false);
+  const handleSave = async () => {
+    if(Object.values(createRequest).some(value => value === ""))
+    {
+      setShowError(true);
+      setMessage({
+        title: "Error",
+        decription: "All fields must be filled."
+      })
+      return;
+    }
+
+    try{
+      setUpdate(true);
+      await courseApi.create(createRequest);
+      closeCreateModal();
+    }
+    catch(error){
+      console.log(error);
+      setShowError(true);
+      setMessage({
+        title: "Dupplicated",
+        decription: "This course with the same code has already existed."
+      });
+    }
+    finally{
+      setUpdate(false);
+    }
   };
 
   const handleCloseFileInput = () =>{
@@ -73,6 +109,21 @@ const CourseManager = () => {
       }
   };
 
+  const updateCreateFormField = (field: string, value: any) => {
+    setCreateRequest(prevState => ({
+        ...prevState,
+        [field]: value
+    }));
+  };
+
+  const closeCreateModal = () =>{
+    setCreateRequest({
+      name: "",
+      courseCode: "",
+    })
+    setModalVisible(false);
+  }
+
   return (
     <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
       {/* Search and Filter Section */}
@@ -80,10 +131,10 @@ const CourseManager = () => {
         <SearchBar 
           placeholder="Type to search..." 
           style={styles.searchBar}
-          onSearch={handleSearch} />
+          onSearch={setSearchTerm} />
         <CustomSelect
           options={["Name","Code"]}
-          onSelect={()=>{}}>
+          onSelect={setSelectedIndex}>
         </CustomSelect>
       </div>
       <div style={styles.buttonContainer}>
@@ -108,7 +159,21 @@ const CourseManager = () => {
         <div style={styles.table}>
           <Table
             tableHeader={tableHeader}
-            tableData={tableData}
+            tableData={data.filter((item)=>{
+              if(searchTerm === "")
+                return true;
+              
+              const formatSearch = searchTerm.toLocaleLowerCase().trim();
+              let checkData = "";
+
+              if(selectedIndex === 0)
+                checkData = item.at(1).toLocaleLowerCase();
+
+              if(selectedIndex === 1)
+                checkData = item.at(2).toLocaleLowerCase();
+
+              return checkData.indexOf(formatSearch) !== -1;
+            })}
             itemsPerPage={5}
           />
         </div>
@@ -119,7 +184,7 @@ const CourseManager = () => {
           <div style={styles.form}>
             <button
               style={styles.closeButton}
-              onClick={() => setModalVisible(false)}
+              onClick={closeCreateModal}
             >
               <IoMdClose size={30}/>
             </button>
@@ -137,12 +202,14 @@ const CourseManager = () => {
               <SmallInput
                 title="Course name"
                 placeHolder="Enter course name"
-                style={{ width: 360}}>
+                style={{ width: 360}}
+                onChangeText={(text)=> updateCreateFormField("name", text)}>
               </SmallInput>
               <SmallInput
                 title="Course code"
                 placeHolder="Enter course code"
-                style={{ width: 360}}>
+                style={{ width: 360}}
+                onChangeText={(text)=> updateCreateFormField("courseCode", text)}>
               </SmallInput>
 
               <div style={{ flex: 1, marginTop: 10 }}>
@@ -207,7 +274,14 @@ const CourseManager = () => {
           </div>
         </div>
       )}
-
+      {
+        showError && 
+        <ErrorMessage
+          title={message.title}
+          description={message.decription}
+          setOpen={setShowError}>
+        </ErrorMessage>
+      }
       {
         openFileInput &&
         <div style={styles.modalOverlay}>
