@@ -83,7 +83,6 @@ const DetailTeacher = () => {
         courseId: 0
     })
     const router = useRouter();
-    const attendanceStatus = ["On-time","Absence with permission", "Absence without permission", "late"];
 
     useEffect(() => {
         const fetchData = async () => {

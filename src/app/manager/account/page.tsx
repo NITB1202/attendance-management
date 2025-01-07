@@ -9,30 +9,49 @@ import CustomSelect from "../../../../component/CustomSelect";
 import { FiPlusCircle } from "react-icons/fi";
 import { Colors } from "../../../../constant/Colors";
 import userApi from "../../../../api/userApi";
-import { formatDate } from "../../../../util/util";
+import { formatDate, validateDateOfBirth, validateEmail, validatePhoneNumber } from "../../../../util/util";
+import SmallInput from "../../../../component/SmallInput";
+import CustomDatePicker from "../../../../component/CustomDatePicker";
+import { IoMdClose } from "react-icons/io";
+import { format } from "date-fns-tz";
+import ErrorMessage from "../../../../component/ErrorMessage";
 
 export default function Account() {
-  const [isMobile, setIsMobile] = useState(false);
   const [teachers, setTeachers] = useState<any[][]>([]);
   const [students, setStudents] = useState<any[][]>([]);
   const [all, setAll] = useState<any[][]>([]);
   const [activeTab, setActiveTab] = useState("All");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [createRequest, setCreateRequest] = useState({
+    email: "",
+    roleName: "Student",
+    name: "",
+    phoneNumber: "",
+    roleCode: "",
+    date: "",
+  })
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 600);
-    };
+  const tableHeader = [
+    "ID",
+    "ROLE",
+    "USERNAME",
+    "EMAIL",
+    "FULL NAME",
+    "PHONE",
+    "DATE OF BIRTH",
+    "ROLE CODE",
+  ];
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible1, setIsModalVisible1] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+  const [message, setMessage] = useState({
+    type:"",
+    title: "",
+    description: "",
+  });
+  const [update,setUpdate] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,43 +95,11 @@ export default function Account() {
     };
 
     fetchData();
-  }, []);
-
-  const tableHeader = [
-    "ID",
-    "ROLE",
-    "USERNAME",
-    "EMAIL",
-    "FULL NAME",
-    "PHONE",
-    "DATE OF BIRTH",
-    "ROLE CODE",
-  ];
-
-  const [selectedOption, setSelectedOption] = useState<string>("");
-
-  const handleDropdownChange = (value: string) => {
-    setSelectedOption(value);
-    console.log("Selected option:", value);
-  };
-
+  }, [update]);
  
   const handleClick = () => {
     console.log("Button clicked!");
   };
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalVisible1, setIsModalVisible1] = useState(false);
-  const toggleModal = () => {
-    setIsModalVisible(!isModalVisible);
-  };
-  const toggleModal1 = () => {
-    setIsModalVisible1(!isModalVisible);
-  };
-
-  const [selectedRow, setSelectedRow] = useState<Record<string, string> | null>(
-    null
-  );
 
   const [formData, setFormData] = useState<Record<string, string>>({});
 
@@ -132,9 +119,20 @@ export default function Account() {
     setIsModalVisible1(true);
   };
 
+  const closeCreateModal = () => {
+    setIsModalVisible(!isModalVisible);
+    setCreateRequest({
+      email: "",
+      roleName: "Student",
+      name: "",
+      phoneNumber: "",
+      roleCode: "",
+      date: "",
+    });
+  };
+
   const closeModal = () => {
     setIsModalVisible1(false);
-    setSelectedRow(null);
     setFormData({});
   };
 
@@ -150,59 +148,80 @@ export default function Account() {
     closeModal();
   };
 
-  const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-      display: "flex",
-      flexDirection: "column",
-      padding: "20px",
-      gap: "20px",
-      width: "100%",
-      margin: "0 auto",
-    },
-    top: {
-      display: "flex",
-      flexDirection: "row",
-      gap: "20px",
-      width: "100%",
-    },
-    searchContainer: {
-      display: "flex",
-      gap: 20,
-      marginTop: 10,
-    },
-    tab: {
-      width: "25%",
-    },
-    button: {
-      display: "flex",
-      justifyContent: "flex-end",
-      borderRadius: "5px",
-    },
-    mid: {
-      display: "flex",
-      justifyContent: isMobile ? "center" : "space-between",
-      flexDirection: isMobile ? "column" : "row",
-      alignItems: isMobile ? "center" : "flex-end",
-      width: "auto",
-    },
-
-    upload: {
-      display: "flex",
-      justifyContent: "flex-end",
-      alignItems: "flex-end",
-      gap: 20,
-    },
-    tableContainer: {
-      display: "flex",
-      flexDirection: "column",
-      width: "100%",
-    },
-    tableTitle: {
-      paddingTop: 20,
-      fontSize: 20,
-      fontWeight: "600",
-    },
+  const updateCreateFormField = (field: string, value: any) => {
+    setCreateRequest(prevState => ({
+        ...prevState,
+        [field]: value
+    }));
   };
+
+  const selectData = activeTab === "All"? all : (activeTab === "Student"? students: teachers);
+
+
+  const handleSubmitCreateRequest = async (event: React.FormEvent<HTMLFormElement>)=> {
+    if(Object.values(createRequest).some(value => value === "")){
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "All fields must be filled."
+      });
+      event.preventDefault();
+      return;
+    }
+
+    if(!validateEmail(createRequest.email)){
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "Invalid email format."
+      });
+      event.preventDefault();
+      return;
+    }
+
+    if(!validatePhoneNumber(createRequest.phoneNumber)){
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "Invalid phone number."
+      });
+      event.preventDefault();
+      return;
+    }
+
+    if(!validateDateOfBirth(createRequest.date)){
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "Invalid date of birth."
+      });
+      event.preventDefault();
+      return;
+    }
+
+   try{
+    setUpdate(true);
+    await userApi.create(createRequest);
+    closeCreateModal();
+   }
+   catch(error){
+    console.log(error);
+    setShowMessage(true);
+    setMessage({
+      type: "error",
+      title: "Error",
+      description: "This user already exists.",
+    })
+    event.preventDefault();
+   }
+   finally{
+    setUpdate(false);
+   }
+  }
 
   return (
     <div style={styles.container}>
@@ -235,7 +254,7 @@ export default function Account() {
           />
           <RoundedButton
             title="Add new"
-            onClick={toggleModal}
+            onClick={()=> setIsModalVisible(true)}
             icon={<FiPlusCircle size={24} color="white" />}
             style={{ backgroundColor: Colors.green, padding: "10px 30px" }}
             textStyle={{ fontSize: "20px", color: "white" }}
@@ -247,12 +266,10 @@ export default function Account() {
       <div style={styles.tableContainer}>
         <Table
           tableHeader={tableHeader}
-          tableData={activeTab === "All"? all : (activeTab === "Student"? students: teachers)
+          tableData={selectData
             .filter((item: any)=>{
               if(searchTerm === "")
                 return true;
-
-              console.log("In search");
               
               const formatSearch = searchTerm.toLocaleLowerCase().trim();
               let checkData = "";
@@ -277,53 +294,15 @@ export default function Account() {
 
       {/* Modal */}
       {isModalVisible1 && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "600px",
-              width: "90%",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <button
-              style={{
-                alignSelf: "flex-end",
-                background: "none",
-                border: "none",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
+        <div style={styles.modalOverlay}>
+          <div style={styles.form}>
+            <button 
+              style={styles.closeButton}
               onClick={closeModal}
             >
-              <X />
+              <IoMdClose size={35} />  
             </button>
-            <label
-              style={{
-                fontSize: "24px",
-                fontWeight: "500",
-                marginBottom: "20px",
-              }}
-            >
+            <label style={styles.formHeader}>
               Update account
             </label>
             <form
@@ -440,22 +419,11 @@ export default function Account() {
                   }}
                 />
               </div>
-              <button
-                type="submit"
-                style={{
-                  marginTop: "16px",
-                  padding: "10px",
-                  backgroundColor: "#3A6D8C",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "24px",
-                  fontWeight: "500",
-                }}
-              >
-                CONFIRM
-              </button>
+              <RoundedButton
+                title="CONFIRM"
+                style={{ marginTop: 20}}
+                onClick={()=> {}}>
+             </RoundedButton>
             </form>
           </div>
         </div>
@@ -463,171 +431,169 @@ export default function Account() {
 
       {/* Modal Section create */}
       {isModalVisible && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            justifyContent: isMobile ? "center" : "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "600px",
-              width: "90%",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <button
-              style={{
-                alignSelf: "flex-end",
-                background: "none",
-                border: "none",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-              onClick={toggleModal}
+        <div style={styles.modalOverlay}>
+          <div style={styles.form}>
+            <button 
+              style={styles.closeButton}
+              onClick={closeCreateModal}
             >
-              <X />
+              <IoMdClose size={35} />
             </button>
-            <label
-              style={{
-                fontSize: "24px",
-                fontWeight: "500",
-                marginBottom: "20px",
-              }}
-            >
-              Create a new accoount
+            <label style={styles.formHeader}>
+              Create a new account
             </label>
             <form
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+              style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+              onSubmit={handleSubmitCreateRequest}
             >
-              <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1.6 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="anna123@gmail.com"
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 0.4 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Role
-                  </label>
-                  <select
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  >
-                    <option value="student">Student</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Teacher</option>
-                  </select>
-                </div>
+              <div style={{ display: "flex", gap: "15px" }}>
+                <SmallInput
+                  title="Email"
+                  placeHolder="Enter email"
+                  style={{width: 345}}
+                  onChangeText={(text)=> updateCreateFormField("email", text)}>
+                </SmallInput>
+                <CustomSelect
+                  title="Role"
+                  options={["Student", "Teacher"]}
+                  onSelect={(index)=>{
+                    if(index === 0)
+                      updateCreateFormField("roleName", "Student");
+                    else
+                      updateCreateFormField("roleName", "Teacher");
+                  }}>
+                </CustomSelect>
               </div>
-              <div>
-                <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                  Full name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Anna Maderlaise"
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
-                />
+              <SmallInput
+                title="Full name"
+                placeHolder="Enter user's name"
+                style={{ width: 460}}
+                onChangeText={(text)=> updateCreateFormField("name",text)}>  
+              </SmallInput>
+              <div style={{ display: "flex", gap: "15px" }}>
+                <CustomDatePicker
+                  title="Date of birth"
+                  setSelectedDate={(date)=>{
+                    if(date) updateCreateFormField("date",format(date,"yyyy-MM-dd"));
+                  }}>
+                </CustomDatePicker>
+                <SmallInput
+                  title="Phone"
+                  placeHolder="Enter phone number"
+                  onChangeText={(text)=> updateCreateFormField("phoneNumber", text)}>
+                </SmallInput>
               </div>
-              <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 0.8 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Date of birth
-                  </label>
-                  <input
-                    type="date"
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 1.2 }}>
-                  <label>Phone</label>
-                  <input
-                    type="tel"
-                    placeholder="09367891072"
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                  Role code
-                </label>
-                <input
-                  type="text"
-                  placeholder="If role is 'Manager', you can leave this empty"
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-              </div>
-              <button
-                type="submit"
-                style={{
-                  marginTop: "16px",
-                  padding: "10px",
-                  backgroundColor: "#3A6D8C",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "24px",
-                  fontWeight: "500",
-                }}
-              >
-                CONFIRM
-              </button>
+              <SmallInput
+                title="Role code"
+                placeHolder="Enter the role code"
+                style={{ width: 460}}
+                onChangeText={(text)=> updateCreateFormField("roleCode",text)}>
+              </SmallInput>
+             <RoundedButton
+                title="CONFIRM"
+                style={{ marginTop: 20}}
+                onClick={()=> {}}>
+             </RoundedButton>
             </form>
           </div>
         </div>
       )}
+      {
+        showMessage && message.type === "error" &&
+        <ErrorMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}>
+        </ErrorMessage>
+      }
     </div>
   );
 }
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px",
+    gap: "20px",
+    width: "100%",
+    margin: "0 auto",
+  },
+  mid: {
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    width: "auto",
+  },
+  top: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "20px",
+    width: "100%",
+  },
+  searchContainer: {
+    display: "flex",
+    gap: 20,
+    marginTop: 10,
+  },
+  tab: {
+    width: "25%",
+  },
+  button: {
+    display: "flex",
+    justifyContent: "flex-end",
+    borderRadius: "5px",
+  },
+  upload: {
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    gap: 20,
+  },
+  tableContainer: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+  },
+  tableTitle: {
+    paddingTop: 20,
+    fontSize: 20,
+    fontWeight: "600",
+  },
+  modalOverlay:{
+    display: "flex",
+    flexDirection: "column",
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  form:{
+    backgroundColor: "white",
+    padding: "20px",
+    borderRadius: "8px",
+    maxWidth: "500px",
+    width: "90%",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    display: "flex",
+    flexDirection: "column",
+  },
+  closeButton:{
+    alignSelf: "flex-end",
+    background: "none",
+    border: "none",
+    fontSize: "16px",
+    cursor: "pointer",
+  },
+  formHeader:{
+    fontSize: "30px",
+    fontWeight: "700",
+    marginBottom: "20px",
+  }
+};

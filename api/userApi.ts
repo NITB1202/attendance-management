@@ -10,8 +10,10 @@ const userApi = {
     },
     getTeachers(){
         return axiosInstance.get("/teacher");
+    },
+    create(body: any){
+        return axiosInstance.post("/user", body);
     }
-
 }
 
 export default userApi;

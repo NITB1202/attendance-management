@@ -87,7 +87,6 @@ const Table = ({
   };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
-  console.log(tableData);
   const currentData = tableData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
