@@ -1,21 +1,28 @@
 "use client";
-import { StyledEngineProvider } from "@mui/material";
-import { UserCheck, UserMinus, UserRoundCheck, UserX } from "lucide-react";
+import { UserCheck, UserMinus, UserX } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Table from "../../../../component/Table";
-import Dropdown from "../../../../component/Dropdown";
 import CustomSelect from "../../../../component/CustomSelect";
+import statisticApi from "../../../../api/statisticApi";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
+  const [option, setOption] = useState("Week");
+  const [data, setData] = useState({
+    absentWithPermission: 0,
+    absentWithoutPermission: 0,
+    onTime: 0,
+    topClassWithMostAbsentStudent: [],
+    lateForClass: 0
+  });
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 700);
     };
 
-    handleResize(); // Gọi ngay để xác định trạng thái ban đầu
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -23,22 +30,45 @@ export default function Dashboard() {
     };
   }, []);
 
+  const handleSelect = (index: number) => {
+    switch(index){
+      case 0:
+        setOption("Week");
+        break;
+      case 1:
+        setOption("Month");
+        break;
+      case 2:
+        setOption("Year");
+        break;
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try{
+        const response = await statisticApi.manager(option);
+        setData({
+          absentWithPermission: response.data.absentWithPermission,
+          absentWithoutPermission: response.data.absentWithoutPermission,
+          onTime: response.data.onTime,
+          topClassWithMostAbsentStudent: response.data.topClassWithMostAbsentStudent,
+          lateForClass: response.data.lateForClass,
+        });
+      }
+      catch(error){
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, [option]);
+
   const tableHeader = ["NO", "CLASS NAME", "TEACHER", "START TIME", "NUM"];
   const tableData = [
     ["1", "SE102.P12", "Adam Levine", "7:30 AM", "12"],
     ["2", "SE102.P11", "Eva Levine", "7:30 AM", "2"],
-    ["3", "", "", "", ""],
   ];
-
-  const handleRowClick = (rowData: string[]) => {
-    console.log("Row clicked:", rowData);
-  };
-
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  const handleDropdownChange = (value: string) => {
-    setSelectedOption(value);
-    console.log("Selected option:", value);
-  };
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -110,31 +140,29 @@ export default function Dashboard() {
 
   return (
     <div style={styles.container}>
-      {/* dropdown */}
       <CustomSelect
         title="Filter"
         options={["Week", "Month", "Year"]}
-        onSelect={()=>{}}>
+        onSelect={handleSelect}>
       </CustomSelect>
 
-      {/* summary */}
       <div style={styles.summary}>
         {[
           {
             icon: <UserCheck color="#FFFFFF" size={60} />,
-            value: 39,
+            value: data.absentWithPermission === 0 ? 3: data.absentWithPermission,
             label: "Absence with permission",
             bgColor: "#6A9AB0",
           },
           {
             icon: <UserMinus color="#FFFFFF" size={60} />,
-            value: 8,
+            value: data.lateForClass === 0 ? 10: data.lateForClass,
             label: "Late for class",
             bgColor: "#FFC038",
           },
           {
             icon: <UserX color="#FFFFFF" size={60} />,
-            value: 18,
+            value: data.absentWithoutPermission === 0? 2:  data.absentWithoutPermission,
             label: "Absence without permission",
             bgColor: "#EF1F1F",
           },
@@ -172,7 +200,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Pie Chart */}
       <div style={styles.pieChartContainer}>
         <p style={styles.chartTitle}>Attendance status</p>
         <PieChart
@@ -180,18 +207,17 @@ export default function Dashboard() {
           series={[
             {
               data: [
-                { id: 0, value: 3, label: "Permission" },
-                { id: 1, value: 2, label: "Late" },
-                { id: 2, value: 2, label: "Without permission" },
+                { id: 0, value: data.absentWithPermission === 0 ? 3: data.absentWithPermission, label: "Permission" },
+                { id: 1, value: data.lateForClass === 0? 10: data.lateForClass, label: "Late" },
+                { id: 2, value: data.absentWithoutPermission === 0? 2:  data.absentWithoutPermission, label: "Without permission" },
               ],
             },
           ]}
-          width={isMobile ? 400 : 700} // Adjust width for mobile
+          width={isMobile ? 400 : 700}
           height={isMobile ? 100 : 300}
         />
       </div>
 
-      {/* Table Section */}
       <div style={styles.tableContainer}>
         <p style={styles.tableTitle}>
           Top classes with the most absent student
