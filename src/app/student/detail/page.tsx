@@ -11,9 +11,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { extractDate, formatDate, getStatusName } from "../../../../util/util";
 import attendanceApi from "../../../../api/attendanceApi";
 import ReplyBox from "../../../../component/ReplyBox";
-import { CiCirclePlus } from "react-icons/ci";
 import { Colors } from "../../../../constant/Colors";
 import questionApi from "../../../../api/questionApi";
+import { FiPlusCircle } from "react-icons/fi";
 
 const DetailStudent = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -316,7 +316,7 @@ const DetailStudent = () => {
                                     <button
                                         style={styles.addButton}
                                         onClick={() => setOpenComment(!openComment)}>
-                                        <CiCirclePlus size={24} width={3}/>
+                                        <FiPlusCircle size={22} width={3}/>
                                         Add new
                                     </button>
                                     {

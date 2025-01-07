@@ -1,15 +1,19 @@
 "use client";
-import { Modal, StyledEngineProvider } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import Table from "../../../../component/Table";
-import Dropdown from "../../../../component/Dropdown";
 import SearchBar from "../../../../component/SearchBar";
 import TabSwitcher from "../../../../component/Tabs";
 import RoundedButton from "../../../../component/RoundedButton";
-import { Calendar, FileUp, X } from "lucide-react";
+import { FileUp, X } from "lucide-react";
+import CustomSelect from "../../../../component/CustomSelect";
+import { FiPlusCircle } from "react-icons/fi";
+import { Colors } from "../../../../constant/Colors";
+import IconButton from "../../../../component/IconButton";
+import { IoIosMore } from "react-icons/io";
 
 export default function Account() {
   const [isMobile, setIsMobile] = useState(false);
+  const options = ["Update", 'Deactivate']
 
   useEffect(() => {
     const handleResize = () => {
@@ -33,6 +37,7 @@ export default function Account() {
     "PHONE",
     "DATE OF BIRTH",
     "ROLE CODE",
+    "",
   ];
   const tableData = [
     [
@@ -100,8 +105,8 @@ export default function Account() {
       {} as Record<string, string>
     );
 
-    setFormData(convertedData); // Lưu dữ liệu đã chuyển đổi
-    setIsModalVisible1(true); // Hiển thị modal
+    setFormData(convertedData);
+    setIsModalVisible1(true);
   };
 
   const closeModal = () => {
@@ -118,7 +123,7 @@ export default function Account() {
   };
 
   const handleSubmit = () => {
-    console.log("Updated Data:", formData); // Bạn có thể gọi API để cập nhật dữ liệu ở đây
+    console.log("Updated Data:", formData);
     closeModal();
   };
 
@@ -134,15 +139,13 @@ export default function Account() {
     top: {
       display: "flex",
       flexDirection: "row",
-      gap: "20px", // Khoảng cách giữa các phần tử trong hàng
+      gap: "20px",
       width: "100%",
     },
     searchContainer: {
+      display: "flex",
+      gap: 20,
       marginTop: 10,
-      width: "auto",
-    },
-    dropdownContainer: {
-      width: "10%",
     },
     tab: {
       width: "25%",
@@ -156,12 +159,14 @@ export default function Account() {
       display: "flex",
       justifyContent: isMobile ? "center" : "space-between",
       flexDirection: isMobile ? "column" : "row",
-      alignItems: isMobile ? "center" : "flex-start",
+      alignItems: isMobile ? "center" : "flex-end",
       width: "auto",
     },
 
     upload: {
       display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "flex-end",
       gap: 20,
     },
     tableContainer: {
@@ -176,6 +181,23 @@ export default function Account() {
     },
   };
 
+  const viewButton = (id: number)=> {
+    return(
+      <IconButton
+        id={id}
+        icon={<IoIosMore  size={24}/>}
+        options={options}
+        onSelectWithId={()=>{}}>
+      </IconButton>
+    );
+  }
+
+  const tableDataWithButtons = tableData.map((row,index) => [
+    ...row,
+    viewButton(index),
+]);
+
+
   return (
     <div style={styles.container}>
       <div style={styles.top}>
@@ -185,33 +207,28 @@ export default function Account() {
             onSearch={handleSearch}
             style={{ width: 415 }}
           />
+           <CustomSelect
+              options={["Name", "Role code", "Email", "Phone"]}
+              onSelect={()=>{}}>
+            </CustomSelect>
         </div>
-        <div style={styles.dropdownContainer}>
-          <Dropdown
-            options={["Name", "Role code", "Email", "Phone"]}
-            onChange={handleDropdownChange}
-            title={""}
-          />
-        </div>
+      
       </div>
       <div style={styles.mid}>
-        <div style={styles.tab}>
-          <TabSwitcher tabs={["All", "Student", "Teacher", "Manager"]} />
-        </div>
+        <TabSwitcher tabs={["All", "Student", "Teacher", "Manager"]} />
         <div style={styles.upload}>
           <RoundedButton
             title="Upload excel file"
             onClick={handleClick}
             icon={<FileUp size={24} color="white" />}
-            style={{ backgroundColor: "#999999" }}
+            style={{ backgroundColor: "#999999", padding: "10px 30px" }}
             textStyle={{ fontSize: "20px", color: "white" }}
           />
-
           <RoundedButton
             title="Add new"
             onClick={toggleModal}
-            icon={<FileUp size={24} color="white" />}
-            style={{ backgroundColor: "green" }}
+            icon={<FiPlusCircle size={24} color="white" />}
+            style={{ backgroundColor: Colors.green, padding: "10px 30px" }}
             textStyle={{ fontSize: "20px", color: "white" }}
           />
         </div>
@@ -219,12 +236,9 @@ export default function Account() {
 
       {/* Table Section */}
       <div style={styles.tableContainer}>
-        <p style={styles.tableTitle}>
-          Top classes with the most absent student
-        </p>
         <Table
           tableHeader={tableHeader}
-          tableData={tableData}
+          tableData={tableDataWithButtons}
           onRowClick={handleRowClick}
         />
       </div>
