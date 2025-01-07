@@ -8,24 +8,74 @@ import { FileUp, X } from "lucide-react";
 import CustomSelect from "../../../../component/CustomSelect";
 import { FiPlusCircle } from "react-icons/fi";
 import { Colors } from "../../../../constant/Colors";
-import IconButton from "../../../../component/IconButton";
-import { IoIosMore } from "react-icons/io";
+import userApi from "../../../../api/userApi";
+import { formatDate } from "../../../../util/util";
 
 export default function Account() {
   const [isMobile, setIsMobile] = useState(false);
-  const options = ["Update", 'Deactivate']
+  const [teachers, setTeachers] = useState<any[][]>([]);
+  const [students, setStudents] = useState<any[][]>([]);
+  const [all, setAll] = useState<any[][]>([]);
+  const [activeTab, setActiveTab] = useState("All");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 600);
     };
 
-    handleResize(); // Gọi ngay để xác định trạng thái ban đầu
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
+  }, []);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try{
+        const studentResponse = await userApi.getStudents();
+        const teacherResponse = await userApi.getTeachers();
+        const formattedStudents: any[][] = studentResponse.data.map((item: any)=>
+          [
+            item.id,
+            "STUDENT",
+            item.studentCode,
+            item.email,
+            item.name,
+            item.phoneNumber,
+            formatDate(item.date),
+            item.studentCode,
+          ]
+        );
+        
+        const formattedTeachers: any[][] = teacherResponse.data.map((item: any)=>[
+            item.id,
+            "TEACHER",
+            item.teacherCode,
+            item.email,
+            item.name,
+            item.phoneNumber,
+            formatDate(item.date),
+            item.teacherCode,
+          ]
+        );
+
+        const combinedData = [...formattedStudents, ...formattedTeachers];
+
+        setStudents(formattedStudents);
+        setTeachers(formattedTeachers);
+        setAll(combinedData);
+      }
+      catch(error){
+        console.log(error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const tableHeader = [
@@ -37,30 +87,8 @@ export default function Account() {
     "PHONE",
     "DATE OF BIRTH",
     "ROLE CODE",
-    "",
   ];
-  const tableData = [
-    [
-      "1",
-      "STUDENT",
-      "harry.potter",
-      "harry.potter@hogwarts.edu",
-      "Harry Potter",
-      "123-456-7890",
-      "31/07/1980",
-      "SV111",
-    ],
-    [
-      "2",
-      "STUDENT",
-      "hermione.granger",
-      "hermione.granger@hogwarts.edu",
-      "Hermione Granger",
-      "123-456-7891",
-      "19/09/1979",
-      "SV112",
-    ],
-  ];
+
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleDropdownChange = (value: string) => {
@@ -68,18 +96,13 @@ export default function Account() {
     console.log("Selected option:", value);
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const handleSearch = (term: string) => {
-    console.log("Search term:", term);
-    setSearchTerm(term);
-  };
-
+ 
   const handleClick = () => {
     console.log("Button clicked!");
   };
 
-  const [isModalVisible, setIsModalVisible] = useState(false); // State để kiểm soát modal
-  const [isModalVisible1, setIsModalVisible1] = useState(false); // State để kiểm soát modal
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible1, setIsModalVisible1] = useState(false);
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -181,41 +204,27 @@ export default function Account() {
     },
   };
 
-  const viewButton = (id: number)=> {
-    return(
-      <IconButton
-        id={id}
-        icon={<IoIosMore  size={24}/>}
-        options={options}
-        onSelectWithId={()=>{}}>
-      </IconButton>
-    );
-  }
-
-  const tableDataWithButtons = tableData.map((row,index) => [
-    ...row,
-    viewButton(index),
-]);
-
-
   return (
     <div style={styles.container}>
       <div style={styles.top}>
         <div style={styles.searchContainer}>
           <SearchBar
             placeholder="Search by..."
-            onSearch={handleSearch}
+            onSearch={setSearchTerm}
             style={{ width: 415 }}
           />
            <CustomSelect
               options={["Name", "Role code", "Email", "Phone"]}
-              onSelect={()=>{}}>
+              onSelect={setSelectedIndex}>
             </CustomSelect>
         </div>
       
       </div>
       <div style={styles.mid}>
-        <TabSwitcher tabs={["All", "Student", "Teacher", "Manager"]} />
+        <TabSwitcher 
+          tabs={["All", "Student", "Teacher"]} 
+          onTabChange={setActiveTab}
+        />
         <div style={styles.upload}>
           <RoundedButton
             title="Upload excel file"
@@ -238,7 +247,30 @@ export default function Account() {
       <div style={styles.tableContainer}>
         <Table
           tableHeader={tableHeader}
-          tableData={tableDataWithButtons}
+          tableData={activeTab === "All"? all : (activeTab === "Student"? students: teachers)
+            .filter((item: any)=>{
+              if(searchTerm === "")
+                return true;
+
+              console.log("In search");
+              
+              const formatSearch = searchTerm.toLocaleLowerCase().trim();
+              let checkData = "";
+              
+              if(selectedIndex === 0)
+                checkData = item.at(4).toLocaleLowerCase();
+
+              if(selectedIndex === 1)
+                checkData = item.at(7).toLocaleLowerCase();
+
+              if(selectedIndex === 2)
+                checkData = item.at(3).toLocaleLowerCase();
+
+              if(selectedIndex === 3)
+                checkData = item.at(5).toLocaleLowerCase();
+
+              return checkData.indexOf(formatSearch) !== -1;
+            })}
           onRowClick={handleRowClick}
         />
       </div>
