@@ -5,13 +5,14 @@ import React, { useEffect, useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Table from "../../../../component/Table";
 import Dropdown from "../../../../component/Dropdown";
+import CustomSelect from "../../../../component/CustomSelect";
 
 export default function Dashboard() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 600);
+      setIsMobile(window.innerWidth < 700);
     };
 
     handleResize(); // Gọi ngay để xác định trạng thái ban đầu
@@ -51,30 +52,31 @@ export default function Dashboard() {
       marginRight: 20,
     },
     dropdown: {
-      width: isMobile ? "50%" : "10%", // Responsive width
+      width: isMobile ? "50%" : "10%",
     },
     summary: {
       display: "flex",
-      flexDirection: isMobile ? "column" : "row", // Responsive layout
-      gap: 20,
+      flexDirection: isMobile ? "column" : "row",
       width: "100%",
       alignItems: "center",
       justifyContent: "center",
       margin: "0 auto",
+      gap: 30,
     },
     summaryItem: {
       display: "flex",
-      flexDirection: isMobile ? "row" : "row", // Adjust content layout
+      flexDirection: isMobile ? "row" : "row",
       alignItems: "center",
       justifyContent: "flex-start",
       padding: "1rem",
       borderRadius: 10,
-      gap: 13,
-      width: isMobile ? "100%" : "20%", // Responsive item width
+      width: 320,
       backgroundColor: "#f0f0f0",
+      gap: 20,
     },
     content: {
-      textAlign: "center",
+      textAlign: "left",
+      width: "100%",
       fontSize: 14,
       fontWeight: "bold",
       color: "#000",
@@ -85,7 +87,7 @@ export default function Dashboard() {
       alignItems: "center",
       width: "100%",
       backgroundColor: "#EFEFEF",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Add shadow for container
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
       borderRadius: 10,
       padding: 20,
     },
@@ -109,14 +111,11 @@ export default function Dashboard() {
   return (
     <div style={styles.container}>
       {/* dropdown */}
-      <div style={styles.dropdown}>
-        <Dropdown
-          title="Filter:"
-          options={["Week", "Month", "Year"]}
-          style={{ borderColor: "#959595" }}
-          onChange={handleDropdownChange}
-        />
-      </div>
+      <CustomSelect
+        title="Filter"
+        options={["Week", "Month", "Year"]}
+        onSelect={()=>{}}>
+      </CustomSelect>
 
       {/* summary */}
       <div style={styles.summary}>
@@ -163,7 +162,7 @@ export default function Dashboard() {
                   fontSize: "16px",
                   fontWeight: "bold",
                   color: "#000000",
-                  textAlign: "center",
+                  textAlign: "left",
                 }}
               >
                 {item.label}

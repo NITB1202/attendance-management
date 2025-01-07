@@ -6,14 +6,14 @@ import CommentBox from "../../../../component/CommentBox";
 import ReplyBox from "../../../../component/ReplyBox";
 import { Colors } from "../../../../constant/Colors";
 import { CiCirclePlus } from "react-icons/ci";
-import { extractDate, formatDate, getStatusName } from "../../../../util/util";
+import { extractDate, getStatusName } from "../../../../util/util";
 import TabSwitcher from "../../../../component/Tabs";
 import IconButton from "../../../../component/IconButton";
 import { IoIosMore } from "react-icons/io";
 import questionApi from "../../../../api/questionApi";
 import attendanceApi from "../../../../api/attendanceApi";
 import classApi from "../../../../api/classApi";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from 'next/navigation';
 import SmallInput from "../../../../component/SmallInput";
 import CustomSelect from "../../../../component/CustomSelect";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
@@ -29,7 +29,7 @@ const DetailTeacher = () => {
     const searchParams = useSearchParams(); 
     const id = searchParams.get('id');
     const [openComment, setOpenComment] = useState(false);
-    const options = ["Assign as class monitor", "Assign as today's roll-caller"];
+    const options = ["Assign as class monitor", "Profile"];
     const [classData, setClassData] = useState({
         className: "",
         courseName: "",
@@ -81,6 +81,8 @@ const DetailTeacher = () => {
         teacherId: 0,
         courseId: 0
     })
+    const router = useRouter();
+    const attendanceStatus = ["On-time","Absence with permission", "Absence without permission", "late"];
 
     useEffect(() => {
         const fetchData = async () => {
@@ -217,6 +219,11 @@ const DetailTeacher = () => {
                 setUpdate(false);
             }
         }
+
+        if(index === 1){
+            const url = "/general/profile?id="+id;
+            router.push(url);
+        }
     }
 
     const selectSession = (row: any[])=>{
@@ -290,6 +297,28 @@ const DetailTeacher = () => {
             </IconButton>
         );
     }
+
+    const attendanceSelect = (id: number) =>{
+        return (
+            <CustomSelect
+                options={attendanceStatus}
+                onSelect={()=> {}}>
+            </CustomSelect>
+        );
+    }
+
+    const attendanceButton = (id: number)=> {
+        return(
+            <IconButton
+                id={id}
+                icon={<IoIosMore size={24}/>}
+                options={["Assign as this session roll-caller", "Profile"]}
+                onSelectWithId={handleSelectUser}>
+            </IconButton>
+        );
+    }
+
+
 
     const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
     const attendanceTableData = attendances.map((row)=> row.slice(1));
@@ -451,14 +480,23 @@ const DetailTeacher = () => {
                         </div>
                         <div style={styles.sessionDetailsContainer}>
                             <div style={styles.rollCallerContainer}>
-                                <div style={styles.smallColumn}>
-                                    <p style={{ fontWeight: 700}}>Roll caller name:</p>
-                                    <p style={{ fontWeight: 700}}>Student code:</p>
-                                </div>
-                                <div style={styles.smallColumn}>
-                                    <p>{rollCaller.name}</p>
-                                    <p>{rollCaller.code}</p>
-                                </div>
+                                <CustomSelect
+                                    title="Roll caller name"
+                                    options={selectOptions}
+                                    onSelect={()=>{}}>
+                                </CustomSelect>
+                                <SmallInput
+                                    title="Student code"
+                                    defaultValue={"2232132"}
+                                    disable={true}>
+                                </SmallInput>
+                                <RoundedButton
+                                    title="Save changes"
+                                    style={styles.saveButton}
+                                    textStyle={styles.buttonText}
+                                    icon={<FaRegEdit size={22} color="white" />}
+                                    onClick={()=>{}}>
+                                </RoundedButton>
                             </div>
 
                             <div style={styles.atttedanceTableContainer}>
@@ -654,7 +692,9 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex', 
         flexDirection: 'row', 
         marginBottom: '10px', 
-        gap: 50
+        gap: 30,
+        alignItems: "flex-end",
+        padding: "0px 10px"
     },
     smallColumn:{ 
         display: 'flex', 
@@ -708,6 +748,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     saveButton:{
         padding: "10px 30px",
         backgroundColor: Colors.green,
+        height: "fit-content"
     },
     buttonContainer:{
         width: "100%",
@@ -718,8 +759,8 @@ const styles: { [key: string]: React.CSSProperties } = {
         marginTop: 20,
     },
     buttonText:{
-        fontSize: 20,
-    }
+        fontSize: 18,
+    },
 }
 
 export default DetailTeacher;
