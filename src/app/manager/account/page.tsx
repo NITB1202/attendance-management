@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Table from "../../../../component/Table";
 import SearchBar from "../../../../component/SearchBar";
 import TabSwitcher from "../../../../component/Tabs";
@@ -15,6 +15,7 @@ import CustomDatePicker from "../../../../component/CustomDatePicker";
 import { IoMdClose } from "react-icons/io";
 import { format } from "date-fns-tz";
 import ErrorMessage from "../../../../component/ErrorMessage";
+import { LuUpload } from "react-icons/lu";
 
 export default function Account() {
   const [teachers, setTeachers] = useState<any[][]>([]);
@@ -52,6 +53,9 @@ export default function Account() {
     description: "",
   });
   const [update,setUpdate] = useState(false);
+  const [openFileInput,setOpenFileInput] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,10 +100,6 @@ export default function Account() {
 
     fetchData();
   }, [update]);
- 
-  const handleClick = () => {
-    console.log("Button clicked!");
-  };
 
   const [formData, setFormData] = useState<Record<string, string>>({});
 
@@ -157,7 +157,6 @@ export default function Account() {
   };
 
   const selectData = activeTab === "All"? all : (activeTab === "Student"? students: teachers);
-
 
   const handleSubmitCreateRequest = async (event: React.FormEvent<HTMLFormElement>)=> {
     if(Object.values(createRequest).some(value => value === "")){
@@ -224,6 +223,24 @@ export default function Account() {
    }
   }
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleCloseFileInput = () =>{
+    setFileName("");
+    setOpenFileInput(false);
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.top}>
@@ -248,7 +265,7 @@ export default function Account() {
         <div style={styles.upload}>
           <RoundedButton
             title="Upload excel file"
-            onClick={handleClick}
+            onClick={()=> setOpenFileInput(true)}
             icon={<FileUp size={24} color="white" />}
             style={{ backgroundColor: "#999999", padding: "10px 30px" }}
             textStyle={{ fontSize: "20px", color: "white" }}
@@ -443,6 +460,46 @@ export default function Account() {
           setOpen={setShowMessage}>
         </ErrorMessage>
       }
+      {
+        openFileInput &&
+        <div style={styles.modalOverlay}>
+          <div style={styles.form}>
+            <button 
+              style={styles.closeButton}
+              onClick={handleCloseFileInput}>
+              <IoMdClose size={35} />
+            </button>
+           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "flex-end", gap:20}}>
+            <SmallInput
+              title="Select an Excel file"
+              style={{width: 400}}
+              defaultValue={fileName}
+              disable={true}>
+            </SmallInput>
+            <input
+              ref={fileInputRef}
+              type="file"
+              id="file-input"
+              style={{ display: "none" }}
+              accept=".xls,.xlsx"
+              onChange={handleFileChange}
+            />
+            <button
+              style={styles.iconButton}
+              type="button"
+              onClick={handleButtonClick}>
+              <LuUpload size={32}  color="white"/>
+            </button>
+            </div>
+            <RoundedButton
+              title="CONFIRM"
+              style={{ padding: "10px 30px", marginTop: 30 }}
+              textStyle={{ fontSize: "20px", color: "white" }}
+              onClick={handleCloseFileInput}>
+            </RoundedButton>
+          </div>
+        </div>
+      }
     </div>
   );
 }
@@ -537,5 +594,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "30px",
     fontWeight: "700",
     marginBottom: "20px",
+  },
+  iconButton:{
+    backgroundColor: Colors.primary,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 5,
+    width: 42,
+    height: 42,
   }
 };
