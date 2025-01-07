@@ -225,6 +225,7 @@ export default function Account() {
         <Table
           tableHeader={tableHeader}
           tableData={tableData}
+          itemsPerPage={5}
           onRowClick={handleRowClick}
         />
       </div>
