@@ -153,7 +153,7 @@ const Table = ({
       </div>
 
       {/* Phân trang */}
-      {totalPages >= 1 && (
+      {totalPages > 1 && (
         <div style={styles.paginationContainer}>
           <button
             style={styles.pageButton}
@@ -200,6 +200,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     alignItems: "center",
     width: "100%",
+    height: "100%",
+    justifyContent: "space-between",
   },
   container: {
     border: "1px solid #ddd",
