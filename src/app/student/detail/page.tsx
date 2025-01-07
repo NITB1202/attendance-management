@@ -273,12 +273,12 @@ const DetailStudent = () => {
                         <div style={styles.sessionDetailsContainer}>
                             <div style={styles.rollCallerContainer}>
                                 <div style={styles.smallColumn}>
-                                    <p style={{ fontWeight: 700}}>Roll caller name:</p>
-                                    <p style={{ fontWeight: 700}}>Student code:</p>
+                                    <p style={{ fontSize: 20,fontWeight: 700}}>Roll caller name:</p>
+                                    <p style={{ fontSize: 20, fontWeight: 700}}>Student code:</p>
                                 </div>
                                 <div style={styles.smallColumn}>
-                                    <p>{rollCaller.name}</p>
-                                    <p>{rollCaller.code}</p>
+                                    <p style={{fontSize: 20}}>{rollCaller.name}</p>
+                                    <p style={{fontSize: 20}}>{rollCaller.code}</p>
                                 </div>
                             </div>
 
