@@ -143,7 +143,8 @@ export default function Account() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     console.log("Updated Data:", formData);
     closeModal();
   };
@@ -306,119 +307,55 @@ export default function Account() {
               Update account
             </label>
             <form
-              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-            >
+              style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+              onSubmit={handleSubmit}>
               <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 1.6 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.EMAIL || ""}
-                    onChange={(e) => handleInputChange("EMAIL", e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 0.4 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Role
-                  </label>
-                  <select
-                    value={formData.ROLE || ""}
-                    onChange={(e) => handleInputChange("ROLE", e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  >
-                    <option value="STUDENT">Student</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="TEACHER">Teacher</option>
-                  </select>
-                </div>
+                <SmallInput
+                  title="Email"
+                  defaultValue={formData.EMAIL || ""}
+                  style={{width: 345}}
+                  onChangeText={(text) => handleInputChange("EMAIL", text)}>
+                </SmallInput>
+                 <CustomSelect
+                  title="Role"
+                  options={formData.ROLE === "STUDENT"? ["Student", "Teacher"]: ["Teacher","Student"]}
+                  onSelect={(index)=>{
+                    if(index === 0)
+                      handleInputChange("ROLE", "STUDENT");
+                    else
+                      handleInputChange("ROLE", "TEACHER");
+                  }}>
+                </CustomSelect>
               </div>
-              <div>
-                <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                  Full name
-                </label>
-                <input
-                  type="text"
-                  value={formData["FULL NAME"] || ""}
-                  onChange={(e) =>
-                    handleInputChange("FULL NAME", e.target.value)
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-              </div>
+              <SmallInput
+                title="Full name"
+                placeHolder="Enter user's name"
+                style={{ width: 460}}
+                defaultValue={formData["FULL NAME"]}
+                onChangeText={(text)=> handleInputChange("FULL NAME", text)}>  
+              </SmallInput>
               <div style={{ display: "flex", gap: "16px" }}>
-                <div style={{ flex: 0.8 }}>
-                  <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                    Date of birth
-                  </label>
-                  <input
-                    type="text"
-                    value={formData["DATE OF BIRTH"] || ""}
-                    onChange={(e) =>
-                      handleInputChange("DATE OF BIRTH", e.target.value)
-                    }
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 1.2 }}>
-                  <label>Phone</label>
-                  <input
-                    type="tel"
-                    value={formData.PHONE || ""}
-                    onChange={(e) => handleInputChange("PHONE", e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
+                <CustomDatePicker
+                  title="Date of birth"
+                  defaultValue={convertDate(formData["DATE OF BIRTH"])}
+                  setSelectedDate={(date)=>{
+                    if(date) handleInputChange("DATE OF BIRTH",format(date,"yyyy-MM-dd"));
+                  }}>
+                </CustomDatePicker>
+                <SmallInput
+                  title="Phone"
+                  placeHolder="Enter phone number"
+                  defaultValue={formData.PHONE}
+                  onChangeText={(text)=> handleInputChange("PHONE", text)}>
+                </SmallInput>
               </div>
-              <div>
-                <label style={{ fontSize: "16px", fontWeight: "500" }}>
-                  Role code
-                </label>
-                <input
-                  type="text"
-                  value={formData["ROLE CODE"] || ""}
-                  onChange={(e) =>
-                    handleInputChange("ROLE CODE", e.target.value)
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-              </div>
+              <SmallInput
+                title="Role code"
+                placeHolder="Enter the role code"
+                style={{ width: 460}}
+                defaultValue={formData["ROLE CODE"]}
+                onChangeText={(text)=> handleInputChange("ROLE CODE", text)}>
+              </SmallInput>
               <RoundedButton
                 title="CONFIRM"
                 style={{ marginTop: 20}}
@@ -509,6 +446,11 @@ export default function Account() {
     </div>
   );
 }
+
+const convertDate = (dateString: string) => {
+  const [day, month, year] = dateString.split('/');
+  return `${year}-${month}-${day}`;
+};
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
