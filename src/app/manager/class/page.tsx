@@ -365,14 +365,12 @@ const justifyContent = screenWidth > 700? "flex-end": "flex-start";
                     marginLeft: "10px",
                   }}
                 >
-                  <SmallInput
-                    title="Teacher code"
-                    defaultValue={selectTeacherCode}
-                    style={{width: 325}}
-                    bold={false}
-                    disable={true}>
-                  </SmallInput>
-                  <h1 hidden>{selectTeacherCode}</h1>
+                  <div style={styles.titleInputContainer}>
+                    <label style={styles.title}>Teacher code</label>
+                    <div style={styles.inputContainer}>
+                      <h1 style={styles.inputText}>{selectTeacherCode}</h1>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -562,6 +560,31 @@ const styles: { [key: string]: Properties<string | number> } = {
     display: "flex",
     flexDirection: "column",
     gap: 10,
+  },
+  title:{
+    fontFamily: "Roboto, sans-serif",
+    fontSize: 20,
+  },
+  inputContainer: {
+    borderRadius: "5px",
+    borderWidth: "1px",
+    borderColor: Colors.gray,
+    height: 44,
+    width: 325,
+    background: Colors.disable,
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    padding: "10px",
+  },
+  inputText:{
+    fontFamily: "Roboto, sans-serif",
+    fontSize: "16px",
+  },
+  titleInputContainer:{
+    display: "flex",
+    flexDirection: "column",
+    gap: 10
   }
 };
 
