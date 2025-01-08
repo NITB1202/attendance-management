@@ -5,6 +5,24 @@ export const validateEmail = (email: string): boolean => {
     return emailRegex.test(email);
 };
 
+export const validatePhoneNumber = (phoneNumber: string) => {
+    const phoneRegex = /^(0[3|5|7|8|9])\d{8}$/;
+    return phoneRegex.test(phoneNumber);
+};
+
+export const validateDateOfBirth = (inputDate: string) => {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+  
+    const inputDateObj = new Date(inputDate);
+  
+    if (inputDateObj >= new Date(todayString)) {
+      return false;
+    }
+  
+    return true;
+};
+
 export const extractDate = (dateTimeString: string): string => {
     const [date] = dateTimeString.split("T");
     const [year, month, day] = date.split("-");

@@ -26,104 +26,99 @@ import { FiPlusCircle } from "react-icons/fi";
 import RollCallerModal from "../../../../component/RollCallerModal";
 
 const DetailTeacher = () => {
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
-  const [openComment, setOpenComment] = useState(false);
-  const options = ["Assign as class monitor", "Profile"];
-  const [classData, setClassData] = useState({
-    className: "",
-    courseName: "",
-    teacherName: "",
-    teacherCode: "",
-    monitorName: "",
-    monitorCode: "",
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    maxLate: -1,
-    maxAb: -1,
-  });
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const searchParams = useSearchParams(); 
+    const id = searchParams.get('id');
+    const [openComment, setOpenComment] = useState(false);
+    const options = ["Assign as class monitor", "Profile"];
+    const [classData, setClassData] = useState({
+        className: "",
+        courseName: "",
+        teacherName: "",
+        teacherCode: "",
+        monitorName: "",
+        monitorCode: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        maxLate: -1,
+        maxAb: -1,
+    })
 
-  const [students, setStudents] = useState<any[][]>([]);
-  const [activeTab, setActiveTab] = useState("General");
-  const studentTableHeaders = [
-    "ORDER",
-    "STUDENT CODE",
-    "STUDENT NAME",
-    "ROLE",
-    "",
-  ];
-  const sessionTableHeaders = ["No", "Date"];
-  const attendanceTableHeaders = [
-    "ORDER",
-    "STUDENT CODE",
-    "STUDENT NAME",
-    "ATTENDANCE STATUS",
-  ];
-  const [sessionData, setSessionData] = useState<any[][]>([]);
-  const [sessionId, setSessionId] = useState(0);
-  const [attendances, setAttendances] = useState<any[][]>([]);
-  const [rollCaller, setRollcaller] = useState({
-    code: "",
-    name: "",
-  });
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [update, setUpdate] = useState(false);
-  const [monitor, setMonitor] = useState({
-    id: 0,
-    name: "",
-    code: "",
-  });
-  const [showMessage, setShowMessage] = useState(false);
-  const [message, setMessage] = useState({
-    type: "",
-    title: "",
-    description: "",
-  });
+    const [students, setStudents] = useState<any[][]>([]);
+    const [activeTab, setActiveTab] = useState('General');
+    const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
+    const sessionTableHeaders = ['No', 'Date'];
+    const attendanceTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS'];
+    const [sessionData, setSessionData] = useState<any[][]>([]);
+    const [sessionId, setSessionId] = useState(0);
+    const [attendances, setAttendances] = useState<any[][]>([]);
+    const [rollCaller, setRollcaller] = useState({
+        code: "",
+        name: ""
+    });
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [update, setUpdate] = useState(false);
+    const [monitor, setMonitor] = useState({
+        id: 0,
+        name: "",
+        code: "",
+    });
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState({
+        type: "",
+        title: "",
+        description: "",
+    })
 
-  const [updateRequest, setUpdateRequest] = useState({
-    name: "",
-    beginDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    allowedLateTime: 0,
-    teacherId: 0,
-    courseId: 0,
-  });
-  const router = useRouter();
-  const attendanceStatus = [
-    "On-time",
-    "Absence with permission",
-    "Absence without permission",
-    "late",
-  ];
+    const [updateRequest, setUpdateRequest] = useState({
+        name: "",
+        beginDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        allowedLateTime: 0,
+        teacherId: 0,
+        courseId: 0
+    })
+    const router = useRouter();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) {
-        console.log("Can't find id");
-        return;
-      }
-      try {
-        const response = await classApi.getById(Number(id));
-        const classInfo = response.data;
-        const info = {
-          className: classInfo.name,
-          courseName: classInfo.course.name,
-          teacherName: classInfo.teacher.name,
-          teacherCode: classInfo.teacher.teacherCode,
-          monitorName: classInfo.classMonitor.name,
-          monitorCode: classInfo.classMonitor.studentCode,
-          startDate: classInfo.beginDate,
-          endDate: classInfo.endDate,
-          startTime: classInfo.startTime,
-          endTime: classInfo.endTime,
-          maxLate: classInfo.allowedLateTime,
-          maxAb: classInfo.allowedAbsent,
-        };
+    useEffect(() => {
+        const fetchData = async () => {
+        if(!id)
+        {
+            console.log("Can't find id");
+            return;
+        } 
+          try {
+            const response = await classApi.getById(Number(id));
+            const classInfo = response.data;
+            const info ={
+                className: classInfo.name,
+                courseName: classInfo.course.name,
+                teacherName: classInfo.teacher.name,
+                teacherCode: classInfo.teacher.teacherCode,
+                monitorName: classInfo.classMonitor.name,
+                monitorCode: classInfo.classMonitor.studentCode,
+                startDate: classInfo.beginDate,
+                endDate: classInfo.endDate,
+                startTime: classInfo.startTime,
+                endTime: classInfo.endTime,
+                maxLate: classInfo.allowedLateTime,
+                maxAb: classInfo.allowedAbsent,
+            }
+
+            const request = {
+                name: info.className,
+                beginDate: info.startDate,
+                endDate: info.endDate,
+                startTime: info.startTime,
+                endTime: info.endTime,
+                allowedLateTime: info.maxLate,
+                teacherId: classInfo.teacher.id,
+                courseId: classInfo.course.id,
+            }
 
         const request = {
           name: info.className,
