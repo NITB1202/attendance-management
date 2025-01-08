@@ -13,6 +13,11 @@ const userApi = {
     },
     create(body: any){
         return axiosInstance.post("/user", body);
+    },
+    sendSurvey(sessionId: number, underStandingRate: number, efficientRate: number){
+        return axiosInstance.put("/attendance/survey",
+            {sessionId, underStandingRate, efficientRate}
+        );
     }
 }
 

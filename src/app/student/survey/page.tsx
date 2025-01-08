@@ -5,6 +5,10 @@ import Rating from "@mui/material/Rating";
 import Slider from "@mui/material/Slider";
 import Box from "@mui/material/Box";
 import RoundedButton from "../../../../component/RoundedButton";
+import { useSearchParams } from "next/navigation";
+import userApi from "../../../../api/userApi";
+import ErrorMessage from "../../../../component/ErrorMessage";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 
 const CustomSlider = styled(Slider)({
   color: "#3A6D8C",
@@ -15,7 +19,7 @@ const CustomSlider = styled(Slider)({
     backgroundColor: "rgba(106, 154, 176, 0.3)",
   },
   "& .MuiSlider-thumb": {
-    backgroundColor: "#3A6D8C", // Màu của nút kéo
+    backgroundColor: "#3A6D8C",
   },
 });
 
@@ -45,6 +49,14 @@ export default function Survey() {
     atmosphere: 3,
     document: 3,
   });
+  const searchParams = useSearchParams(); 
+  const id = searchParams.get('id');
+  const [showMessage, setShowMessage] = useState(false);
+  const [message, setMessage] = useState({
+    type: "",
+    title: "",
+    description: "",
+  })
 
   useEffect(() => {
     const handleResize = () => {
@@ -69,20 +81,47 @@ export default function Survey() {
       setRatings((prev) => ({ ...prev, [name]: value || 0 }));
     };
 
-  const handleSend = () => {
-    console.log("Slider values:", sliderValues);
-    console.log("Ratings:", ratings);
-    alert("Survey submitted!");
+  const handleSend = async () => {
+    const underStandingRate = convertToFiveScale(sliderValues.understanding);
+    const efficientRate = (sliderValues.knowledge + convertToHundredScale(ratings.atmosphere)
+  + convertToHundredScale(ratings.document) + convertToHundredScale(ratings.teaching))/4;
+
+    const formattedRequest = {
+      sessionId: Number(id),
+      underStandingRate: underStandingRate,
+      efficientRate: efficientRate,
+    };
+
+    try{
+      await userApi.sendSurvey(formattedRequest.sessionId, formattedRequest.underStandingRate,formattedRequest.efficientRate);
+      setShowMessage(true);
+      setMessage({
+        type: "success",
+        title: "Send successfully",
+        description: "Your survey has been submitted."
+      })
+    }
+    catch(error){
+      console.log(error);
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Invalid request",
+        description: "You must attend this session before submitting a survey."
+      })
+    }
   };
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
       display: "flex",
       flexDirection: "column",
+      justifyContent: "center",
       alignItems: "center",
       fontFamily: "Roboto, sans-serif",
       gap: 20,
       padding: "1rem",
+      marginTop: 60,
     },
     title: {
       fontSize: 24,
@@ -180,13 +219,43 @@ export default function Survey() {
             onClick={handleSend}
             style={{
               backgroundColor: "#001F3F",
-              padding: "auto",
               width: "100%",
             }}
             textStyle={{ color: "white", fontSize: "24px" }}
           />
         </div>
       </Box>
+      {
+        showMessage && message.type === "error" &&
+        <ErrorMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}>
+        </ErrorMessage>
+      }
+      {
+        showMessage && message.type === "success" &&
+        <SuccessfulMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}>
+        </SuccessfulMessage>
+      }
     </div>
   );
 }
+
+function convertToFiveScale(score100: number) {
+  if (score100 < 0 || score100 > 100) {
+    throw new Error("Score must be in the range 0-100");
+  }
+  return (score100 / 100) * 5;
+}
+
+function convertToHundredScale(score5: number) {
+  if (score5 < 0 || score5 > 5) {
+    throw new Error("Score must be in the range 0-5");
+  }
+  return score5 * 20;
+}
+

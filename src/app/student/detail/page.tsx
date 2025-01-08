@@ -14,6 +14,8 @@ import ReplyBox from "../../../../component/ReplyBox";
 import { Colors } from "../../../../constant/Colors";
 import questionApi from "../../../../api/questionApi";
 import { FiPlusCircle } from "react-icons/fi";
+import RoundedButton from "../../../../component/RoundedButton";
+import { RiSurveyLine } from "react-icons/ri";
 
 const DetailStudent = () => {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -174,6 +176,11 @@ const DetailStudent = () => {
         }
     }
 
+    const handleNavigate = ()=>{
+        const url = "/student/survey?id=" + sessionId;
+        router.push(url);
+    }
+
     const viewButton = (id: number)=> {
         return(
             <IconButton
@@ -280,6 +287,16 @@ const DetailStudent = () => {
                                     <p style={{fontSize: 20}}>{rollCaller.name}</p>
                                     <p style={{fontSize: 20}}>{rollCaller.code}</p>
                                 </div>
+                            </div>
+
+                            <div style={styles.buttonContainer}>
+                                <RoundedButton
+                                    title="Do survey"
+                                    icon={<RiSurveyLine size={22} color="white"/>}
+                                    style={{backgroundColor: Colors.green}}
+                                    textStyle={{ fontSize: 18}}
+                                    onClick={handleNavigate}>
+                                </RoundedButton>
                             </div>
 
                             <div style={styles.atttedanceTableContainer}>
@@ -483,6 +500,12 @@ const styles: { [key: string]: React.CSSProperties } = {
         marginTop: 20,
         paddingLeft: 10,
         height: 200,
+    },
+    buttonContainer:{
+        width: "100%",
+        display: "flex",
+        justifyContent: "flex-end",
+        padding: "0px 10px"
     }
 }
 
