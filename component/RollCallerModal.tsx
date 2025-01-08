@@ -13,24 +13,36 @@ interface RollCallerModalProps {
   onClose: () => void;
   students: any[][];
   sessionId: number;
-  rollCaller:{name: string, code: string}
+  rollCaller: { name: string; code: string };
 }
 
-const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, students, sessionId, rollCaller }) => {
+const RollCallerModal: React.FC<RollCallerModalProps> = ({
+  open,
+  onClose,
+  students,
+  sessionId,
+  rollCaller,
+}) => {
   const filteredStudentsList = filterList(rollCaller.code, students);
-  
+
   const [rollCallerName, setRollCallerName] = useState(rollCaller.name);
   const [studentCode, setStudentCode] = useState(rollCaller.code);
-  const absent = students.map(item => item.at(3));
-  
+  const absent = students.map((item) => item.at(3));
+
   const [absentList, setAbsentList] = useState<string[]>([]);
   const [filteredAbsent, setFilteredAbsent] = useState<string[]>([]);
-  const [newAbsentee, setNewAbsentee] = useState<string>(absent.length > 0 ? absent[0] : "");
+  const [newAbsentee, setNewAbsentee] = useState<string>(
+    absent.length > 0 ? absent[0] : ""
+  );
   const [showError, setShowError] = useState(false);
 
   useEffect(() => {
-    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
-    if (JSON.stringify(updatedFilteredAbsent) !== JSON.stringify(filteredAbsent)) {
+    const updatedFilteredAbsent = absent.filter(
+      (name) => !absentList.includes(name)
+    );
+    if (
+      JSON.stringify(updatedFilteredAbsent) !== JSON.stringify(filteredAbsent)
+    ) {
       setFilteredAbsent(updatedFilteredAbsent);
     }
   }, [absentList, absent, filteredAbsent]);
@@ -43,12 +55,12 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, studen
 
   const handleAddAbsentee = () => {
     if (newAbsentee && !absentList.includes(newAbsentee)) {
-      setAbsentList(prevList => [...prevList, newAbsentee]);
+      setAbsentList((prevList) => [...prevList, newAbsentee]);
     }
   };
 
   const handleRemoveAbsentee = (name: string) => {
-    setAbsentList(prevList => prevList.filter(item => item !== name));
+    setAbsentList((prevList) => prevList.filter((item) => item !== name));
   };
 
   const handleSave = () => {
@@ -57,16 +69,23 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, studen
       return;
     }
 
-    const selectedStudents = students.filter(item => absentList.includes(item.at(3)));
-    const studentIds = selectedStudents.map(item => item.at(0));
+    const selectedStudents = students.filter((item) =>
+      absentList.includes(item.at(3))
+    );
+    const studentIds = selectedStudents.map((item) => item.at(0));
 
     console.log(studentIds);
     // onClose();
   };
 
   useEffect(() => {
-    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
-    if (updatedFilteredAbsent.length > 0 && !updatedFilteredAbsent.includes(newAbsentee)) {
+    const updatedFilteredAbsent = absent.filter(
+      (name) => !absentList.includes(name)
+    );
+    if (
+      updatedFilteredAbsent.length > 0 &&
+      !updatedFilteredAbsent.includes(newAbsentee)
+    ) {
       setNewAbsentee(updatedFilteredAbsent[0]);
     } else if (updatedFilteredAbsent.length === 0 && newAbsentee !== "") {
       setNewAbsentee("");
@@ -82,7 +101,13 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, studen
           setOpen={setShowError}
         />
       ) : (
-        <Modal open={open} onCancel={onClose} footer={null} title={null} width={500}>
+        <Modal
+          open={open}
+          onCancel={onClose}
+          footer={null}
+          title={null}
+          width={500}
+        >
           <div style={styles.modalContent}>
             <div style={styles.label}>Roll Caller</div>
             <div style={styles.row}>
@@ -106,7 +131,9 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, studen
             </div>
 
             <div style={styles.section}>
-              <label style={{ ...styles.label, marginTop: 20 }}>Absent with permission</label>
+              <label style={{ ...styles.label, marginTop: 20 }}>
+                Absent with permission
+              </label>
               <List
                 dataSource={absentList}
                 renderItem={(item) => (
@@ -162,13 +189,11 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, studen
   );
 };
 
-
-function filterList(code: string, students: any[][]){
-  const selected = students.find(item => item.at(2) === code);
-  const remaining = students.filter(item => item.at(2) !== code);
+function filterList(code: string, students: any[][]) {
+  const selected = students.find((item) => item.at(2) === code);
+  const remaining = students.filter((item) => item.at(2) !== code);
   return selected ? [selected, ...remaining] : students;
 }
-
 
 // Styles
 const styles: { [key: string]: React.CSSProperties } = {
@@ -219,33 +244,33 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: 25,
     width: "100%",
   },
-  butttonText:{
+  butttonText: {
     fontSize: 20,
   },
-   title:{
-      fontFamily: "Roboto, sans-serif",
-      fontSize: 20,
-    },
+  title: {
+    fontFamily: "Roboto, sans-serif",
+    fontSize: 20,
+  },
   inputContainer: {
-      borderRadius: "5px",
-      borderWidth: "1px",
-      borderColor: Colors.gray,
-      height: 44,
-      background: Colors.disable,
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      padding: "10px",
+    borderRadius: "5px",
+    borderWidth: "1px",
+    borderColor: Colors.gray,
+    height: 44,
+    background: Colors.disable,
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    padding: "10px",
   },
-  inputText:{
-      fontFamily: "Roboto, sans-serif",
-      fontSize: "16px",
+  inputText: {
+    fontFamily: "Roboto, sans-serif",
+    fontSize: "16px",
   },
-  titleInputContainer:{
-      display: "flex",
-      flexDirection: "column",
-      gap: 10
-  }
+  titleInputContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  },
 };
 
 export default RollCallerModal;
