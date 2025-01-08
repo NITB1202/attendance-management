@@ -231,7 +231,7 @@ export default function Dashboard() {
               <p style={styles.cardTitle}>Maximum allowed absence</p>
               <div style={styles.Value}>
                 <UserX width="50px" height="50px" />
-                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.maxAb}</p>
+                <p style={styles.cardValue}>{classInfo.at(selectedIndex)?.maxAb !== null ? classInfo.at(selectedIndex)?.maxAb : 0}</p>
               </div>
             </div>
           </div>

@@ -94,7 +94,7 @@ export default function RollcallStudent() {
             session: selectClass.session,
         })
 
-        const secondLeft = handleTime(selectClass.startTime, selectClass.allowedLateTime);
+        const secondLeft = handleTime(selectClass.startTime);
         if(secondLeft <= 0)
             setTimer(120);
         else
@@ -175,9 +175,9 @@ const formatTime = (seconds: number) => {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 };
 
-const handleTime = (timeString: string, minutes: number) =>{
+const handleTime = (timeString: string) =>{
     const date = new Date(timeString);
-    date.setMinutes(date.getMinutes() + minutes);
+    date.setMinutes(date.getMinutes());
     const currentTime= toZonedTime(new Date(), 'Asia/Ho_Chi_Minh');
     const duration = date.getTime() - currentTime.getTime();
     const seconds = duration/1000;
