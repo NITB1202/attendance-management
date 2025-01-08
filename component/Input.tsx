@@ -11,23 +11,41 @@ interface InputProps {
   onChangeText?: (text: string) => void;
   icon?: React.ReactNode;
   defaultValue?: string;
-  disable?: boolean
+  disable?: boolean;
 }
 
-const Input: React.FC<InputProps> = ({ title, placeHolder, style, onChangeText, icon, textStyle, defaultValue, disable = false }) => {
-
+const Input: React.FC<InputProps> = ({
+  title,
+  placeHolder,
+  style,
+  onChangeText,
+  icon,
+  textStyle,
+  defaultValue,
+  disable = false,
+}) => {
   const handleChangeText = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (onChangeText) onChangeText(event.target.value);
   };
-  
+
   return (
     <div style={styles.container}>
       {title && <label style={styles.title}>{title}</label>}
-      <div style={{ ...styles.inputContainer, ...style, background: disable? Colors.disable: "white" }}>
+      <div
+        style={{
+          ...styles.inputContainer,
+          ...style,
+          background: disable ? Colors.disable : "white",
+        }}
+      >
         {icon}
         <input
           placeholder={placeHolder}
-          style={{...styles.input, ... textStyle, background: disable? Colors.disable: "white"}}
+          style={{
+            ...styles.input,
+            ...textStyle,
+            background: disable ? Colors.disable : "white",
+          }}
           defaultValue={defaultValue}
           onChange={handleChangeText}
           disabled={disable}
@@ -45,7 +63,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   title: {
     fontFamily: "Roboto, sans-serif",
-    fontSize: "22px",
+    fontSize: "16px",
   },
   inputContainer: {
     display: "flex",
@@ -60,7 +78,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   input: {
     fontFamily: "Roboto, sans-serif",
-    fontSize: "20px",
+    fontSize: "16px",
     outline: "none",
     width: "100%",
   },
