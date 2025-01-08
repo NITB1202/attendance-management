@@ -24,6 +24,42 @@ const classApi = {
     },
     getAll(){
         return axiosInstance.get("/classroom");
+    },
+    create(info: any, file: any){
+        const url = "/classroom?classroom-info="+ info;
+
+        const formData = new FormData();
+        formData.append("student-file", file);
+
+        return axiosInstance.post(url, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+        });
+    },
+    addSession(numberSessions: number, classroomId: number){
+       return axiosInstance.post("/session/7",
+        {numberSessions, classroomId}
+       );
+    },
+    assignMonitor(classId: number, studentId: number){
+        const url = "/classroom/"+ classId + "/"+ studentId;
+        return axiosInstance.post(url);
+    },
+    async assignRollCaller(studentId: number, sessionIds: number[]){
+        try {
+            const results = await Promise.all(
+              sessionIds.map((sessionId) => {
+                const url = `/session/${sessionId}/${studentId}`;
+                return axiosInstance.post(url);
+              })
+            );
+        
+            return results;
+          } catch (error) {
+            console.error("Error occurred during API calls:", error);
+            throw error;
+          }
     }
 }
 

@@ -40,6 +40,7 @@ const ClassManager = () => {
   })
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState("");
+  const [file, setFile] = useState<File| null>(null);
   const [selectTeacherCode, setSelectTeacherCode] = useState("");
   const [showError, setShowError] = useState(false);
   const [message,setMessage] = useState({
@@ -127,7 +128,7 @@ const handleClickRow = (row: any[]) =>{
     });
     if(foundItem){
         const id = foundItem.at(0);
-        router.push(`/manager/detail?id=${id}`);
+        router.push(`/teacher/detail?id=${id}`);
     }
 }
 
@@ -149,6 +150,22 @@ const handleSelectTeacher = (index: number) =>{
   setSelectTeacherCode(selectTeacher?.at(2));
 }
 
+const handleCloseModal = () => {
+  setModalVisible(false);
+  setFile(null);
+  setFileName("");
+  setCreateRequest({
+    name: "",
+    beginDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    allowedLateTime: 3,
+    teacherId: 1 ,
+    courseId: 1,
+  })
+}
+
 const handleUploadFile = ()=>{
   if (fileInputRef.current) {
     fileInputRef.current.click();
@@ -158,6 +175,7 @@ const handleUploadFile = ()=>{
 const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setFile(file);
       setFileName(file.name);
     }
 };
@@ -170,7 +188,7 @@ const handleSave = ()=>{
       title: "Error",
       description: "All fields must be filled."
     });
-    // return;
+    return;
   }
 
   if(!isDateBeforeOrEqual(createRequest.beginDate, createRequest.endDate))
@@ -180,6 +198,7 @@ const handleSave = ()=>{
       title: "Error",
       description: "Start date must be before or equal to end date."
     })
+    return;
   }
 
   if(!isTimeBefore(createRequest.startTime, createRequest.endTime))
@@ -189,9 +208,27 @@ const handleSave = ()=>{
       title: "Error",
       description: "Start time must be before end time."
     })
+    return;
   }
 
-  console.log(createRequest);
+  if(file === null)
+  {
+    setShowError(true);
+    setMessage({
+      title: "Error",
+      description: "Please select an Excel file for the students."
+    })
+    return;
+  }
+
+  const info = JSON.stringify(createRequest, null, 2);
+
+  try{
+
+  }
+  catch(error){
+    console.log(error);
+  }
 }
 
 const justifyContent = screenWidth > 700? "flex-end": "flex-start";  
@@ -255,7 +292,7 @@ const justifyContent = screenWidth > 700? "flex-end": "flex-start";
           <div style={styles.form}>
             <button 
               style={styles.closeButton}
-              onClick={() => setModalVisible(false)}
+              onClick={handleCloseModal}
             >
               <IoMdClose size={35} />
             </button>
