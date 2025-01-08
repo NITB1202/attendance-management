@@ -65,6 +65,10 @@ const classApi = {
     getViolation(classId: any){
         const url = "/student/violation/"+ classId;
         return axiosInstance.get(url);
+    },
+    setRollCaller(studentId: number, sessionId: number){
+        const url = "/session/"+sessionId+"/"+ studentId;
+        return axiosInstance.put(url);
     }
 }
 export default classApi;

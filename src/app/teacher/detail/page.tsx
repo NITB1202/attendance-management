@@ -85,6 +85,7 @@ const DetailTeacher = () => {
     })
     const [openModal, setOpenModal] = useState(false);
 
+
     const router = useRouter();
 
     useEffect(() => {
@@ -327,6 +328,10 @@ const DetailTeacher = () => {
         })
     }
 
+    const updateRollCallerState = (code: string, name: string) => {
+        setRollcaller({ code, name });
+    };
+
     const isMobile = screenWidth < 700;
     const flexDirection = isMobile ? "column" : "row";
     
@@ -548,7 +553,9 @@ const DetailTeacher = () => {
                             onClose={()=> setOpenModal(false)}
                             students={students}
                             sessionId={sessionId}
-                            rollCaller={rollCaller}>
+                            rollCaller={rollCaller}
+                            setRollCaller={updateRollCallerState}
+                            setUpdate={setUpdate}>
                         </RollCallerModal>
                     }
                     {
