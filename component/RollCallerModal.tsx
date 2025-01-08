@@ -6,40 +6,28 @@ import Dropdown from "./Dropdown";
 import Input from "./Input";
 import RoundedButton from "./RoundedButton";
 
-interface RollCaller {
-  name: string;
-  code: string;
-}
-
 interface RollCallerModalProps {
   open: boolean;
   onClose: () => void;
-  rollCallers?: RollCaller[]; // Có thể truyền từ ngoài hoặc dùng mock data
-  absent?: string[]; // Có thể truyền từ ngoài hoặc dùng mock data
+  rollCallers?: { name: string; code: string }[];
+  absent?: string[];
 }
 
-const RollCallerModal: React.FC<RollCallerModalProps> = ({
-  open,
-  onClose,
-  rollCallers = [
+const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
+  const rollCallers = [
     { name: "Nguyen Van A", code: "A001" },
     { name: "Tran Thi B", code: "B002" },
     { name: "Le Van C", code: "C003" },
-  ], // Mock data mặc định
-  absent = ["Morton Hamsey", "Jack Tarco", "Alice Smith", "John Doe"], // Mock data mặc định
-}) => {
-  const [rollCallerName, setRollCallerName] = useState(
-    rollCallers[0]?.name || ""
-  ); // Giá trị mặc định
-  const [studentCode, setStudentCode] = useState(rollCallers[0]?.code || ""); // Giá trị mặc định
+  ];
 
-  // Cập nhật mã số sinh viên khi thay đổi tên người điểm danh
+  const [rollCallerName, setRollCallerName] = useState(rollCallers[0].name); // Giá trị mặc định là tên đầu tiên
+  const [studentCode, setStudentCode] = useState("");
   useEffect(() => {
     const defaultRollCaller = rollCallers.find(
       (caller) => caller.name === rollCallerName
     );
     setStudentCode(defaultRollCaller ? defaultRollCaller.code : "");
-  }, [rollCallerName, rollCallers]);
+  }, [rollCallerName]);
 
   const handleDropdownChange = (value: React.SetStateAction<string>) => {
     setRollCallerName(value);
@@ -49,11 +37,11 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({
     setStudentCode(selectedRollCaller ? selectedRollCaller.code : "");
   };
 
+  const absent = ["Morton Hamsey", "Jack Tarco", "Alice Smith", "John Doe"];
+
   const [absentList, setAbsentList] = useState<string[]>([]); // Danh sách vắng mặt
   const [filteredAbsent, setFilteredAbsent] = useState<string[]>(absent); // Lọc những người chưa thêm vào danh sách vắng mặt
   const [newAbsentee, setNewAbsentee] = useState<string>(absent[0] || ""); // Giá trị mặc định là phần tử đầu tiên
-
-  // Cập nhật filteredAbsent khi absentList thay đổi
   useEffect(() => {
     const updatedFilteredAbsent = absent.filter(
       (name) => !absentList.includes(name)
