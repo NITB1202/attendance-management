@@ -596,7 +596,7 @@ const DetailTeacher = () => {
                                     </SmallInput>
                                     <SmallInput
                                         title="Maximum allowable absence occurences"
-                                        defaultValue={classData.maxAb !== null? classData.maxAb.toString() : "3"}>
+                                        defaultValue={classData.maxAb.toString()}>
                                     </SmallInput>
                                 </div>
                             }
