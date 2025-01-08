@@ -7,7 +7,6 @@ import CustomSelect from "../../../../component/CustomSelect";
 import { Colors } from "../../../../constant/Colors";
 import classApi from "../../../../api/classApi";
 import { useRouter } from "next/navigation";
-import { title } from "process";
 import QuestionMessage from "../../../../component/QuestionMessage";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import attendanceApi from "../../../../api/attendanceApi";
@@ -148,7 +147,7 @@ export default function Report() {
       studentList.push(info);
     }
 
-    let opinion = sessionStorage.getItem("opinion")
+    let opinion = sessionStorage.getItem("opinion");
     if(opinion === null)
     opinion = "This is a warning message. Please make sure to attend class on time from now on.";
     sessionStorage.removeItem("opinion");

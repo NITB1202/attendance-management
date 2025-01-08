@@ -2,9 +2,17 @@
 import React, { useEffect, useState } from "react";
 import Table from "../../../../component/Table";
 import { Colors } from "../../../../constant/Colors";
+import { useAuth } from "../../../../context/AuthContext";
+import userApi from "../../../../api/userApi";
+import RoundedButton from "../../../../component/RoundedButton";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 
 export default function ReportUpdate() {
   const [isMobile, setIsMobile] = useState(false);
+  const {authState} = useAuth();
+  const [name, setName] = useState("");
+  const [opinion, setOpinion] = useState("This is a warning message. Please make sure to attend class on time from now on.");
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -18,6 +26,29 @@ export default function ReportUpdate() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try{
+        if(authState.id === null) return;
+        const response = await userApi.getById(authState.id);
+        setName(response.data.name);
+        let storedOpinion = sessionStorage.getItem("opinion");
+        if(storedOpinion === null) 
+          storedOpinion = "This is a warning message. Please make sure to attend class on time from now on.";
+        setOpinion(storedOpinion);
+      }
+      catch(error){
+        console.log(error);
+      }
+    };
+
+    fetchName();
+  }, [authState]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setOpinion(e.target.value);
+  };
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -81,7 +112,7 @@ export default function ReportUpdate() {
       backgroundColor: Colors.green,
       color: "white",
       border: "none",
-      padding: "12px 24px",
+      padding: "10px 24px",
       borderRadius: 4,
       cursor: "pointer",
       fontWeight: "bold",
@@ -101,6 +132,11 @@ export default function ReportUpdate() {
     ["", "", "", ""],
     ["", "", "", ""],
   ];
+
+  const handleClick = () => {
+    sessionStorage.setItem("opinion", opinion);
+    setShowMessage(true);
+  }
 
   return (
     <div style={styles.container}>
@@ -133,30 +169,39 @@ export default function ReportUpdate() {
         </p>
         <p style={styles.paragraph}>Details:</p>
 
-        {/* Table Section */}
         <div style={styles.tableContainer}>
           <Table tableHeader={tableHeader} tableData={tableData} />
         </div>
 
-        {/* Textarea for Opinion */}
         <textarea
           style={styles.textarea}
-          placeholder="Write your opinion here..."
+          value={opinion}
+          onChange={handleChange}
         ></textarea>
 
-        {/* Footer Section */}
         <div style={styles.footer}>
           <div>
             <p>Manager</p>
-            <p style={styles.manager}>Mary Jane</p>
+            <p style={styles.manager}>{name}</p>
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
       <div style={styles.saveButtonContainer}>
-        <button style={styles.saveButton}>SAVE CHANGES</button>
+        <RoundedButton
+          title="SAVE CHANGES"
+          style={styles.saveButton}
+          onClick={handleClick}>
+        </RoundedButton>
       </div>
+      {
+        showMessage &&
+        <SuccessfulMessage
+          title="Update successfully"
+          description="Your opinion has been saved."
+          setOpen={setShowMessage}>
+        </SuccessfulMessage>
+      }
     </div>
   );
 }
