@@ -129,7 +129,7 @@ const handleClickRow = (row: any[]) =>{
     });
     if(foundItem){
         const id = foundItem.at(0);
-        router.push(`/teacher/detail?id=${id}`);
+        router.push(`/manager/detail?id=${id}`);
     }
 }
 

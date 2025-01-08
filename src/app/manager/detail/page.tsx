@@ -1,457 +1,862 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Dropdown from "../../../../component/Dropdown";
 import Table from "../../../../component/Table";
 import CommentBox from "../../../../component/CommentBox";
-import RoundedButton from "../../../../component/RoundedButton";
-import Input from "../../../../component/Input";
+import { Colors } from "../../../../constant/Colors";
+import { extractDate, getStatusName } from "../../../../util/util";
+import TabSwitcher from "../../../../component/Tabs";
+import IconButton from "../../../../component/IconButton";
+import { IoIosMore } from "react-icons/io";
+import questionApi from "../../../../api/questionApi";
+import attendanceApi from "../../../../api/attendanceApi";
+import classApi from "../../../../api/classApi";
+import { useRouter, useSearchParams } from 'next/navigation';
+import SmallInput from "../../../../component/SmallInput";
+import CustomSelect from "../../../../component/CustomSelect";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
 import CustomTimePicker from "../../../../component/CustomTimePicker";
-import "./styles.css";
+import RoundedButton from "../../../../component/RoundedButton";
+import { FaRegEdit } from "react-icons/fa";
+import QuestionMessage from "../../../../component/QuestionMessage";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
+import ErrorMessage from "../../../../component/ErrorMessage";
+import { FiPlusCircle } from "react-icons/fi";
+import userApi from "../../../../api/userApi";
+import courseApi from "../../../../api/courseApi";
+import { format } from "date-fns-tz";
 
 const DetailManager = () => {
-  const [activeTab, setActiveTab] = useState("General");
-  const [newClassName] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [, setSelectedDate] = useState<Date | null>(null);
-  const [, setSelectedTime] = useState<Date | null>(null);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const searchParams = useSearchParams(); 
+  const id = searchParams.get('id');
+  const options = ["Remove", "Profile"];
+  const [classData, setClassData] = useState({
+      className: "",
+      courseName: "",
+      teacherName: "",
+      teacherCode: "",
+      monitorName: "",
+      monitorCode: "",
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      maxLate: -1,
+      maxAb: -1,
+  })
+
+  const [students, setStudents] = useState<any[][]>([]);
+  const [activeTab, setActiveTab] = useState('General');
+  const studentTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ROLE', ''];
+  const sessionTableHeaders = ['No', 'Date'];
+  const attendanceTableHeaders = ['ORDER', 'STUDENT CODE', 'STUDENT NAME', 'ATTENDANCE STATUS'];
+  const [sessionData, setSessionData] = useState<any[][]>([]);
+  const [sessionId, setSessionId] = useState(0);
+  const [attendances, setAttendances] = useState<any[][]>([]);
+  const [rollCaller, setRollcaller] = useState({
+      code: "",
+      name: ""
+  });
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [update, setUpdate] = useState(false);
+  const [monitor, setMonitor] = useState({
+      id: 0,
+      name: "",
+      code: "",
+  });
+  const [teachers, setTeachers] = useState<any[][]> ([]);
+  const [courses, setCourses] = useState<any[][]> ([]);
+  const [teacherCode, setTeacherCode] = useState("");
+
+  const [showMessage, setShowMessage] = useState(false);
+  const [message, setMessage] = useState({
+      type: "",
+      title: "",
+      description: "",
+  })
+
+  const [updateRequest, setUpdateRequest] = useState({
+      name: "",
+      beginDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      allowedLateTime: 0,
+      teacherId: 0,
+      courseId: 0
+  })
+  const [openModal, setOpenModal] = useState(false);
+  const router = useRouter();
+
 
   useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+      const fetchData = async () => {
+      if(!id)
+      {
+          console.log("Can't find id");
+          return;
+      } 
+        try {
+          const response = await classApi.getById(Number(id));
+          const classInfo = response.data;
+          const info ={
+              className: classInfo.name,
+              courseName: classInfo.course.name,
+              teacherName: classInfo.teacher.name,
+              teacherCode: classInfo.teacher.teacherCode,
+              monitorName: classInfo.classMonitor.name,
+              monitorCode: classInfo.classMonitor.studentCode,
+              startDate: classInfo.beginDate,
+              endDate: classInfo.endDate,
+              startTime: classInfo.startTime,
+              endTime: classInfo.endTime,
+              maxLate: classInfo.allowedLateTime,
+              maxAb: classInfo.allowedAbsent,
+          }
+
+          const request = {
+              name: info.className,
+              beginDate: info.startDate,
+              endDate: info.endDate,
+              startTime: info.startTime,
+              endTime: info.endTime,
+              allowedLateTime: info.maxLate,
+              teacherId: classInfo.teacher.id,
+              courseId: classInfo.course.id,
+          }
+
+          const students = response.data.students;
+          const monitorCode = info.monitorCode;
+          const formattedData: string[][] = sortStudents(students, monitorCode, setMonitor);
+
+          const sessions = response.data.sessions;
+          const formattedSession: string[][] =
+          sessions.map((item: any) => {
+              if(item.no === 1) {
+                  setSessionId(item.id);
+                  setRollcaller({
+                      name: item.representative_id.name,
+                      code: item.representative_id.studentCode,
+                  });
+              }
+              return (
+                  [
+                      item.id,
+                      item.representative_id.name,
+                      item.representative_id.studentCode,
+                      item.no,
+                      extractDate(item.startTime)
+                  ]
+              );
+          }
+          );
+
+          const teacherResponse = await userApi.getTeachers();
+          const formattedTeachers = teacherResponse.data.map((item: any)=>
+            [
+              item.id,
+              item.name,
+              item.teacherCode
+            ]
+          );
+  
+          const courseResponse = await courseApi.getAll();
+          const formattedCourses = courseResponse.data.map((item: any)=>
+            [
+              item.id,
+              item.name,
+            ]
+          );
+
+          setClassData(info);
+          setStudents(formattedData);
+          setSessionData(formattedSession);
+          setUpdateRequest(request);
+          setTeachers(formattedTeachers);
+          setCourses(formattedCourses);
+          setTeacherCode(info.teacherCode);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    
+      fetchData();
+  }, [update]);
+
+  useEffect(() => {
+      const handleResize = () => {
+        setScreenWidth(window.innerWidth);
+      };
+  
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
   }, []);
 
-  const tableHeader = ["Order", "Student Code", "Student Name", "Username"];
-  const tableData = [
-    ["1", "S001", "John Doe", "johndoe"],
-    ["2", "S002", "Jane Smith", "janesmith"],
-  ];
+  useEffect(() => {
+      const fetchSession = async () => {
+      if(sessionId === 0) return;
+        try{
+          const response = await attendanceApi.getById(sessionId);
+          const formattedData: string[][] = response.data.map((item: any, index: number) => {
+              if (index === 0) {
+                  setRollcaller({
+                      code: item.session.representative_id.studentCode,
+                      name: item.session.representative_id.name,
+                  });
+              }
+              
+              return [
+                  item.student.id,
+                  (index + 1).toString(),
+                  item.student.studentCode,
+                  item.student.name,
+                  getStatusName(item.status)
+              ];
+          });
 
-  const tableHeader2 = ["No", "Date"];
-  const tableData2 = [
-    ["1", "2023-01-01"],
-    ["2", "2023-01-02"],
-  ];
+          const quesionResponse = await questionApi.getBySessionId(sessionId);
+          setUpdate(false);
 
-  const tableHeader3 = [
-    "Order",
-    "Student Code",
-    "Student Name",
-    "Attendance Status",
-  ];
-  const tableData3 = [
-    ["1", "S001", "John Doe", "Present"],
-    ["2", "S002", "Jane Smith", "Absent"],
-  ];
-
-  const handleAddNew = () => {
-    setModalVisible(true);
-  };
-
-  const handleSave = () => {
-    console.log("New Class Name:", newClassName);
-    setModalVisible(false);
-  };
-
-  return (
-    <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
-      <div
-        style={
-          screenWidth < 500 ? styles.tabContainerMobile : styles.tabContainer
+          setAttendances(formattedData);
+          setQuestions(quesionResponse.data);
         }
-      >
-        <button
-          onClick={() => setActiveTab("General")}
-          style={{
-            ...styles.tabButton,
-            ...(activeTab === "General"
-              ? styles.tabButtonActive
-              : styles.tabButtonInactive),
-          }}
-        >
-          General
-        </button>
-        <button
-          onClick={() => setActiveTab("Session")}
-          style={{
-            ...styles.tabButton,
-            ...(activeTab === "Session"
-              ? styles.tabButtonActive
-              : styles.tabButtonInactive),
-          }}
-        >
-          Session
-        </button>
-      </div>
-      <div style={{ marginTop: "20px" }}>
-        {activeTab === "General" && (
-          <div
-            style={{
-              display: "flex",
-              width: "100%",
-              height: "10%",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ flex: 6, padding: "5px", marginBottom: "10px" }}>
-              <label style={{ fontWeight: "bold", fontSize: 24 }}>
-                Class Information
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                }}
-              >
-                <div className="class-course-container">
-                  <div className="input-group-course">
-                    <label>Class Name</label>
-                    <div className="input-box">M501.P22</div>
+        catch(error){
+          console.log(error);
+        }
+      };
+  
+      fetchSession();
+  }, [sessionId]);
+
+  const handleSelectUser = async (index: number, userId: number) => {
+      if(index === 1){
+          const url = "/general/profile?id="+id;
+          router.push(url);
+      }
+  }
+
+  const selectSession = (row: any[])=>{
+      const foundItem = sessionData.find(item => {
+          return item.slice(3).every((value, index) => value === row[index]);
+      });
+      if(foundItem){
+          setSessionId(foundItem.at(0));
+          setRollcaller({
+              name: foundItem.at(1),
+              code: foundItem.at(2)
+          });
+      }
+  }
+
+  const handleConfirm = async ()=>{
+    const formatRequest = {
+      name: updateRequest.name,
+      beginDate: updateRequest.beginDate,
+      endDate: updateRequest.endDate,
+      startTime: updateRequest.startTime.slice(0, 5),
+      endTime: updateRequest.endTime.slice(0, 5),
+      allowedLateTime: updateRequest.allowedLateTime,
+      teacherId: updateRequest.teacherId,
+      courseId: updateRequest.courseId,
+    }
+
+    if(Object.values(formatRequest).some(value => value === ""))
+      {
+        setShowMessage(true);
+        setMessage({
+          type: "error",
+          title: "Error",
+          description: "All fields must be filled."
+        });
+        return;
+      }
+    
+      if(!isDateBeforeOrEqual(formatRequest.beginDate, formatRequest.endDate))
+      {
+        setShowMessage(true);
+        setMessage({
+          type: "error",
+          title: "Error",
+          description: "Start date must be before or equal to end date."
+        })
+        return;
+      }
+    
+      if(!isTimeBefore(formatRequest.startTime, formatRequest.endTime))
+      {
+        setShowMessage(true);
+        setMessage({
+          type: "error",
+          title: "Error",
+          description: "Start time must be before end time."
+        })
+        return;
+      }
+    
+      console.log(formatRequest);
+      
+      try{
+          await classApi.updateClassMonitor(id, monitor.id);
+          await classApi.update(id, formatRequest);
+          setShowMessage(true);
+          setMessage({
+          type: "success",
+          title: "Success",
+          description: "The classroom's information has been updated.",
+          })
+      }
+      catch(error){
+          console.log(error);
+      }
+  }
+
+  const updateField = (field: string, value: any) => {
+      setUpdateRequest(prevState => ({
+          ...prevState,
+          [field]: value
+      }));
+  };
+
+  const viewButton = (id: number)=> {
+      return(
+          <IconButton
+              id={id}
+              icon={<IoIosMore size={24}/>}
+              options={options}
+              onSelectWithId={handleSelectUser}>
+          </IconButton>
+      );
+  }
+
+  const sessionTableData = sessionData.map((row)=> row.slice(3)).sort((a,b)=> a[0]-b[0]);
+  const attendanceTableData = attendances.map((row)=> row.slice(1));
+  const tableDataWithButtons = students.map((row) => [
+      ...row.slice(1),
+      viewButton(row.at(0)),
+  ]);
+
+  const handleSelectCourse= (index: number) =>{
+    const selectCourse = courses.at(index);
+    updateField("courseId",selectCourse?.at(0));
+  }
+
+  const handleSelectTeacher = (index: number)=>{
+    const selectTeacher = teachers.at(index);
+    updateField("teacherId",selectTeacher?.at(0));
+    setTeacherCode(selectTeacher?.at(2));
+  }
+
+  const isMobile = screenWidth < 700;
+  const flexDirection = isMobile ? "column" : "row";
+  
+  return (
+      <div style={styles.container}>
+          <div style={styles.tabContainer}>
+              <TabSwitcher
+                  tabs={["General", "Session"]}
+                  onTabChange={setActiveTab}>
+              </TabSwitcher>
+          </div>
+          <div style={{ marginTop: '20px' }}>
+              {activeTab === 'General' && (
+                  <div style={styles.generalPage}>
+                      <div style={styles.classInfo}>
+                          <label style={styles.header}>Class Information</label>
+                          
+                          <div style={styles.row}>
+                              <SmallInput
+                                  title="Class name"
+                                  defaultValue={classData.className}>
+                              </SmallInput>
+                              <CustomSelect
+                                title="Course name"
+                                options={courses.map(item => item.at(1))}
+                                onSelect={handleSelectCourse}>
+                              </CustomSelect>
+                          </div>
+
+                          <div style={{...styles.row, flexDirection: flexDirection}}> 
+                              <div style={styles.row}>
+                                  <CustomSelect
+                                    title="Teacher name"
+                                    options={teachers.map(item => item.at(1))}
+                                    onSelect={handleSelectTeacher}>
+
+                                  </CustomSelect>
+                                  <SmallInput
+                                      title="Teacher code"
+                                      defaultValue={teacherCode}
+                                      disable={true}>
+                                  </SmallInput>
+                              </div>
+
+                              <div style={styles.row}>
+                                  <SmallInput
+                                    title="Class monitor's name"
+                                    defaultValue={classData.monitorName}
+                                    disable={true}>
+                                  </SmallInput>
+                                  <SmallInput
+                                      title="Class monitor's code"
+                                      defaultValue={classData.monitorCode}
+                                      disable={true}>
+                                  </SmallInput>
+                              </div>
+                          </div>
+
+
+                          <div style={{...styles.row, flexDirection: flexDirection}}> 
+                              <div style={styles.row}>
+                                  <CustomDatePicker
+                                      title="Start date"
+                                      defaultValue={updateRequest.beginDate}
+                                      setSelectedDate={(date)=>{
+                                        if(date) updateField("beginDate",format(date, "yyyy-MM-dd"))
+                                      }}>
+                                  </CustomDatePicker>
+                                  <CustomDatePicker
+                                      title="End date"
+                                      defaultValue={updateRequest.endDate}
+                                      setSelectedDate={(date)=>{
+                                        if(date) updateField("endDate",format(date, "yyyy-MM-dd"))
+                                      }}>
+                                  </CustomDatePicker>
+                              </div>
+
+                              <div style={styles.row}>
+                                  <CustomTimePicker
+                                      title="Start time"
+                                      defaultValue={updateRequest.startTime}
+                                      setSelectedTime={(date)=>{
+                                        if(date) updateField("startTime", convertToTime(date))
+                                      }}>
+                                  </CustomTimePicker>
+                                  <CustomTimePicker
+                                      title="End time"
+                                      defaultValue={updateRequest.endTime}
+                                      setSelectedTime={(date)=>{
+                                        if(date) updateField("endTime", convertToTime(date))
+                                      }}>
+                                  </CustomTimePicker> 
+                              </div>
+                          </div>
+
+                          {
+                              classData.maxAb > -1 &&
+                              <div style={styles.row}>
+                                  <SmallInput
+                                      title="Maximum allowable late occurences"
+                                      defaultValue={classData.maxLate.toString()}
+                                      onChangeText={(text)=> updateField("allowedLateTime", Number(text)? Number(text): -1)}
+                                      disable={true}>
+                                  </SmallInput>
+                                  <SmallInput
+                                      title="Maximum allowable absence occurences"
+                                      defaultValue={classData.maxAb !== null? classData.maxAb.toString() : "3"}
+                                      disable={true}>
+                                  </SmallInput>
+                              </div>
+                          }
+                      </div>
+                      <div style={styles.buttonContainer}>
+                          <RoundedButton
+                              title="SAVE CHANGES"
+                              style={styles.saveButton}
+                              textStyle={styles.buttonText}
+                              icon={<FaRegEdit size={24} color="white" />}
+                              onClick={()=> {
+                                  setShowMessage(true);
+                                  setMessage({
+                                      type: "question",
+                                      title: "Confirmation",
+                                      description: "Are you sure you want to update class's information?"
+                                  })
+                              }}>
+                          </RoundedButton>
+                          <RoundedButton
+                            title="ADD STUDENT"
+                            style={styles.addStudentButton}
+                            textStyle={styles.buttonText}
+                            icon={<FiPlusCircle size={24} color="white" />}
+                            onClick={()=>setOpenModal(true)}>
+                          </RoundedButton>
+                      </div>
+                      <div style={{ padding: 10 }}>
+                          <label style={styles.header}>Student List</label>
+                          <Table 
+                              tableHeader={studentTableHeaders} 
+                              tableData={tableDataWithButtons} />
+                      </div>
                   </div>
-                  <div className="input-group-course2">
-                    <label>Course Name</label>
-                    <Dropdown
-                      title=""
-                      options={["Math", "Literature", "Science"]}
-                    />
-                  </div>
-                </div>
-                <div className="teacher-info-container">
-                  <div className="input-group-info2">
-                    <label>Teacher Name</label>
-                    <Dropdown
-                      title=""
-                      options={["Math", "Literature", "Science"]}
-                      style={{
-                        height: 40,
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "white",
-                      }}
-                    />
-                  </div>
-                  <div className="input-group-info">
-                    <label>Teacher Code</label>
-                    <div
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "white",
-                      }}
-                    >
-                      Teacher Code
+              )}
+               {activeTab === 'Session' && (
+                  <div style={styles.sessionPage}>
+                      <div style={styles.sessionTableContainer}>
+                          <Table 
+                              tableHeader={sessionTableHeaders} 
+                              tableData={sessionTableData}
+                              onRowClick={selectSession} />
+                      </div>
+                      <div style={styles.sessionDetailsContainer}>
+                          <div style={styles.rollCallerContainer}>
+                              <div style={{ display: "flex", gap: 30}}>
+                                  <div style={styles.smallColumn}>
+                                      <p style={{ fontSize: 20,fontWeight: 700}}>Roll caller name:</p>
+                                      <p style={{ fontSize: 20, fontWeight: 700}}>Student code:</p>
+                                  </div>
+                                  <div style={styles.smallColumn}>
+                                      <p style={{fontSize: 20}}>{rollCaller.name}</p>
+                                      <p style={{fontSize: 20}}>{rollCaller.code}</p>
+                                  </div>
+                              </div>  
+                          </div>
+
+                          <div style={styles.atttedanceTableContainer}>
+                              <label style={styles.header}>Student attendance status</label>
+                              <Table
+                                  tableHeader={attendanceTableHeaders}
+                                  tableData={attendanceTableData}
+                              />
+                          </div>
+
+                              <div style={styles.dicussionContainer}>
+                                  <label style={styles.header}>Discussion</label>
+                                  <div style={styles.commentSection}>
+                                      {
+                                          questions.map((item)=>{
+                                              return (
+                                                  <CommentBox
+                                                      key={item.id}
+                                                      id= {item.id}
+                                                      sessionId={sessionId}
+                                                      user={item.user}
+                                                      content={item.content}
+                                                      timestamp={extractDate(item.askedTime)}
+                                                      replies={item.replies}
+                                                      disableReply={true}
+                                                      setUpdate={() => setUpdate(true)}>
+                                                  </CommentBox>
+                                              );
+                                          })
+                                      }
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  )}
+                  {
+                      showMessage && message.type === "question" &&
+                      <QuestionMessage
+                          title={message.title}
+                          description={message.description}
+                          setOpen={setShowMessage}
+                          onAgree={handleConfirm}>
+                      </QuestionMessage>
+                  }
+                  {
+                      showMessage && message.type === "success" &&
+                      <SuccessfulMessage
+                          title={message.title}
+                          description={message.description}
+                          setOpen={setShowMessage}>
+                      </SuccessfulMessage>
+                  }
+                  {
+                      showMessage && message.type === "error" &&
+                      <ErrorMessage
+                          title={message.title}
+                          description={message.description}
+                          setOpen={setShowMessage}>
+                      </ErrorMessage>
+                  }
+                  {
+                    openModal &&
+                    <div style={styles.shadow}>
+                        <div style={styles.messageContainer}>
+                          <button style={styles.closeButton} onClick={() => setOpenModal(false)}>
+                            <img src="/icon/close.png" alt="Close" />
+                          </button>
+                          <h1 style={styles.formHeader}>Select a student</h1>
+                          <div style={styles.body}>
+                            <CustomSelect
+                              title="Student name"
+                              options={teachers.map(item => item.at(1))}
+                              style={{ width: 350}}
+                              textStyle={{fontWeight: 500}}
+                              onSelect={()=>{}}>
+                            </CustomSelect>
+                            <SmallInput
+                              title="Student code"
+                              disable={true}
+                              style={{ width: 350}}
+                              bold={false}>
+                            </SmallInput>
+                          </div>
+                          <RoundedButton
+                            textStyle={styles.buttonText}
+                            style={styles.addConfirmButton}
+                            title="CONFIRM"
+                            onClick={()=>{}}>
+                          </RoundedButton>
+                        </div>
                     </div>
-                  </div>
-                  <div className="input-group-info2">
-                    <label>Class Monitor&apos;s Name</label>
-                    <Dropdown
-                      title=""
-                      options={["Math", "Literature", "Science"]}
-                      style={{
-                        height: 40,
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "white",
-                      }}
-                    />
-                  </div>
-                  <div className="input-group-info">
-                    <label>Student Code</label>
-                    <div
-                      style={{
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        backgroundColor: "white",
-                      }}
-                    >
-                      Student Code
-                    </div>
-                  </div>
-                </div>
-                <div className="date-time-container">
-                  <div className="input-group-datetime">
-                    <label>Start Date</label>
-                    <CustomDatePicker
-                      title=""
-                      setSelectedDate={(newValue: Date | null) =>
-                        setSelectedDate(newValue)
-                      }
-                    />
-                  </div>
-                  <div className="input-group-datetime">
-                    <label>End Date</label>
-                    <CustomDatePicker
-                      title=""
-                      setSelectedDate={(newValue: Date | null) =>
-                        setSelectedDate(newValue)
-                      }
-                    />
-                  </div>
-                  <div className="input-group-datetime">
-                    <label>Start Time</label>
-                    <CustomTimePicker
-                      title=""
-                      setSelectedTime={(newValue: Date | null) =>
-                        setSelectedTime(newValue)
-                      }
-                    />
-                  </div>
-                  <div className="input-group-datetime">
-                    <label>End Time</label>
-                    <CustomTimePicker
-                      title=""
-                      setSelectedTime={(newValue: Date | null) =>
-                        setSelectedTime(newValue)
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="input-container">
-                  <div className="input-group">
-                    <label>Maximum allowable late occurrences</label>
-                    <input type="text" placeholder="Input 1" />
-                  </div>
-                  <div className="input-group">
-                    <label>Maximum allowable absence occurrences</label>
-                    <input type="text" placeholder="Input 2" />
-                  </div>
-                  <div className="input-group2">
-                    <label>Allowed late time (minute)</label>
-                    <input type="text" placeholder="Input 3" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="student-list-container">
-              <div className="student-list-header">
-                <label className="student-list-title">Student List</label>
-                <div className="button-group">
-                  <button className="upload-button">Upload Excel File</button>
-                  <button className="add-button" onClick={handleAddNew}>
-                    Add New
-                  </button>
-                </div>
-              </div>
-              <div className="table-container">
-                <div className="table">
-                  <Table
-                    tableHeader={tableHeader}
-                    tableData={tableData}
-                    itemsPerPage={4}
-                  />
-                </div>
-              </div>
-            </div>
+                  }
+                  
           </div>
-        )}
-        {modalVisible && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                width: screenWidth < 500 ? "auto" : 297,
-                height: screenWidth < 500 ? "auto" : 341,
-                backgroundColor: "white",
-                borderRadius: 10,
-                padding: 20,
-                position: "relative",
-              }}
-            >
-              <button
-                style={{
-                  position: "absolute",
-                  top: 10,
-                  right: 10,
-                  fontSize: 24,
-                  backgroundColor: "transparent",
-                  border: "none",
-                }}
-                onClick={() => setModalVisible(false)}
-              >
-                ✕
-              </button>
-              <h1
-                style={{
-                  marginBottom: 15,
-                  marginTop: 30,
-                  fontSize: 24,
-                  fontWeight: "bold",
-                }}
-              >
-                Select a student
-              </h1>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ height: 90 }}>
-                  <label>Student name</label>
-                  <Dropdown
-                    title=""
-                    options={["Martin Blue", "Martin Gray", "Martin Green"]}
-                    style={{ marginBottom: "10px" }}
-                  />
-                  <input
-                    type="text"
-                    style={{ width: "100%", marginBottom: "10px" }}
-                  />
-                </div>
-                <div style={{ height: 90 }}>
-                  <label>Student code</label>
-                  <Input
-                    title=""
-                    placeHolder="SV12345"
-                    style={{ marginBottom: "10px" }}
-                  />
-                  <input
-                    type="text"
-                    style={{ width: "100%", marginBottom: "10px" }}
-                  />
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <RoundedButton
-                    title="CONFIRM"
-                    onClick={handleSave}
-                    style={{
-                      width: "100%",
-                      height: 46,
-                      marginTop: "auto",
-                    }}
-                    textStyle={{ fontSize: 24, fontWeight: "bold" }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "Session" && (
-          <div className="session-container">
-            <div className="table-wrapper">
-              <div className="table-container">
-                <div className="table2">
-                  <Table tableHeader={tableHeader2} tableData={tableData2} />
-                </div>
-              </div>
-            </div>
-            <div className="session-details">
-              <div className="roll-caller-info">
-                <label className="info-label">Roll Caller Name:</label>
-                <label className="info-value">John Doe</label>
-              </div>
-              <div className="student-code-info">
-                <label className="info-label">Student Code:</label>
-                <label className="info-value">S001</label>
-              </div>
-              <div className="attendance-status">
-                <label className="status-label">
-                  Student Attendance Status
-                </label>
-                <div className="table-container">
-                  <div className="table3">
-                    <Table tableHeader={tableHeader3} tableData={tableData3} />
-                  </div>
-                </div>
-              </div>
-              <div className="discussion-section">
-                <label className="discussion-label">Discussion</label>
-                <div className="comment-box">
-                  <CommentBox
-                    className="custom-comment-box"
-                    avatar="path/to/avatar.jpg"
-                    name="John Doe"
-                    content="This is a comment."
-                    timestamp="2023-01-01"
-                    onReply={() => console.log("Reply clicked")}
-                  />
-                  <button
-                    className="reply-button"
-                    onClick={() => console.log("4 Replies clicked")}
-                  >
-                    4 Replies
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
   );
 };
 
-import { Properties } from "csstype";
-const styles: { [key: string]: Properties<string | number> } = {
-  container: {
-    padding: "20px",
+function convertToTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function sortStudents(students: any, monitorCode: number, setMonitor: any){
+  const result = students.map((item: any) => {
+      const isMonitor = item.studentCode === monitorCode;
+      
+      if (isMonitor) {
+          setMonitor({
+              id: item.id,
+              name: item.name,
+              code: item.studentCode,
+          });
+      }
+
+      return {
+          id: item.id,
+          studentCode: item.studentCode,
+          name: item.name,
+          role: isMonitor ? "CLASS MONITOR" : "MEMBER"
+      };
+  });
+
+  const sortedStudents = result.sort((a: any, b: any) => {
+      if (a.role === "CLASS MONITOR" && b.role !== "CLASS MONITOR") {
+          return -1;
+      } else if (a.role !== "CLASS MONITOR" && b.role === "CLASS MONITOR") {
+          return 1;
+      } else {
+          return a.name.localeCompare(b.name);
+      }
+  });
+
+  const finalResult = sortedStudents.map((item: any, index: number) => [
+      item.id,
+      index + 1,
+      item.studentCode,
+      item.name,
+      item.role
+  ]);
+
+  return finalResult;
+}
+
+function isDateBeforeOrEqual(dateA: string, dateB: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateA) || !/^\d{4}-\d{2}-\d{2}$/.test(dateB)) {
+    throw new Error('Input must be in yyyy-mm-dd format');
+  }
+
+  const dateObjectA = new Date(dateA);
+  const dateObjectB = new Date(dateB);
+
+  return dateObjectA <= dateObjectB;
+}
+
+function isTimeBefore(timeA: string, timeB: string) {
+  if (!/^\d{2}:\d{2}$/.test(timeA) || !/^\d{2}:\d{2}$/.test(timeB)) {
+    throw new Error('Input must be in hh:mm format');
+  }
+
+  const [hoursA, minutesA] = timeA.split(':').map(Number);
+  const [hoursB, minutesB] = timeB.split(':').map(Number);
+
+  const totalMinutesA = hoursA * 60 + minutesA;
+  const totalMinutesB = hoursB * 60 + minutesB;
+
+  return totalMinutesA < totalMinutesB;
+}
+
+
+const styles: { [key: string]: React.CSSProperties } = {
+  container:{
+      display: "flex",
+      flexDirection: "column",
+      width: "100vw",
+      height: "100hw",
   },
-  containerMobile: {
-    padding: "10px",
+  tabContainer:{ 
+      display: 'flex', 
+      padding: "10px", 
+      marginTop: "20px"
   },
-  tabContainer: {
+  boldText:{
+      fontWeight: 'bold', 
+      marginBottom: '10px', 
+      display: 'block'
+  },
+  normalText:{ 
+      marginBottom: '10px', 
+      display: 'block' 
+  },
+  header:{ 
+      fontSize: 24, 
+      fontWeight: 'bold', 
+      display: 'block' 
+  },
+  textColumn:{ 
+      padding: '10px', 
+      display: 'flex', 
+      flexDirection: 'row', 
+      gap: 30
+  },
+  leftColumn:{ 
+      padding: '10px',
+      width: "fit-content",
+      minWidth: 200,
+  },
+  generalPage:{ 
+      display: 'flex', 
+      width: '100%', 
+      flexDirection: 'column'
+  },
+  classInfo:{ 
+      display: "flex", 
+      flexDirection: "column", 
+      padding: '0px 10px',
+      gap: 30,
+  },
+  sessionPage:{ 
+      display: 'flex',
+      width: "100%",
+      height: "100%"
+  },
+  sessionTableContainer:{ 
+      padding: '0px 10px' 
+  },
+  atttedanceTableContainer:{
+      padding: '10px', 
+      height: 400
+  },
+  sessionDetailsContainer:{
+      padding: '10px',
+      width: "100%"
+  },
+  rollCallerContainer:{ 
+      display: 'flex',
+      width: "100%", 
+      flexDirection: 'row', 
+      marginBottom: '10px', 
+      gap: 30,
+      alignItems: "flex-end",
+      padding: "0px 10px",
+      justifyContent: "space-between",
+  },
+  smallColumn:{ 
+      display: 'flex', 
+      flexDirection: 'column',
+  },
+  dicussionContainer:{ 
+      padding: '10px', 
+      display: 'flex', 
+      flexDirection: 'column',
+      gap: 20,
+  },
+  commentSection:{ 
+      display: "flex",
+      flexDirection: "column",
+      border: '1px solid #ccc', 
+      borderRadius: 10,
+      height: 500,
+      padding: 20,
+      minWidth: "fit-content",
+      overflow: "auto",
+      gap: 20,
+  },
+  addCommentContainer:{ 
+      display: 'flex', 
+      alignItems: 'flex-start',
+      justifyContent: "flex-start",
+      marginTop: 20,
+      paddingLeft: 10,
+      height: 200,
+  },
+  row:{
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      gap: 40,
+  },
+  saveButton:{
+      padding: "10px 30px",
+      height: "fit-content",
+      background: Colors.green,
+  },
+  buttonContainer:{
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      padding: 10,
+      marginTop: 20,
+      gap: 20,
+  },
+  buttonText:{
+      fontSize: 18,
+  },
+  input:{
+      background: Colors.red,
+  },
+  addStudentButton:{
+    padding: "10px 30px",
+    height: "fit-content",
+  },
+  shadow: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: "100vh",
     display: "flex",
-    backgroundColor: "#3A6D8C",
-    padding: "10px",
-    width: "14%",
-    marginLeft: "10px",
-    marginTop: "10px",
-    borderRadius: "5px",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
-  tabContainerMobile: {
+  messageContainer: {
+    zIndex: 10,
+    backgroundColor: "white",
+    borderRadius: "10px",
+    boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.2)",
+    padding: "10px",
+    width: "375px",
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "#3A6D8C",
-    padding: "10px",
+    gap: "10px",
+    alignItems: "flex-end",
+  },
+  formHeader:{
     width: "100%",
-    marginLeft: "0px",
-    marginTop: "10px",
-    borderRadius: "5px",
+    textAlign: "left",
+    fontSize: 26,
+    fontWeight: 600,
   },
-  tabButton: {
-    borderRadius: "5px",
-    padding: "10px 20px",
-    cursor: "pointer",
-    color: "white",
-    border: "none",
-    outline: "none",
+  addConfirmButton:{
+    width: "100%",
+    backgroundColor: Colors.green,
   },
-  tabButtonActive: {
-    backgroundColor: "#00B01A",
-    fontWeight: "bold",
-  },
-  tabButtonInactive: {
-    backgroundColor: "#3A6D8C",
-    fontWeight: "normal",
-  },
-};
+  body:{
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+    marginBottom: 20,
+  }
+}
 
 export default DetailManager;
