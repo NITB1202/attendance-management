@@ -23,6 +23,7 @@ import QuestionMessage from "../../../../component/QuestionMessage";
 import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 import ErrorMessage from "../../../../component/ErrorMessage";
 import { FiPlusCircle } from "react-icons/fi";
+import RollCallerModal from "../../../../component/RollCallerModal";
 
 
 const DetailTeacher = () => {
@@ -82,6 +83,8 @@ const DetailTeacher = () => {
         teacherId: 0,
         courseId: 0
     })
+    const [openModal, setOpenModal] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -482,7 +485,7 @@ const DetailTeacher = () => {
                                     style={styles.saveButton}
                                     textStyle={styles.buttonText}
                                     icon={<FaRegEdit size={22} color="white" />}
-                                    onClick={()=>{}}>
+                                    onClick={()=> setOpenModal(true)}>
                                 </RoundedButton>
                             </div>
 
@@ -538,6 +541,13 @@ const DetailTeacher = () => {
                             </div>
                         </div>
                     )}
+                    {
+                        openModal &&
+                        <RollCallerModal
+                            open={openModal}
+                            onClose={()=> setOpenModal(false)}>
+                        </RollCallerModal>
+                    }
                     {
                         showMessage && message.type === "question" &&
                         <QuestionMessage
