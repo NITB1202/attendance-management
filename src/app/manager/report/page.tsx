@@ -1,21 +1,43 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Edit3, Send } from "lucide-react";
-import Dropdown from "../../../../component/Dropdown";
 import RoundedButton from "../../../../component/RoundedButton";
-import Table from "../../../../component/Table"; // Import Table component có pagination và checkbox
+import Table from "../../../../component/Table";
+import CustomSelect from "../../../../component/CustomSelect";
+import { Colors } from "../../../../constant/Colors";
+import classApi from "../../../../api/classApi";
+import { useRouter } from "next/navigation";
+import { title } from "process";
+import QuestionMessage from "../../../../component/QuestionMessage";
 
 export default function Report() {
   const [isMobile, setIsMobile] = useState(false);
-  const [maxViolations, setMaxViolations] = useState<number>(6); // Giá trị cố định
-  const [selectedRows, setSelectedRows] = useState<any[][]>([]); // Hàng được chọn
+  const [selectedRows, setSelectedRows] = useState<any[][]>([]);
+  const [classData, setClassData] = useState<{
+    id: number,
+    name: string,
+    maxLate: number,
+    maxAb: number,
+  }[]>([]);
+  const [students, setStudents] = useState<any[][]>([]);
+  const [selectedClassId, setSelectedClassId] = useState(1);
+  const [selectedType, setSelectedType] = useState(0);
+  const [maxNum, setMaxNum] = useState(0);
+  const tableHeaders = ["STUDENT NAME", "STUDENT CODE", "NUMBER OF VIOLATIONS"];
+  const router = useRouter();
+  const [showMessage,setShowMessage] = useState(false);
+  const [message, setMessage] = useState({
+    type: "",
+    title: "",
+    description:""
+  });
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 600);
     };
 
-    handleResize(); // Gọi ngay để xác định trạng thái ban đầu
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -23,21 +45,40 @@ export default function Report() {
     };
   }, []);
 
-  const [selectedOption, setSelectedOption] = useState<string>("");
+  useEffect(() => {
+    const fetchData = async () => {
+      const classResponse = await classApi.getAll();
+      const formattedClassData = classResponse.data.map((item: any)=>({
+        id: item.id,
+        name: item.name,
+        maxLate: item.allowedLateTime,
+        maxAb: item.allowedAbsent !== null? item.allowedAbsent : 3,
+      }));
 
-  const handleDropdownChange = (value: string) => {
-    setSelectedOption(value);
-    console.log("Selected option:", value);
-  };
+      setClassData(formattedClassData);
+      setSelectedClassId(formattedClassData.at(0).id);
+      setMaxNum(formattedClassData.at(0).maxLate);
+    };
 
-  const tableHeaders = ["STUDENT NAME", "STUDENT CODE", "NUMBER OF VIOLATIONS"];
-  const tableData = [
-    ["Jacob Wilton", "SV230841", 7],
-    ["Jane Smith", "SV123456", 3],
-    ["Mark Taylor", "SV654321", 5],
-    ["Emily Davis", "SV789012", 2],
-    ["John Doe", "SV345678", 4],
-  ];
+    fetchData();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      const response = await classApi.getViolation(selectedClassId);
+      const formattedData = response.data.map((item: any)=>[
+          item.name,
+          item.studentCode,
+          item.late,
+          item.absentWithoutPermission + item.absentWithPermission
+      ]);
+      
+      setStudents(formattedData);
+    };
+
+    fetchStudents();
+  }, [selectedClassId]);
 
   const handleSelectedRowsChange = (rows: any[][]) => {
     setSelectedRows(rows);
@@ -46,13 +87,41 @@ export default function Report() {
 
   const handleSendWarning = () => {
     console.log("Send warning to:", selectedRows);
-    // Thêm logic gửi cảnh báo ở đây
+    setShowMessage(true);
+    setMessage({
+      type: "question",
+      title: "Confirmation",
+      description: "Do you want to send a warning message email to all the selected?"
+    })
+    
   };
 
   const handleUpdateWarning = () => {
-    console.log("Update warning content");
-    // Thêm logic cập nhật nội dung cảnh báo ở đây
+    router.push("/manager/update-report");
   };
+
+  const handleSelectClass = (index: number)=>{
+    const selectedClass = classData.at(index);
+    if(selectedClass){
+      setSelectedClassId(selectedClass?.id);
+      if(selectedType === 0)
+        setMaxNum(selectedClass.maxLate);
+      else
+        setMaxNum(selectedClass.maxAb);
+    }
+  }
+
+  const handleSelectType = (index: number) =>{
+    setSelectedType(index);
+    const selectedClass = classData.find(item => item.id === selectedClassId);
+    if(selectedClass){
+      if(index === 0)
+        setMaxNum(selectedClass.maxLate);
+      else
+        setMaxNum(selectedClass.maxAb);
+    }
+
+  }
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
@@ -66,7 +135,7 @@ export default function Report() {
       marginRight: 20,
     },
     dropdown: {
-      width: isMobile ? "50%" : "50%", // Responsive width
+      width: isMobile ? "50%" : "50%",
       display: "flex",
       flexDirection: "row",
       gap: 20,
@@ -77,17 +146,6 @@ export default function Report() {
       alignItems: "flex-start",
       gap: 13,
     },
-    maxViolationsInput: {
-      width: "60px",
-      height: "52%",
-      padding: "5px",
-      textAlign: "center",
-      border: "1px solid #959595",
-      borderRadius: "4px",
-      backgroundColor: "#f0f0f0",
-      color: "#000",
-      pointerEvents: "none", // Không cho phép chỉnh sửa
-    },
     label: {
       fontWeight: 600,
       fontSize: "16px",
@@ -95,38 +153,58 @@ export default function Report() {
     buttonRow: {
       display: "flex",
       flexDirection: "row",
-      gap: "20px", // Khoảng cách giữa các nút trong cùng một hàng
+      gap: "20px",
     },
     tableContainer: {
       display: "flex",
       width: "100%",
     },
+     title:{
+        fontFamily: "Roboto, sans-serif",
+        fontSize: 20,
+        fontWeight: 600,
+    },
+    inputContainer: {
+        borderRadius: "5px",
+        borderWidth: "1px",
+        borderColor: Colors.gray,
+        height: 44,
+        background: Colors.disable,
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        padding: "10px",
+    },
+    inputText:{
+        fontFamily: "Roboto, sans-serif",
+        fontSize: "16px",
+    },
+    titleInputContainer:{
+        display: "flex",
+        flexDirection: "column",
+        gap: 10
+    }
   };
 
   return (
     <div style={styles.container}>
       {/* Dropdown */}
       <div style={styles.dropdown}>
-        <Dropdown
+        <CustomSelect
           title="Class name"
-          options={["SE100.P10", "SE100.P12", "SE102.P12"]}
-          style={{ borderColor: "#959595" }}
-          onChange={handleDropdownChange}
-        />
-        <Dropdown
+          options={classData.map(item => item.name)}
+          onSelect={handleSelectClass}>
+        </CustomSelect>
+        <CustomSelect
           title="Type"
-          options={["Late", "Absence", "On-time"]}
-          style={{ borderColor: "#959595" }}
-          onChange={handleDropdownChange}
-        />
-        <div style={styles.maxViolationsContainer}>
-          <label style={styles.label}>Maximum number of violations</label>
-          <input
-            type="number"
-            value={maxViolations}
-            readOnly // Thuộc tính readonly
-            style={styles.maxViolationsInput}
-          />
+          options={['Late',"Absent"]}
+          onSelect={handleSelectType}>
+        </CustomSelect>
+        <div style={styles.titleInputContainer}>
+          <label style={styles.title}>Maximum number of violations</label>
+          <div style={styles.inputContainer}>
+            <h1 style={styles.inputText}>{maxNum}</h1>
+          </div>
         </div>
       </div>
 
@@ -137,11 +215,11 @@ export default function Report() {
           icon={<Send size={24} color="white" />}
           style={{
             backgroundColor: "#D32F2F",
-            padding: "7px 10px", // Tùy chỉnh padding
+            padding: "10px 30px",
           }}
           textStyle={{
-            fontSize: "20px", // Chữ nhỏ hơn
-            fontWeight: "bold", // Font chữ không đậm (nếu cần)
+            fontSize: "20px",
+            fontWeight: "bold", 
           }}
         />
         <RoundedButton
@@ -150,7 +228,7 @@ export default function Report() {
           icon={<Edit3 size={24} color="white" />}
           style={{
             backgroundColor: "#3A6D8C",
-            padding: "7px 10px",
+            padding: "10px 30px",
           }}
           textStyle={{
             fontSize: "20px",
@@ -162,12 +240,26 @@ export default function Report() {
       <div style={styles.tableContainer}>
         <Table
           tableHeader={tableHeaders}
-          tableData={tableData}
-          itemsPerPage={4}
+          tableData={selectedType === 0? removeColumn(students, 3) : removeColumn(students,2)}
+          itemsPerPage={5}
           showHeaderCheckbox={true}
           onSelectedRowsChange={handleSelectedRowsChange}
         />
       </div>
+      {
+        showMessage && message.type === "question" &&
+        <QuestionMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}
+          onAgree={()=> setShowMessage(false)}>
+        </QuestionMessage>
+      }
     </div>
   );
 }
+
+function removeColumn(matrix: any[][], columnIndex: number) {
+  return matrix.map(row => row.filter((_, colIndex) => colIndex !== columnIndex));
+}
+
