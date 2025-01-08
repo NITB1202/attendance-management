@@ -128,7 +128,7 @@ const handleClickRow = (row: any[]) =>{
     });
     if(foundItem){
         const id = foundItem.at(0);
-        router.push(`/manager/detail?id=${id}`);
+        router.push(`/teacher/detail?id=${id}`);
     }
 }
 
@@ -148,6 +148,22 @@ const handleSelectTeacher = (index: number) =>{
   const selectTeacher = teachers.at(index);
   updateCreateFormField("teacherId", selectTeacher?.at(0));
   setSelectTeacherCode(selectTeacher?.at(2));
+}
+
+const handleCloseModal = () => {
+  setModalVisible(false);
+  setFile(null);
+  setFileName("");
+  setCreateRequest({
+    name: "",
+    beginDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    allowedLateTime: 3,
+    teacherId: 1 ,
+    courseId: 1,
+  })
 }
 
 const handleUploadFile = ()=>{
@@ -172,7 +188,7 @@ const handleSave = ()=>{
       title: "Error",
       description: "All fields must be filled."
     });
-    // return;
+    return;
   }
 
   if(!isDateBeforeOrEqual(createRequest.beginDate, createRequest.endDate))
@@ -182,6 +198,7 @@ const handleSave = ()=>{
       title: "Error",
       description: "Start date must be before or equal to end date."
     })
+    return;
   }
 
   if(!isTimeBefore(createRequest.startTime, createRequest.endTime))
@@ -191,6 +208,7 @@ const handleSave = ()=>{
       title: "Error",
       description: "Start time must be before end time."
     })
+    return;
   }
 
   if(file === null)
@@ -211,22 +229,6 @@ const handleSave = ()=>{
   catch(error){
     console.log(error);
   }
-}
-
-const handleCloseModal = () => {
-  setModalVisible(false);
-  setFile(null);
-  setFileName("");
-  setCreateRequest({
-    name: "",
-    beginDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    allowedLateTime: 3,
-    teacherId: 1 ,
-    courseId: 1,
-  })
 }
 
 const justifyContent = screenWidth > 700? "flex-end": "flex-start";  
