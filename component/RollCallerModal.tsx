@@ -1,162 +1,174 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Modal, Button, List } from "antd";
+import { Modal, List } from "antd";
 import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import Dropdown from "./Dropdown";
-import Input from "./Input";
 import RoundedButton from "./RoundedButton";
+import CustomSelect from "./CustomSelect";
+import { Colors } from "../constant/Colors";
+import ErrorMessage from "./ErrorMessage";
 
 interface RollCallerModalProps {
   open: boolean;
   onClose: () => void;
-  rollCallers?: { name: string; code: string }[];
-  absent?: string[];
+  students: any[][];
+  sessionId: number;
+  rollCaller:{name: string, code: string}
 }
 
-const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
-  const rollCallers = [
-    { name: "Nguyen Van A", code: "A001" },
-    { name: "Tran Thi B", code: "B002" },
-    { name: "Le Van C", code: "C003" },
-  ];
-
-  const [rollCallerName, setRollCallerName] = useState(rollCallers[0].name);
-  const [studentCode, setStudentCode] = useState("");
-  useEffect(() => {
-    const defaultRollCaller = rollCallers.find(
-      (caller) => caller.name === rollCallerName
-    );
-    setStudentCode(defaultRollCaller ? defaultRollCaller.code : "");
-  }, [rollCallerName]);
-
-  const handleDropdownChange = (value: React.SetStateAction<string>) => {
-    setRollCallerName(value);
-    const selectedRollCaller = rollCallers.find(
-      (caller) => caller.name === value
-    );
-    setStudentCode(selectedRollCaller ? selectedRollCaller.code : "");
-  };
-
-  const absent = ["Morton Hamsey", "Jack Tarco", "Alice Smith", "John Doe"];
-
+const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, students, sessionId, rollCaller }) => {
+  const filteredStudentsList = filterList(rollCaller.code, students);
+  
+  const [rollCallerName, setRollCallerName] = useState(rollCaller.name);
+  const [studentCode, setStudentCode] = useState(rollCaller.code);
+  const absent = students.map(item => item.at(3));
+  
   const [absentList, setAbsentList] = useState<string[]>([]);
-  const [filteredAbsent, setFilteredAbsent] = useState<string[]>(absent);
-  const [newAbsentee, setNewAbsentee] = useState<string>(
-    filteredAbsent[0] || ""
-  );
+  const [filteredAbsent, setFilteredAbsent] = useState<string[]>([]);
+  const [newAbsentee, setNewAbsentee] = useState<string>(absent.length > 0 ? absent[0] : "");
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
-    const updatedFilteredAbsent = absent.filter(
-      (name) => !absentList.includes(name)
-    );
-    setFilteredAbsent(updatedFilteredAbsent);
-    if (
-      !updatedFilteredAbsent.includes(newAbsentee) &&
-      updatedFilteredAbsent.length > 0
-    ) {
-      setNewAbsentee(updatedFilteredAbsent[0]);
+    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
+    if (JSON.stringify(updatedFilteredAbsent) !== JSON.stringify(filteredAbsent)) {
+      setFilteredAbsent(updatedFilteredAbsent);
     }
-  }, [absentList]);
+  }, [absentList, absent, filteredAbsent]);
+
+  const handleDropdownChange = (index: number) => {
+    const selectRollCaller = filteredStudentsList.at(index);
+    setRollCallerName(selectRollCaller?.at(3));
+    setStudentCode(selectRollCaller?.at(2));
+  };
 
   const handleAddAbsentee = () => {
     if (newAbsentee && !absentList.includes(newAbsentee)) {
-      setAbsentList([...absentList, newAbsentee]);
-      setFilteredAbsent(filteredAbsent.filter((name) => name !== newAbsentee));
-      setNewAbsentee("");
+      setAbsentList(prevList => [...prevList, newAbsentee]);
     }
   };
 
   const handleRemoveAbsentee = (name: string) => {
-    setAbsentList(absentList.filter((item) => item !== name));
-    setFilteredAbsent([...filteredAbsent, name]);
+    setAbsentList(prevList => prevList.filter(item => item !== name));
   };
 
   const handleSave = () => {
-    console.log("Attendance status updated", { rollCallerName, absentList });
-    onClose();
+    if (absentList.includes(rollCallerName)) {
+      setShowError(true);
+      return;
+    }
+
+    const selectedStudents = students.filter(item => absentList.includes(item.at(3)));
+    const studentIds = selectedStudents.map(item => item.at(0));
+
+    console.log(studentIds);
+    // onClose();
   };
 
+  useEffect(() => {
+    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
+    if (updatedFilteredAbsent.length > 0 && !updatedFilteredAbsent.includes(newAbsentee)) {
+      setNewAbsentee(updatedFilteredAbsent[0]);
+    } else if (updatedFilteredAbsent.length === 0 && newAbsentee !== "") {
+      setNewAbsentee("");
+    }
+  }, [absentList, absent, newAbsentee]);
+
   return (
-    <Modal
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      title={null}
-      width={500}
-    >
-      <div style={styles.modalContent}>
-        <div style={styles.label}>Roll Caller</div>
-        <div style={styles.row}>
-          <div style={styles.item}>
-            <Dropdown
-              title="Roll-caller name"
-              options={rollCallers.map((caller) => caller.name)}
-              style={styles.fullWidth}
-              onChange={handleDropdownChange}
+    <div>
+      {showError ? (
+        <ErrorMessage
+          title="Invalid roll caller"
+          description="The roll caller cannot be included in the absent student list."
+          setOpen={setShowError}
+        />
+      ) : (
+        <Modal open={open} onCancel={onClose} footer={null} title={null} width={500}>
+          <div style={styles.modalContent}>
+            <div style={styles.label}>Roll Caller</div>
+            <div style={styles.row}>
+              <div style={styles.item}>
+                <CustomSelect
+                  title="Roll-caller name"
+                  textStyle={{ fontWeight: 500 }}
+                  options={filteredStudentsList.map((caller) => caller.at(3))}
+                  style={styles.fullWidth}
+                  onSelect={handleDropdownChange}
+                />
+              </div>
+              <div style={styles.item}>
+                <div style={styles.titleInputContainer}>
+                  <label style={styles.title}>Student code</label>
+                  <div style={styles.inputContainer}>
+                    <h1 style={styles.inputText}>{studentCode}</h1>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.section}>
+              <label style={{ ...styles.label, marginTop: 20 }}>Absent with permission</label>
+              <List
+                dataSource={absentList}
+                renderItem={(item) => (
+                  <List.Item style={styles.listItem}>
+                    <button
+                      onClick={() => handleRemoveAbsentee(item)}
+                      style={{
+                        marginRight: 10,
+                        fontSize: 18,
+                        padding: 5,
+                        borderRadius: 3,
+                      }}
+                    >
+                      <MinusCircleOutlined size={24} color="white" />
+                    </button>
+                    <span>{item}</span>
+                  </List.Item>
+                )}
+              />
+            </div>
+
+            <div style={styles.row1}>
+              <Dropdown
+                title=""
+                options={filteredAbsent}
+                style={styles.fullWidthA}
+                onChange={(value) => setNewAbsentee(value)}
+              />
+              <button
+                onClick={handleAddAbsentee}
+                disabled={!newAbsentee}
+                style={{
+                  fontSize: 18,
+                  marginTop: 8,
+                  padding: 5,
+                  borderRadius: 3,
+                }}
+              >
+                <PlusCircleOutlined size={30} color="white" />
+              </button>
+            </div>
+
+            <RoundedButton
+              title="CONFIRM"
+              style={styles.saveButton}
+              textStyle={styles.butttonText}
+              onClick={handleSave}
             />
           </div>
-          <div style={styles.item}>
-            <div style={styles.inputContainer}>
-              <label style={styles.title}>Student code</label>
-              <div style={{ ...styles.input, fontSize: 16 }}>{studentCode}</div>
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.section}>
-          <label style={styles.label}>Absent with permission</label>
-          <List
-            dataSource={absentList}
-            renderItem={(item) => (
-              <List.Item style={styles.listItem}>
-                <Button
-                  type="primary"
-                  danger
-                  icon={<MinusCircleOutlined />}
-                  onClick={() => handleRemoveAbsentee(item)}
-                  style={{
-                    marginRight: 10,
-                    tabSize: 24,
-                    fontSize: 18,
-                  }}
-                />
-                <span>{item}</span>
-              </List.Item>
-            )}
-          />
-        </div>
-
-        <div style={styles.row1}>
-          <Dropdown
-            title=""
-            options={filteredAbsent}
-            style={styles.fullWidthA}
-            onChange={(value) => setNewAbsentee(value)}
-          />
-          <Button
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={handleAddAbsentee}
-            disabled={!newAbsentee}
-            style={{
-              tabSize: 24,
-              fontSize: 18,
-              backgroundColor: "#00B01A",
-              color: "white",
-              marginTop: 8,
-            }}
-          />
-        </div>
-
-        <RoundedButton
-          title="CONFIRM"
-          style={styles.saveButton}
-          onClick={handleSave}
-        />
-      </div>
-    </Modal>
+        </Modal>
+      )}
+    </div>
   );
 };
+
+
+function filterList(code: string, students: any[][]){
+  const selected = students.find(item => item.at(2) === code);
+  const remaining = students.filter(item => item.at(2) !== code);
+  return selected ? [selected, ...remaining] : students;
+}
+
 
 // Styles
 const styles: { [key: string]: React.CSSProperties } = {
@@ -165,7 +177,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   label: {
     fontWeight: "bold",
-    fontSize: "20px",
+    fontSize: 26,
     marginBottom: "15px",
     display: "block",
   },
@@ -174,9 +186,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   fullWidthA: {
     width: 203,
-  },
-  title: {
-    fontSize: 16,
   },
   listItem: {
     display: "flex",
@@ -187,18 +196,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   row: {
     display: "flex",
     alignItems: "center",
-    gap: "25px",
+    gap: "10px",
     justifyContent: "flex-start",
-  },
-  input: {
-    display: "flex",
-    justifyContent: "center",
-    borderRadius: "5px",
-    borderWidth: "1px",
-    borderColor: "grey",
-    padding: "8px",
-    width: "100%",
-    marginTop: 10,
   },
   row1: {
     display: "flex",
@@ -210,7 +209,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   section: {
     marginBottom: "20px",
   },
-
   flex: {
     flex: 1,
   },
@@ -221,6 +219,33 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: 25,
     width: "100%",
   },
+  butttonText:{
+    fontSize: 20,
+  },
+   title:{
+      fontFamily: "Roboto, sans-serif",
+      fontSize: 20,
+    },
+  inputContainer: {
+      borderRadius: "5px",
+      borderWidth: "1px",
+      borderColor: Colors.gray,
+      height: 44,
+      background: Colors.disable,
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      padding: "10px",
+  },
+  inputText:{
+      fontFamily: "Roboto, sans-serif",
+      fontSize: "16px",
+  },
+  titleInputContainer:{
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+  }
 };
 
 export default RollCallerModal;
