@@ -7,6 +7,8 @@ import RoundedButton from "./RoundedButton";
 import CustomSelect from "./CustomSelect";
 import { Colors } from "../constant/Colors";
 import ErrorMessage from "./ErrorMessage";
+import attendanceApi from "../api/attendanceApi";
+import classApi from "../api/classApi";
 
 interface RollCallerModalProps {
   open: boolean;
@@ -14,6 +16,8 @@ interface RollCallerModalProps {
   students: any[][];
   sessionId: number;
   rollCaller: { name: string; code: string };
+  setRollCaller: (code: string, name: string) => void;
+  setUpdate: (update: boolean) => void;
 }
 
 const RollCallerModal: React.FC<RollCallerModalProps> = ({
@@ -22,6 +26,8 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({
   students,
   sessionId,
   rollCaller,
+  setRollCaller,
+  setUpdate
 }) => {
   const filteredStudentsList = filterList(rollCaller.code, students);
 
@@ -63,7 +69,7 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({
     setAbsentList((prevList) => prevList.filter((item) => item !== name));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (absentList.includes(rollCallerName)) {
       setShowError(true);
       return;
@@ -73,9 +79,19 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({
       absentList.includes(item.at(3))
     );
     const studentIds = selectedStudents.map((item) => item.at(0));
+    const rollCaller = students.find(item=> item.at(2) === studentCode);
 
-    console.log(studentIds);
-    // onClose();
+    try{
+      if(studentIds.length > 0)
+        await attendanceApi.updateAbsent(sessionId, studentIds);
+      await classApi.setRollCaller(rollCaller?.at(0),sessionId);
+      setRollCaller(studentCode, rollCallerName);
+      setUpdate(true);
+      onClose();
+    }
+    catch(error){
+      console.log(error);
+    }
   };
 
   useEffect(() => {

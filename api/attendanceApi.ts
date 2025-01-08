@@ -17,6 +17,21 @@ const attendanceApi = {
         const url = "attendance/"+id;
         return axiosInstance.get(url);
     },
+    async updateAbsent(sessionId: number, studentIds: number[]){
+        try {
+            const results = await Promise.all(
+                studentIds.map((studentId) => {
+                    const url = `/attendance/${sessionId}/${studentId}`;
+                    return axiosInstance.post(url);
+                })
+            );
+            return results;
+        } catch (error) {
+            console.error("Error occurred during API calls:", error);
+            throw error;
+        }
+
+    }
 }
 
 export default attendanceApi;
