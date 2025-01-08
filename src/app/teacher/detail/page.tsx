@@ -326,18 +326,6 @@ const DetailTeacher = () => {
 
     const isMobile = screenWidth < 700;
     const flexDirection = isMobile ? "column" : "row";
-
-    const handleSelectRollCaller = (index: number)=>{
-        const rollCallerSelectList = sortRollcallerToTop(selectOptions, rollCaller.name);
-        const selectName = rollCallerSelectList.at(index);
-        const selectStudent = students.find((item)=> item.at(3)=== selectName);
-        if(selectStudent){
-            setRollcaller({
-                code: selectStudent.at(2),
-                name: selectStudent.at(3),
-            })
-        }
-    }
     
     return (
         <div style={styles.container}>
@@ -479,7 +467,7 @@ const DetailTeacher = () => {
                         </div>
                         <div style={styles.sessionDetailsContainer}>
                             <div style={styles.rollCallerContainer}>
-                                <div style={{ display: "flex"}}>
+                                <div style={{ display: "flex", gap: 30}}>
                                     <div style={styles.smallColumn}>
                                         <p style={{ fontSize: 20,fontWeight: 700}}>Roll caller name:</p>
                                         <p style={{ fontSize: 20, fontWeight: 700}}>Student code:</p>
@@ -622,13 +610,6 @@ function sortStudents(students: any, monitorCode: number, setMonitor: any){
     return finalResult;
 }
 
-function sortRollcallerToTop(options: string[], name: string){
-    const nameItem = options.filter(item => item === name);
-    const otherItems = options.filter(item => item !== name);
-    return [...nameItem, ...otherItems];
-}
-
-
 const styles: { [key: string]: React.CSSProperties } = {
     container:{
         display: "flex",
@@ -706,7 +687,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     smallColumn:{ 
         display: 'flex', 
         flexDirection: 'column',
-        padding: "0px 10px"
     },
     dicussionContainer:{ 
         padding: '10px', 

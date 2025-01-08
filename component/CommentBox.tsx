@@ -15,9 +15,10 @@ interface CommentBoxProps {
     onCancel?: () => void;
     avatarNumber?: number;
     setUpdate: () => void;
+    disableReply?: boolean;
 }
 
-const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, timestamp, replies, onCancel, avatarNumber = 1, setUpdate}: CommentBoxProps) => {
+const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, timestamp, replies, onCancel, avatarNumber = 1, setUpdate, disableReply = false}: CommentBoxProps) => {
     const [clickReply, setClickReply] = useState(false);
     const [showAll, setShowAll] = useState(false);
     const avatarLink = "/reply_avatar/reply_" + avatarNumber + ".jpg";
@@ -50,11 +51,13 @@ const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, t
                 </div>
             </div>
             <div style={styles.buttonContainer}>
-                <button
-                    onClick={()=> setClickReply(!clickReply)}
-                    style={styles.replyButton}>
-                    Reply
-                </button>
+                {   !disableReply && 
+                    <button
+                        onClick={()=> setClickReply(!clickReply)}
+                        style={styles.replyButton}>
+                        Reply
+                    </button>
+                }
             </div>
         </div>
         {
@@ -90,6 +93,7 @@ const CommentBox: React.FC<CommentBoxProps> = ({ sessionId, id, user, content, t
                         timestamp={extractDate(item.askedTime)}
                         replies={item.replies}
                         avatarNumber={avatarNumber+1}
+                        disableReply={disableReply}
                         setUpdate={setUpdate}>
                     </CommentBox>
                     ))

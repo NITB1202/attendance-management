@@ -47,6 +47,7 @@ const ClassManager = () => {
     title: "",
     description: "",
   })
+  const [update, setUpdate] = useState(false);
 
   useEffect(() => {
       const handleResize = () => {
@@ -107,7 +108,7 @@ const ClassManager = () => {
     };
   
     fetchData();
-}, []);
+}, [update]);
 
 const tableHeader = [
     "CLASS NAME",
@@ -128,7 +129,7 @@ const handleClickRow = (row: any[]) =>{
     });
     if(foundItem){
         const id = foundItem.at(0);
-        router.push(`/teacher/detail?id=${id}`);
+        router.push(`/manager/detail?id=${id}`);
     }
 }
 
@@ -180,7 +181,7 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     }
 };
 
-const handleSave = ()=>{
+const handleSave = async ()=>{
   if(Object.values(createRequest).some(value => value === ""))
   {
     setShowError(true);
@@ -224,10 +225,26 @@ const handleSave = ()=>{
   const info = JSON.stringify(createRequest, null, 2);
 
   try{
+    setUpdate(true);
+    const classResponse = await classApi.create(info, file);
 
+    const firstStudentId = classResponse.data.students.at(0).id;
+    const classroomId = classResponse.data.id;
+    console.log(classroomId);
+    await classApi.updateClassMonitor(classroomId, firstStudentId);
+
+    const numberSessions = daysBetweenDates(createRequest.beginDate, createRequest.endDate);
+    const sessionResponse = await classApi.addSession(numberSessions, classroomId);
+    const sessionIds = sessionResponse.data.sessions.map((item:any)=>item.id);
+    await classApi.assignRollCaller(firstStudentId, sessionIds);
+
+    handleCloseModal();
   }
   catch(error){
     console.log(error);
+  }
+  finally{
+    setUpdate(false);
   }
 }
 
@@ -462,6 +479,16 @@ function isTimeBefore(timeA: string, timeB: string) {
   const totalMinutesB = hoursB * 60 + minutesB;
 
   return totalMinutesA < totalMinutesB;
+}
+
+function daysBetweenDates(date1: string, date2: string) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+
+  const timeDifference = Math.abs(d2.getTime() - d1.getTime());
+  const daysDifference = timeDifference / (1000 * 3600 * 24);
+
+  return daysDifference;
 }
 
 const styles: { [key: string]: Properties<string | number> } = {
