@@ -20,7 +20,7 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
     { name: "Le Van C", code: "C003" },
   ];
 
-  const [rollCallerName, setRollCallerName] = useState(rollCallers[0].name); // Giá trị mặc định là tên đầu tiên
+  const [rollCallerName, setRollCallerName] = useState(rollCallers[0].name);
   const [studentCode, setStudentCode] = useState("");
   useEffect(() => {
     const defaultRollCaller = rollCallers.find(
@@ -39,20 +39,17 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
 
   const absent = ["Morton Hamsey", "Jack Tarco", "Alice Smith", "John Doe"];
 
-  const [absentList, setAbsentList] = useState<string[]>([]); // Danh sách vắng mặt
-  const [filteredAbsent, setFilteredAbsent] = useState<string[]>(absent); // Lọc những người chưa thêm vào danh sách vắng mặt
+  const [absentList, setAbsentList] = useState<string[]>([]);
+  const [filteredAbsent, setFilteredAbsent] = useState<string[]>(absent);
   const [newAbsentee, setNewAbsentee] = useState<string>(
     filteredAbsent[0] || ""
-  ); // Sử dụng phần tử đầu tiên của filteredAbsent làm giá trị mặc định
+  );
 
-  // Cập nhật filteredAbsent khi absentList thay đổi
   useEffect(() => {
     const updatedFilteredAbsent = absent.filter(
       (name) => !absentList.includes(name)
     );
     setFilteredAbsent(updatedFilteredAbsent);
-
-    // Nếu filteredAbsent có giá trị mới, thì set lại newAbsentee
     if (
       !updatedFilteredAbsent.includes(newAbsentee) &&
       updatedFilteredAbsent.length > 0
@@ -63,15 +60,15 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
 
   const handleAddAbsentee = () => {
     if (newAbsentee && !absentList.includes(newAbsentee)) {
-      setAbsentList([...absentList, newAbsentee]); // Thêm vào danh sách vắng mặt
-      setFilteredAbsent(filteredAbsent.filter((name) => name !== newAbsentee)); // Loại bỏ tên khỏi dropdown
-      setNewAbsentee(""); // Reset giá trị của input sau khi thêm
+      setAbsentList([...absentList, newAbsentee]);
+      setFilteredAbsent(filteredAbsent.filter((name) => name !== newAbsentee));
+      setNewAbsentee("");
     }
   };
 
   const handleRemoveAbsentee = (name: string) => {
     setAbsentList(absentList.filter((item) => item !== name));
-    setFilteredAbsent([...filteredAbsent, name]); // Thêm lại tên vào dropdown khi được loại bỏ
+    setFilteredAbsent([...filteredAbsent, name]);
   };
 
   const handleSave = () => {
@@ -99,12 +96,10 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
             />
           </div>
           <div style={styles.item}>
-            <Input
-              title="Student code"
-              defaultValue={studentCode}
-              disable={true}
-              style={{ ...styles.fullWidth, fontSize: 16 }}
-            />
+            <div style={styles.inputContainer}>
+              <label style={styles.title}>Student code</label>
+              <div style={{ ...styles.input, fontSize: 16 }}>{studentCode}</div>
+            </div>
           </div>
         </div>
 
@@ -136,13 +131,13 @@ const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
             title=""
             options={filteredAbsent}
             style={styles.fullWidthA}
-            onChange={(value) => setNewAbsentee(value)} // Cập nhật newAbsentee khi người dùng chọn tên
+            onChange={(value) => setNewAbsentee(value)}
           />
           <Button
             type="primary"
             icon={<PlusCircleOutlined />}
             onClick={handleAddAbsentee}
-            disabled={!newAbsentee} // Disable nút nếu không có tên được chọn
+            disabled={!newAbsentee}
             style={{
               tabSize: 24,
               fontSize: 18,
@@ -180,6 +175,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   fullWidthA: {
     width: 203,
   },
+  title: {
+    fontSize: 16,
+  },
   listItem: {
     display: "flex",
     justifyContent: "flex-start",
@@ -189,8 +187,18 @@ const styles: { [key: string]: React.CSSProperties } = {
   row: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
+    gap: "25px",
     justifyContent: "flex-start",
+  },
+  input: {
+    display: "flex",
+    justifyContent: "center",
+    borderRadius: "5px",
+    borderWidth: "1px",
+    borderColor: "grey",
+    padding: "8px",
+    width: "100%",
+    marginTop: 10,
   },
   row1: {
     display: "flex",
@@ -202,6 +210,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   section: {
     marginBottom: "20px",
   },
+
   flex: {
     flex: 1,
   },
