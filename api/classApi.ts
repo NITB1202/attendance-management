@@ -61,7 +61,10 @@ const classApi = {
     addStudent(classId: any, studentId: number){
         const url = "/classroom/"+ classId + "/"+ studentId;
         return axiosInstance.put(url);
+    },
+    getViolation(classId: any){
+        const url = "/student/violation/"+ classId;
+        return axiosInstance.get(url);
     }
 }
-
 export default classApi;

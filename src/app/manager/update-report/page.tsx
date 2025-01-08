@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Table from "../../../../component/Table";
+import { Colors } from "../../../../constant/Colors";
 
 export default function ReportUpdate() {
   const [isMobile, setIsMobile] = useState(false);
@@ -47,7 +48,7 @@ export default function ReportUpdate() {
       marginBottom: "20px",
     },
     highlightedText: {
-      color: "#3A6D8C", // Màu xanh cho phần trong ngoặc []
+      color: "#3A6D8C",
       fontWeight: 300,
     },
     tableContainer: {
@@ -77,7 +78,7 @@ export default function ReportUpdate() {
       width: 406,
     },
     saveButton: {
-      backgroundColor: "#28a745",
+      backgroundColor: Colors.green,
       color: "white",
       border: "none",
       padding: "12px 24px",
