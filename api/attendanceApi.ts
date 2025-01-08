@@ -30,7 +30,10 @@ const attendanceApi = {
             console.error("Error occurred during API calls:", error);
             throw error;
         }
-
+    },
+    sendMessage(classId: number, opinion: string, studentList: any[]){
+        const url = "/email/" + classId;
+        return axiosInstance.post(url, {opinion, studentList})
     }
 }
 

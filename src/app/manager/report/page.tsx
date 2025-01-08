@@ -7,8 +7,10 @@ import CustomSelect from "../../../../component/CustomSelect";
 import { Colors } from "../../../../constant/Colors";
 import classApi from "../../../../api/classApi";
 import { useRouter } from "next/navigation";
-import { title } from "process";
 import QuestionMessage from "../../../../component/QuestionMessage";
+import ErrorMessage from "../../../../component/ErrorMessage";
+import attendanceApi from "../../../../api/attendanceApi";
+import SuccessfulMessage from "../../../../component/SuccessfulMesage";
 
 export default function Report() {
   const [isMobile, setIsMobile] = useState(false);
@@ -82,11 +84,9 @@ export default function Report() {
 
   const handleSelectedRowsChange = (rows: any[][]) => {
     setSelectedRows(rows);
-    console.log("Selected rows:", rows);
   };
 
   const handleSendWarning = () => {
-    console.log("Send warning to:", selectedRows);
     setShowMessage(true);
     setMessage({
       type: "question",
@@ -120,7 +120,50 @@ export default function Report() {
       else
         setMaxNum(selectedClass.maxAb);
     }
+  }
 
+  const handleAgree =async ()=>{
+    if(selectedRows.length === 0)
+    {
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "You haven't selected any row yet."
+      });
+      return;
+    }
+
+    let studentList = [];
+    
+    for(let i = 0; i< selectedRows.length; i++){
+      const info ={
+        typeViolation: selectedType === 0? "late": "absent" ,
+        "studentCode": selectedRows.at(i)?.at(1),
+        "numberViolations": selectedRows.at(i)?.at(2),
+        "maximumViolationAllowed": maxNum
+      };
+
+      studentList.push(info);
+    }
+
+    let opinion = sessionStorage.getItem("opinion");
+    if(opinion === null)
+    opinion = "This is a warning message. Please make sure to attend class on time from now on.";
+    sessionStorage.removeItem("opinion");
+
+    try{
+      await attendanceApi.sendMessage(selectedClassId, opinion, studentList);
+      setShowMessage(true);
+      setMessage({
+        type: "success",
+        title: "Send successfully",
+        description: "The warning message has been sent to the students."
+      })
+    }
+    catch(error){
+      console.log(error);
+    }
   }
 
   const styles: { [key: string]: React.CSSProperties } = {
@@ -252,8 +295,24 @@ export default function Report() {
           title={message.title}
           description={message.description}
           setOpen={setShowMessage}
-          onAgree={()=> setShowMessage(false)}>
+          onAgree={handleAgree}>
         </QuestionMessage>
+      }
+      {
+        showMessage && message.type === "error" &&
+        <ErrorMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}>
+        </ErrorMessage>
+      }
+      {
+        showMessage && message.type === "success" &&
+        <SuccessfulMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowMessage}>
+        </SuccessfulMessage>
       }
     </div>
   );
