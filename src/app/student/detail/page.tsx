@@ -287,16 +287,15 @@ const DetailStudent = () => {
                                     <p style={{fontSize: 20}}>{rollCaller.name}</p>
                                     <p style={{fontSize: 20}}>{rollCaller.code}</p>
                                 </div>
-                            </div>
-
-                            <div style={styles.buttonContainer}>
-                                <RoundedButton
-                                    title="Do survey"
-                                    icon={<RiSurveyLine size={22} color="white"/>}
-                                    style={{backgroundColor: Colors.green}}
-                                    textStyle={{ fontSize: 18}}
-                                    onClick={handleNavigate}>
-                                </RoundedButton>
+                                <div style={styles.buttonContainer}>
+                                    <RoundedButton
+                                        title="Do survey"
+                                        icon={<RiSurveyLine size={22} color="white"/>}
+                                        style={{backgroundColor: Colors.green}}
+                                        textStyle={{ fontSize: 18}}
+                                        onClick={handleNavigate}>
+                                    </RoundedButton>
+                                </div>
                             </div>
 
                             <div style={styles.atttedanceTableContainer}>
@@ -456,7 +455,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex', 
         flexDirection: 'row', 
         marginBottom: '10px', 
-        gap: 50
+        gap: 50,
     },
     smallColumn:{ 
         display: 'flex', 
@@ -502,10 +501,10 @@ const styles: { [key: string]: React.CSSProperties } = {
         height: 200,
     },
     buttonContainer:{
-        width: "100%",
         display: "flex",
         justifyContent: "flex-end",
-        padding: "0px 10px"
+        alignItems: "flex-end",
+        width: "73%",
     }
 }
 
