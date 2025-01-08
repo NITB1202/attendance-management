@@ -265,12 +265,14 @@ const CourseManager = () => {
                 title="Course name"
                 placeHolder="Enter course name"
                 style={{ width: 360}}
+                bold = {false}
                 onChangeText={(text)=> updateCreateFormField("name", text)}>
               </SmallInput>
               <SmallInput
                 title="Course code"
                 placeHolder="Enter course code"
                 style={{ width: 360}}
+                bold = {false}
                 onChangeText={(text)=> updateCreateFormField("courseCode", text)}>
               </SmallInput>
 
@@ -314,12 +316,14 @@ const CourseManager = () => {
                 title="Course name"
                 defaultValue={updateRequest.name}
                 style={{ width: 360}}
+                bold = {false}
                 onChangeText={(text)=> updateUpdateFormField("name", text) }>
               </SmallInput>
               <SmallInput
                 title="Course code"
                 defaultValue={updateRequest.courseCode}
                 style={{ width: 360}}
+                bold = {false}
                 onChangeText={(text)=> updateUpdateFormField("courseCode", text)}>
               </SmallInput>
 

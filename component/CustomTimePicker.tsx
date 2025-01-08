@@ -6,9 +6,10 @@ interface CustomTimePickerProps{
     setSelectedTime: (newValue: Date | null) => void;
     defaultValue?: string;
     disable?: boolean;
+    bold?: boolean
 }
 
-export default function CustomTimePicker({title, setSelectedTime, defaultValue, disable = false}: CustomTimePickerProps){
+export default function CustomTimePicker({title, setSelectedTime, defaultValue, disable = false, bold = true}: CustomTimePickerProps){
     const handleTimeChange = (newTime: Date | null) => {
         setSelectedTime(newTime);
     };
@@ -17,7 +18,7 @@ export default function CustomTimePicker({title, setSelectedTime, defaultValue, 
     
     return(
         <div style={styles.container}>
-            <h1 style={styles.title}>{title}</h1>
+            <h1 style={{...styles.title, fontWeight: bold? 600: 500}}>{title}</h1>
             <TimePicker
             value={initialTime}
             disabled={disable}
@@ -53,6 +54,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     title:{
         fontFamily: "Roboto, sans-serif",
         fontSize: 20,
-        fontWeight: 600,
     },
 }

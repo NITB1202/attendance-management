@@ -21,6 +21,9 @@ const classApi = {
     updateClassMonitor(classId: any, studentId: any){
         const url = "/classroom/"+ classId +"/"+ studentId;
         return axiosInstance.post(url);
+    },
+    getAll(){
+        return axiosInstance.get("/classroom");
     }
 }
 
