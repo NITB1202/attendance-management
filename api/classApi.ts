@@ -57,6 +57,10 @@ const classApi = {
             console.error("Error occurred during API calls:", error);
             throw error;
           }
+    },
+    addStudent(classId: any, studentId: number){
+        const url = "/classroom/"+ classId + "/"+ studentId;
+        return axiosInstance.put(url);
     }
 }
 

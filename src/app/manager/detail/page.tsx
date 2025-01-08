@@ -68,7 +68,6 @@ const DetailManager = () => {
   const [teachers, setTeachers] = useState<any[][]> ([]);
   const [courses, setCourses] = useState<any[][]> ([]);
   const [teacherCode, setTeacherCode] = useState("");
-
   const [showMessage, setShowMessage] = useState(false);
   const [message, setMessage] = useState({
       type: "",
@@ -76,6 +75,11 @@ const DetailManager = () => {
       description: "",
   })
 
+  const [allStudent, setAllStudent] = useState<any[][]>([]);
+  const [selectStudent, setSelectStudent] = useState({
+    id: 1,
+    code: "",
+  })
   const [updateRequest, setUpdateRequest] = useState({
       name: "",
       beginDate: "",
@@ -169,6 +173,13 @@ const DetailManager = () => {
             ]
           );
 
+          const allStudentResponse = await userApi.getStudents();
+          const formattedAllStudent = allStudentResponse.data.map((item: any)=>[
+            item.id,
+            item.name,
+            item.studentCode,
+          ]);
+
           setClassData(info);
           setStudents(formattedData);
           setSessionData(formattedSession);
@@ -176,6 +187,11 @@ const DetailManager = () => {
           setTeachers(formattedTeachers);
           setCourses(formattedCourses);
           setTeacherCode(info.teacherCode);
+          setAllStudent(formattedAllStudent);
+          setSelectStudent({
+            id: formattedAllStudent.at(0).at(0),
+            code: formattedAllStudent.at(0).at(2),
+          })
         } catch (error) {
           console.log(error);
         }
@@ -348,6 +364,35 @@ const DetailManager = () => {
     const selectTeacher = teachers.at(index);
     updateField("teacherId",selectTeacher?.at(0));
     setTeacherCode(selectTeacher?.at(2));
+  }
+
+  const handleSelectAddStudent = (index: number)=>{
+    const selected = allStudent.at(index);
+    setSelectStudent({
+      id: selected?.at(0),
+      code: selected?.at(2),
+    })
+  }
+
+  const handleAddStudent = async ()=>{
+    console.log(selectStudent);
+    try{
+      setUpdate(true);
+      await classApi.addStudent(id,selectStudent.id);
+      setOpenModal(false);
+    }
+    catch(error)
+    {
+      setShowMessage(true);
+      setMessage({
+        type: "error",
+        title: "Error",
+        description: "This student is already in this class"
+      });
+    }
+    finally{
+      setUpdate(false);
+    }
   }
 
   const isMobile = screenWidth < 700;
@@ -549,6 +594,38 @@ const DetailManager = () => {
                       </div>
                   )}
                   {
+                    openModal &&
+                    <div style={styles.shadow}>
+                        <div style={styles.messageContainer}>
+                          <button style={styles.closeButton} onClick={() => setOpenModal(false)}>
+                            <img src="/icon/close.png" alt="Close" />
+                          </button>
+                          <h1 style={styles.formHeader}>Select a student</h1>
+                          <div style={styles.body}>
+                            <CustomSelect
+                              title="Student name"
+                              options={allStudent.map(item => item.at(1))}
+                              style={{ width: 350}}
+                              textStyle={{fontWeight: 500}}
+                              onSelect={handleSelectAddStudent}>
+                            </CustomSelect>
+                            <div style={styles.titleInputContainer}>
+                              <label style={styles.title}>Student code</label>
+                              <div style={styles.inputContainer}>
+                                <h1 style={styles.inputText}>{selectStudent.code}</h1>
+                              </div>
+                            </div>
+                          </div>
+                          <RoundedButton
+                            textStyle={styles.buttonText}
+                            style={styles.addConfirmButton}
+                            title="CONFIRM"
+                            onClick={handleAddStudent}>
+                          </RoundedButton>
+                        </div>
+                    </div>
+                  }
+                  {
                       showMessage && message.type === "question" &&
                       <QuestionMessage
                           title={message.title}
@@ -573,39 +650,6 @@ const DetailManager = () => {
                           setOpen={setShowMessage}>
                       </ErrorMessage>
                   }
-                  {
-                    openModal &&
-                    <div style={styles.shadow}>
-                        <div style={styles.messageContainer}>
-                          <button style={styles.closeButton} onClick={() => setOpenModal(false)}>
-                            <img src="/icon/close.png" alt="Close" />
-                          </button>
-                          <h1 style={styles.formHeader}>Select a student</h1>
-                          <div style={styles.body}>
-                            <CustomSelect
-                              title="Student name"
-                              options={teachers.map(item => item.at(1))}
-                              style={{ width: 350}}
-                              textStyle={{fontWeight: 500}}
-                              onSelect={()=>{}}>
-                            </CustomSelect>
-                            <SmallInput
-                              title="Student code"
-                              disable={true}
-                              style={{ width: 350}}
-                              bold={false}>
-                            </SmallInput>
-                          </div>
-                          <RoundedButton
-                            textStyle={styles.buttonText}
-                            style={styles.addConfirmButton}
-                            title="CONFIRM"
-                            onClick={()=>{}}>
-                          </RoundedButton>
-                        </div>
-                    </div>
-                  }
-                  
           </div>
       </div>
   );
@@ -829,7 +873,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   messageContainer: {
-    zIndex: 10,
     backgroundColor: "white",
     borderRadius: "10px",
     boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.2)",
@@ -856,6 +899,31 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     gap: 20,
     marginBottom: 20,
+  },
+  title:{
+    fontFamily: "Roboto, sans-serif",
+    fontSize: 20,
+  },
+  inputContainer: {
+    borderRadius: "5px",
+    borderWidth: "1px",
+    borderColor: Colors.gray,
+    height: 44,
+    width: 345,
+    background: Colors.disable,
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    padding: "10px",
+  },
+  inputText:{
+    fontFamily: "Roboto, sans-serif",
+    fontSize: "16px",
+  },
+  titleInputContainer:{
+    display: "flex",
+    flexDirection: "column",
+    gap: 10
   }
 }
 
