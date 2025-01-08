@@ -5,9 +5,10 @@ interface CustomDatePickerProps{
     setSelectedDate: (newValue: Date | null) => void;
     defaultValue?: string;
     disable?: boolean;
+    bold?: boolean;
 }
 
-export default function CustomDatePicker({title, setSelectedDate, defaultValue, disable = false}: CustomDatePickerProps){
+export default function CustomDatePicker({title, setSelectedDate, defaultValue, disable = false, bold = true}: CustomDatePickerProps){
     const handleDateChange = (newDate: Date | null) => {
         setSelectedDate(newDate);
     };
@@ -16,7 +17,7 @@ export default function CustomDatePicker({title, setSelectedDate, defaultValue, 
 
     return(
         <div style={styles.container}>
-            <h1 style={styles.title}>{title}</h1>
+            <h1 style={{...styles.title, fontWeight: bold? 600: 500}}>{title}</h1>
             <DatePicker
             value={initialDate}
             disabled={disable}
@@ -54,6 +55,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     title:{
         fontFamily: "Roboto, sans-serif",
         fontSize: 20,
-        fontWeight: 600,
     },
 }

@@ -503,83 +503,127 @@ const DetailTeacher = () => {
                 onRowClick={selectSession}
               />
             </div>
-            <div style={styles.sessionDetailsContainer}>
-              <div style={styles.rollCallerContainer}>
-                <div style={{ display: "flex" }}>
-                  <div style={styles.smallColumn}>
-                    <p style={{ fontSize: 20, fontWeight: 700 }}>
-                      Roll caller name:
-                    </p>
-                    <p style={{ fontSize: 20, fontWeight: 700 }}>
-                      Student code:
-                    </p>
-                  </div>
-                  <div style={styles.smallColumn}>
-                    <p style={{ fontSize: 20 }}>{rollCaller.name}</p>
-                    <p style={{ fontSize: 20 }}>{rollCaller.code}</p>
-                  </div>
-                </div>
-                <div>
-                  <RoundedButton
-                    title="Update attendance status"
-                    style={styles.saveButton}
-                    textStyle={styles.buttonText}
-                    icon={<FaRegEdit size={22} color="white" />}
-                    onClick={handleOpenModal}
-                  />
-                  {/* Modal */}
-                  <RollCallerModal
-                    open={isModalOpen}
-                    onClose={handleCloseModal}
-                  />
-                </div>
-              </div>
+            <div style={{ marginTop: '20px' }}>
+                {activeTab === 'General' && (
+                    <div style={styles.generalPage}>
+                        <div style={styles.classInfo}>
+                            <label style={styles.header}>Class Information</label>
+                            
+                            <div style={styles.row}>
+                                <SmallInput
+                                    title="Class name"
+                                    defaultValue={classData.className}
+                                    disable={true}>
+                                </SmallInput>
+                                <SmallInput
+                                    title="Course name"
+                                    defaultValue={classData.courseName}
+                                    disable={true}>
+                                </SmallInput>
+                            </div>
 
-              <div style={styles.atttedanceTableContainer}>
-                <label style={styles.header}>Student attendance status</label>
-                <Table
-                  tableHeader={attendanceTableHeaders}
-                  tableData={attendanceTableData}
-                />
-              </div>
+                            <div style={{...styles.row, flexDirection: flexDirection}}> 
+                                <div style={styles.row}>
+                                    <SmallInput
+                                        title="Teacher name"
+                                        defaultValue={classData.teacherName}
+                                        disable={true}>
+                                    </SmallInput>
+                                    <SmallInput
+                                        title="Teacher code"
+                                        defaultValue={classData.teacherCode}
+                                        disable={true}>
+                                    </SmallInput>
+                                </div>
 
-              <div style={styles.dicussionContainer}>
-                <label style={styles.header}>Discussion</label>
-                <div style={styles.commentSection}>
-                  {questions.map((item) => {
-                    return (
-                      <CommentBox
-                        key={item.id}
-                        id={item.id}
-                        sessionId={sessionId}
-                        user={item.user}
-                        content={item.content}
-                        timestamp={extractDate(item.askedTime)}
-                        replies={item.replies}
-                        setUpdate={() => setUpdate(true)}
-                      ></CommentBox>
-                    );
-                  })}
-                </div>
-              </div>
+                                <div style={styles.row}>
+                                    {
+                                        monitor.name !== "" &&
+                                        <CustomSelect
+                                            title="Class monitor's name"
+                                            options={update !== true? selectOptions : []}
+                                            onSelect={handleSelect}>
+                                        </CustomSelect>
+                                    }
+                                    <SmallInput
+                                        title="Class monitor's code"
+                                        defaultValue={monitor.code}
+                                        disable={true}>
+                                    </SmallInput>
+                                </div>
+                            </div>
 
-              <div style={styles.addCommentContainer}>
-                <button
-                  style={styles.addButton}
-                  onClick={() => setOpenComment(!openComment)}
-                >
-                  <FiPlusCircle size={24} width={3} />
-                  Add new
-                </button>
-                {openComment && (
-                  <ReplyBox
-                    sessionId={sessionId}
-                    onCancel={() => setOpenComment(false)}
-                    onPost={() => {
-                      setUpdate(true);
-                      setOpenComment(false);
-                    }}
-                  ></ReplyBox>
+
+                            <div style={{...styles.row, flexDirection: flexDirection}}> 
+                                <div style={styles.row}>
+                                    <CustomDatePicker
+                                        title="Start date"
+                                        defaultValue={classData.startDate}
+                                        setSelectedDate={()=>{}}
+                                        disable={true}>
+                                    </CustomDatePicker>
+                                    <CustomDatePicker
+                                        title="End date"
+                                        defaultValue={classData.endDate}
+                                        setSelectedDate={()=>{}}
+                                        disable={true}>
+                                    </CustomDatePicker>
+                                </div>
+
+                                <div style={styles.row}>
+                                    <CustomTimePicker
+                                        title="Start time"
+                                        defaultValue={classData.startTime}
+                                        setSelectedTime={()=>{}}
+                                        disable={true}>
+                                    </CustomTimePicker>
+                                    <CustomTimePicker
+                                        title="End time"
+                                        defaultValue={classData.endTime}
+                                        setSelectedTime={()=>{}}
+                                        disable={true}>
+                                    </CustomTimePicker> 
+                                </div>
+                            </div>
+
+                            {
+                                classData.maxAb > -1 &&
+                                <div style={styles.row}>
+                                    <SmallInput
+                                        title="Maximum allowable late occurences"
+                                        defaultValue={classData.maxLate.toString()}
+                                        onChangeText={(text)=> updateField("allowedLateTime", Number(text)? Number(text): -1)}>
+                                    </SmallInput>
+                                    <SmallInput
+                                        title="Maximum allowable absence occurences"
+                                        defaultValue={classData.maxAb !== null? classData.maxAb.toString() : "3"}>
+                                    </SmallInput>
+                                </div>
+                            }
+                        </div>
+                        <div style={styles.buttonContainer}>
+                            <RoundedButton
+                                title="SAVE CHANGES"
+                                style={styles.saveButton}
+                                textStyle={styles.buttonText}
+                                icon={<FaRegEdit size={24} color="white" />}
+                                onClick={()=> {
+                                    setShowMessage(true);
+                                    setMessage({
+                                        type: "question",
+                                        title: "Confirmation",
+                                        description: "Are you sure you want to update class's information?"
+                                    })
+                                }}>
+                            </RoundedButton>
+                        </div>
+                        <div style={{ padding: "20px 10px" }}>
+                            <label style={styles.header}>Student List</label>
+                            <Table 
+                                tableHeader={studentTableHeaders} 
+                                tableData={tableDataWithButtons} />
+                        </div>
+                    </div>
                 )}
               </div>
             </div>

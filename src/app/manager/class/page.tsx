@@ -1,45 +1,115 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Table from "../../../../component/Table";
 import RoundedButton from "../../../../component/RoundedButton";
 import SearchBar from "../../../../component/SearchBar";
-import Input from "../../../../component/Input";
-import Dropdown from "../../../../component/Dropdown";
 import { Colors } from "../../../../constant/Colors";
 import CustomDatePicker from "../../../../component/CustomDatePicker";
 import CustomTimePicker from "../../../../component/CustomTimePicker";
+import { Properties } from "csstype";
+import { useRouter } from "next/navigation";
+import { formatDate } from "../../../../util/util";
+import classApi from "../../../../api/classApi";
+import CustomSelect from "../../../../component/CustomSelect";
+import { FiPlusCircle } from "react-icons/fi";
+import { IoMdClose } from "react-icons/io";
+import userApi from "../../../../api/userApi";
+import courseApi from "../../../../api/courseApi";
+import { format } from "date-fns-tz";
+import SmallInput from "../../../../component/SmallInput";
+import { MdOutlineFileUpload } from "react-icons/md";
+import ErrorMessage from "../../../../component/ErrorMessage";
 
 const ClassManager = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [, setSelectedDate] = useState<Date | null>(null);
-  const [, setSelectedTime] = useState<Date | null>(null);
-  const [newClassName] = useState("");
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [data, setData] = useState<any[][]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searchData, setSearchData] = useState("");
+  const [cousrses, setCourses] = useState<any[][]>([]);
+  const [teachers, setTeachers]  = useState<any[][]>([]);
+  const [createRequest, setCreateRequest] = useState({
+    name: "",
+    beginDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    allowedLateTime: 3,
+    teacherId: 0,
+    courseId: 0,
+  })
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = useState("");
+  const [file, setFile] = useState<File| null>(null);
+  const [selectTeacherCode, setSelectTeacherCode] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [message,setMessage] = useState({
+    title: "",
+    description: "",
+  })
 
   useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
+      const handleResize = () => {
+        setScreenWidth(window.innerWidth);
+      };
+  
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
+    }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await classApi.getAll();
+        const formattedData = 
+        response.data.map((item: any)=>
+            [
+                item.id,
+                item.name,
+                item.course.name,
+                formatDate(item.beginDate),
+                formatDate(item.endDate),
+                item.startTime,
+                item.endTime,
+                item.teacher.name
+            ]
+        );
+
+        const teacherResponse = await userApi.getTeachers();
+        const formattedTeachers = teacherResponse.data.map((item: any)=>
+          [
+            item.id,
+            item.name,
+            item.teacherCode
+          ]
+        );
+
+        const courseResponse = await courseApi.getAll();
+        const formattedCourses = courseResponse.data.map((item: any)=>
+          [
+            item.id,
+            item.name,
+          ]
+        );
+
+        setData(formattedData);
+        setTeachers(formattedTeachers);
+        setCourses(formattedCourses);
+        setSelectTeacherCode(formattedTeachers.at(0).at(2));
+        updateCreateFormField("teacherId", formattedTeachers.at(0).at(0));
+        updateCreateFormField("courseId", formattedCourses.at(0).at(0));
+      } catch (error) {
+        console.log(error);
+      }
     };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  
+    fetchData();
+}, []);
 
-  const handleSearch = () => {
-    console.log("Từ khóa tìm kiếm:");
-  };
-
-  const handleAddNew = () => {
-    setModalVisible(true);
-  };
-
-  const handleSave = () => {
-    console.log("New Class Name:", newClassName);
-    setModalVisible(false);
-  };
-
-  const tableHeader = [
+const tableHeader = [
     "CLASS NAME",
     "COURSE NAME",
     "START DATE",
@@ -47,251 +117,246 @@ const ClassManager = () => {
     "START TIME",
     "END TIME",
     "TEACHER NAME",
-  ];
+];
 
-  const tableData = [
-    [
-      "M120.P22",
-      "MATH BASIC",
-      "01/06/2024",
-      "01/09/2024",
-      "07:00 AM",
-      "10:30 AM",
-      "Luwid Mathra",
-    ],
-  ];
+const searchTerms = ["Class name", "Course name", "Teacher name"];
+const router = useRouter();
+
+const handleClickRow = (row: any[]) =>{
+    const foundItem = data.find(item => {
+        return item.slice(1).every((value, index) => value === row[index]);
+    });
+    if(foundItem){
+        const id = foundItem.at(0);
+        router.push(`/teacher/detail?id=${id}`);
+    }
+}
+
+const updateCreateFormField = (field: string, value: any) => {
+  setCreateRequest(prevState => ({
+      ...prevState,
+      [field]: value
+  }));
+};
+
+const handleSelectCourse = (index: number)=>{
+  const selectCourse = cousrses.at(index);
+  updateCreateFormField("courseId", selectCourse?.at(0));
+}
+
+const handleSelectTeacher = (index: number) =>{
+  const selectTeacher = teachers.at(index);
+  updateCreateFormField("teacherId", selectTeacher?.at(0));
+  setSelectTeacherCode(selectTeacher?.at(2));
+}
+
+const handleCloseModal = () => {
+  setModalVisible(false);
+  setFile(null);
+  setFileName("");
+  setCreateRequest({
+    name: "",
+    beginDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    allowedLateTime: 3,
+    teacherId: 1 ,
+    courseId: 1,
+  })
+}
+
+const handleUploadFile = ()=>{
+  if (fileInputRef.current) {
+    fileInputRef.current.click();
+  }
+}
+
+const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFile(file);
+      setFileName(file.name);
+    }
+};
+
+const handleSave = ()=>{
+  if(Object.values(createRequest).some(value => value === ""))
+  {
+    setShowError(true);
+    setMessage({
+      title: "Error",
+      description: "All fields must be filled."
+    });
+    return;
+  }
+
+  if(!isDateBeforeOrEqual(createRequest.beginDate, createRequest.endDate))
+  {
+    setShowError(true);
+    setMessage({
+      title: "Error",
+      description: "Start date must be before or equal to end date."
+    })
+    return;
+  }
+
+  if(!isTimeBefore(createRequest.startTime, createRequest.endTime))
+  {
+    setShowError(true);
+    setMessage({
+      title: "Error",
+      description: "Start time must be before end time."
+    })
+    return;
+  }
+
+  if(file === null)
+  {
+    setShowError(true);
+    setMessage({
+      title: "Error",
+      description: "Please select an Excel file for the students."
+    })
+    return;
+  }
+
+  const info = JSON.stringify(createRequest, null, 2);
+
+  try{
+
+  }
+  catch(error){
+    console.log(error);
+  }
+}
+
+const justifyContent = screenWidth > 700? "flex-end": "flex-start";  
 
   return (
-    <div style={screenWidth < 500 ? styles.containerMobile : styles.container}>
-      {/* Search and Filter Section */}
-      <div style={{ display: "flex", marginBottom: 20, height: 40 }}>
-        <SearchBar placeholder="Type to search..." onSearch={handleSearch} />
-        <div
-          style={{
-            marginLeft: 20,
-            height: 37,
-            ...(screenWidth < 500 && styles.dropdownMobile),
-          }}
-        >
-          <select
-            style={{
-              height: 40,
-              borderRadius: 5,
-              borderWidth: 1,
-              borderColor: "#ccc",
-              paddingLeft: 10,
-              paddingRight: 10,
-              backgroundColor: "#fff",
-            }}
-            onChange={(e) => console.log(e.target.value)}
-          >
-            <option value="SE103.022">Class name</option>
-            <option value="SE104.023">Course name</option>
-            <option value="SE105.024">Teacher name</option>
-          </select>
+    <div style={screenWidth < 700 ? styles.containerMobile : styles.container}>
+      <div style={{ padding: "20px 10px"}}>
+            <div style={styles.headerContainer}>
+                <SearchBar
+                    placeholder="Type to search..."
+                    style={styles.searchBar}
+                    onSearch={setSearchData}
+                />
+                <CustomSelect
+                    options={searchTerms}
+                    onSelect={setSelectedIndex}>
+                </CustomSelect>
+            </div>
+            <div style={{...styles.buttonContainer, justifyContent}}>
+              <RoundedButton
+                title="Add new"
+                onClick={()=> setModalVisible(true)}
+                icon={<FiPlusCircle size={24} color="white" />}
+                style={{ backgroundColor: Colors.green, padding: "10px 30px" }}
+                textStyle={{ fontSize: "20px", color: "white" }}
+              />
+            </div>
+            <div>
+                <Table 
+                    tableHeader={tableHeader} 
+                    tableData={data
+                        .filter((item:any)=> {
+                        if(searchData === "")
+                            return true;
+
+                        const formatSearch = searchData.toLocaleLowerCase().trim();
+                        let checkData = "";
+
+                        if(selectedIndex === 0){
+                            checkData = item.at(1).toLocaleLowerCase();
+                        }
+
+                        if(selectedIndex === 1){
+                            checkData = item.at(2).toLocaleLowerCase();
+                        }
+
+                        if(selectedIndex === 2){
+                          checkData = item.at(7).toLocaleLowerCase();
+                        }
+
+                        return checkData.indexOf(formatSearch) !== -1;
+                    })
+                    .map((row) => row.slice(1))
+                }
+                    onRowClick={handleClickRow} />
+            </div>
         </div>
-        <button
-          style={{
-            backgroundColor: "green",
-            padding: "10px 20px",
-            borderRadius: 5,
-            marginLeft: "auto",
-            color: "white",
-            fontSize: 16,
-            fontWeight: "bold",
-          }}
-          onClick={handleAddNew}
-        >
-          Add New
-        </button>
-      </div>
-      {/* Table Section */}
-      <div style={{ marginTop: 20, ...styles.tableContainer }}>
-        <div style={styles.table}>
-          <Table
-            tableHeader={tableHeader}
-            tableData={tableData}
-            itemsPerPage={5}
-          />
-        </div>
-      </div>
+
       {modalVisible && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              width: 523,
-              height: 710,
-              backgroundColor: "white",
-              borderRadius: 10,
-              padding: 20,
-              position: "relative",
-            }}
-          >
-            <button
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                fontSize: 24,
-                backgroundColor: "transparent",
-                border: "none",
-              }}
-              onClick={() => setModalVisible(false)}
+        <div style={styles.modalOverlay}>
+          <div style={styles.form}>
+            <button 
+              style={styles.closeButton}
+              onClick={handleCloseModal}
             >
-              ✕
+              <IoMdClose size={35} />
             </button>
-            <h1
-              style={{
-                marginBottom: 15,
-                marginTop: 30,
-                fontSize: 24,
-                fontWeight: "bold",
-              }}
-            >
+            <h1 style={styles.formHeader}>
               Create a new class
             </h1>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-                overflow: "hidden",
-              }}
-            >
-              <div style={{ height: 90 }}>
-                <label>Class name</label>
-                <Input
-                  title=""
-                  placeHolder="Enter class name"
-                  style={{ marginBottom: "10px" }}
+            <div style={styles.formContent}>
+              <SmallInput
+                title="Class name"
+                placeHolder="Enter class name"
+                style={{width: 500}}
+                bold={false}
+                onChangeText={(text) => updateCreateFormField("name",text)}>
+              </SmallInput>
+              <CustomSelect
+                title="Course name"
+                textStyle={{fontWeight: 500}}
+                style={{width: 500}}
+                options={cousrses.map(item => item.at(1))}
+                onSelect={handleSelectCourse}>
+              </CustomSelect>
+              <div style={styles.row}>
+                <CustomDatePicker
+                    title="Start date"
+                    bold={false}
+                    setSelectedDate={(newValue: Date | null) => {
+                        if(newValue) updateCreateFormField("beginDate", format(newValue,"yyyy-MM-dd"))
+                    }}
                 />
-                <input
-                  type="text"
-                  style={{ width: "100%", marginBottom: "10px" }}
-                />
-              </div>
-              <div style={{ height: 90 }}>
-                <label>Course name</label>
-                <Dropdown
-                  title=""
-                  options={["Math", "Course 2", "Course 3"]}
-                  style={{ marginBottom: "10px" }}
-                />
-                <input type="text" style={{ width: "100%" }} />
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div
-                  style={{ flex: 1, display: "flex", flexDirection: "column" }}
-                >
-                  <label>Start Date</label>
-                  <CustomDatePicker
-                    title=""
+                <CustomDatePicker
+                    title="End date"
+                    bold={false}
                     setSelectedDate={(newValue: Date | null) =>
-                      setSelectedDate(newValue)
-                    }
+                    {
+                      if(newValue) updateCreateFormField("endDate", format(newValue,"yyyy-MM-dd"))
+                    }}
                   />
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "46px",
-                    marginLeft: "10px",
-                  }}
-                >
-                  <label>End Date</label>
-                  <CustomDatePicker
-                    title=""
-                    setSelectedDate={(newValue: Date | null) =>
-                      setSelectedDate(newValue)
-                    }
-                  />
-                </div>
               </div>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    marginTop: 10,
-                  }}
-                >
-                  <label>Start Time</label>
-                  <CustomTimePicker
-                    title=""
+              <div style={styles.row}>
+                <CustomTimePicker
+                    title="Start time"  
+                    bold={false}
                     setSelectedTime={(newValue: Date | null) =>
-                      setSelectedTime(newValue)
+                    {
+                      if(newValue) updateCreateFormField("startTime", convertToTime(newValue))
                     }
+                  }
                   />
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    marginLeft: "10px",
-                    marginTop: 10,
-                  }}
-                >
-                  <label>End Time</label>
-                  <CustomTimePicker
-                    title=""
-                    setSelectedTime={(newValue: Date | null) =>
-                      setSelectedTime(newValue)
+                <CustomTimePicker
+                    title="End time"
+                    bold={false}
+                    setSelectedTime={(newValue: Date | null) =>{
+                      if(newValue) updateCreateFormField("endTime", convertToTime(newValue))
                     }
+                  }
                   />
-                </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginTop: 10,
-                }}
-              >
-                <div
-                  style={{ flex: 2, display: "flex", flexDirection: "column" }}
-                >
-                  <label>Teacher Name</label>
-                  <Dropdown
-                    title=""
-                    options={["Brian Anna", "Anna Brian"]}
-                    style={{
-                      marginBottom: "10px",
-                      width: "100%",
-                      height: "46px",
-                    }}
-                  />
-                </div>
+              <div style={styles.row}>
+                <CustomSelect
+                  title="Teacher name"
+                  textStyle={{fontWeight: 500}}
+                  options={teachers.map(item => item.at(1))}
+                  onSelect={handleSelectTeacher}>
+                </CustomSelect>
                 <div
                   style={{
                     flex: 1,
@@ -300,22 +365,14 @@ const ClassManager = () => {
                     marginLeft: "10px",
                   }}
                 >
-                  <label>Teacher Code</label>
-                  <div
-                    style={{
-                      marginTop: 10,
-                      width: "100%",
-                      height: "46px",
-                      padding: "10px",
-                      borderRadius: "5px",
-                      borderWidth: "1px",
-                      borderColor: Colors.gray,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    TC12345
-                  </div>
+                  <SmallInput
+                    title="Teacher code"
+                    defaultValue={selectTeacherCode}
+                    style={{width: 325}}
+                    bold={false}
+                    disable={true}>
+                  </SmallInput>
+                  <h1 hidden>{selectTeacherCode}</h1>
                 </div>
               </div>
               <div
@@ -325,48 +382,33 @@ const ClassManager = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <div
-                  style={{ flex: 2, display: "flex", flexDirection: "column" }}
-                >
-                  <label>Teacher Name</label>
-                  <div
-                    style={{
-                      marginTop: 10,
-                      marginBottom: 20,
-                      width: "100%",
-                      height: "46px",
-                      padding: "10px",
-                      borderRadius: "5px",
-                      borderWidth: "1px",
-                      borderColor: Colors.gray,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    TC12345
-                  </div>
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    marginLeft: "10px",
-                  }}
-                >
+                <div style={styles.row}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    id="file-input"
+                    style={{ display: "none" }}
+                    accept=".xls,.xlsx"
+                    onChange={handleFileChange}
+                  />
+                  <SmallInput
+                    title="Student list"
+                    style={{width: 295}}
+                    bold={false}
+                    disable={true}
+                    defaultValue={fileName}>
+                  </SmallInput>
                   <RoundedButton
                     title="Upload Excel File"
-                    onClick={handleSave}
-                    style={{
-                      width: "100%",
-                      height: 46,
-                      marginTop: 34,
-                    }}
+                    onClick={handleUploadFile}
+                    style={styles.uploadButton}
+                    icon={<MdOutlineFileUpload size={24} color="white"/>}
                     textStyle={{ fontSize: 16, fontWeight: "bold" }}
                   />
                 </div>
               </div>
-              <div style={{ flex: 1 }}>
+            </div>
+            <div style={{ flex: 1, marginTop: 30 }}>
                 <RoundedButton
                   title="CONFIRM"
                   onClick={handleSave}
@@ -377,16 +419,53 @@ const ClassManager = () => {
                   }}
                   textStyle={{ fontSize: 24, fontWeight: "bold" }}
                 />
-              </div>
             </div>
           </div>
         </div>
       )}
+      {
+        showError &&
+        <ErrorMessage
+          title={message.title}
+          description={message.description}
+          setOpen={setShowError}>
+        </ErrorMessage>
+      }
     </div>
   );
 };
 
-import { Properties } from "csstype";
+function convertToTime(date: Date) {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function isDateBeforeOrEqual(dateA: string, dateB: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateA) || !/^\d{4}-\d{2}-\d{2}$/.test(dateB)) {
+    throw new Error('Input must be in yyyy-mm-dd format');
+  }
+
+  const dateObjectA = new Date(dateA);
+  const dateObjectB = new Date(dateB);
+
+  return dateObjectA <= dateObjectB;
+}
+
+function isTimeBefore(timeA: string, timeB: string) {
+  if (!/^\d{2}:\d{2}$/.test(timeA) || !/^\d{2}:\d{2}$/.test(timeB)) {
+    throw new Error('Input must be in hh:mm format');
+  }
+
+  const [hoursA, minutesA] = timeA.split(':').map(Number);
+  const [hoursB, minutesB] = timeB.split(':').map(Number);
+
+  const totalMinutesA = hoursA * 60 + minutesA;
+  const totalMinutesB = hoursB * 60 + minutesB;
+
+  return totalMinutesA < totalMinutesB;
+}
+
 const styles: { [key: string]: Properties<string | number> } = {
   container: {
     padding: "20px",
@@ -401,7 +480,7 @@ const styles: { [key: string]: Properties<string | number> } = {
     minWidth: "500px",
   },
   dropdownMobile: {
-    marginRight: "10px", // Dịch sang bên trái một chút
+    marginRight: "10px",
   },
   modalContent: {
     width: "90%",
@@ -419,6 +498,71 @@ const styles: { [key: string]: Properties<string | number> } = {
     padding: "20px",
     position: "relative",
   },
+  headerContainer:{
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 20,
+  },
+  searchBar:{
+    display: "flex",
+    maxWidth: 350,
+  },
+  buttonContainer:{
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    width: "100%",
+    marginTop: 20,
+  },
+  modalOverlay:{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  form:{
+    width: 540,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    position: "relative",
+  },
+  closeButton:{
+    position: "absolute",
+    top: 10,
+    right: 10,
+    fontSize: 24,
+    backgroundColor: "transparent",
+    border: "none",
+  },
+  formHeader:{
+    marginBottom: 15,
+    marginTop: 30,
+    fontSize: 30,
+    fontWeight: "bold",
+  },
+  row:{
+    flex: 1,
+    display: "flex",
+    gap: 20,
+    alignItems: "flex-end"
+  },
+  uploadButton:{
+    height: 46,
+    marginTop: 34,
+    width: "fit-content",
+  },
+  formContent:{
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+  }
 };
 
 export default ClassManager;

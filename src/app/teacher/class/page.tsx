@@ -9,9 +9,7 @@ import { formatDate } from "../../../../util/util";
 import classApi from "../../../../api/classApi";
 
 const ClassTeacher = () => {
-    const [data, setData] = useState<any[][]>(
-        [["","","","","","","",""]]
-    );
+    const [data, setData] = useState<any[][]>([]);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [searchData, setSearchData] = useState("");
 

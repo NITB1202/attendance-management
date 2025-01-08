@@ -331,11 +331,13 @@ export default function Account() {
                   title="Email"
                   defaultValue={formData.EMAIL || ""}
                   style={{width: 345}}
+                  bold = {false}
                   onChangeText={(text) => handleInputChange("EMAIL", text)}>
                 </SmallInput>
                  <CustomSelect
                   title="Role"
                   options={formData.ROLE === "STUDENT"? ["Student", "Teacher"]: ["Teacher","Student"]}
+                  textStyle={{fontWeight: 500}}
                   onSelect={(index)=>{
                     if(index === 0)
                       handleInputChange("ROLE", "STUDENT");
@@ -349,12 +351,14 @@ export default function Account() {
                 placeHolder="Enter user's name"
                 style={{ width: 460}}
                 defaultValue={formData["FULL NAME"]}
+                bold = {false}
                 onChangeText={(text)=> handleInputChange("FULL NAME", text)}>  
               </SmallInput>
               <div style={{ display: "flex", gap: "16px" }}>
                 <CustomDatePicker
                   title="Date of birth"
                   defaultValue={convertDate(formData["DATE OF BIRTH"])}
+                  bold = {false}
                   setSelectedDate={(date)=>{
                     if(date) handleInputChange("DATE OF BIRTH",format(date,"yyyy-MM-dd"));
                   }}>
@@ -363,6 +367,7 @@ export default function Account() {
                   title="Phone"
                   placeHolder="Enter phone number"
                   defaultValue={formData.PHONE}
+                  bold = {false}
                   onChangeText={(text)=> handleInputChange("PHONE", text)}>
                 </SmallInput>
               </div>
@@ -371,6 +376,7 @@ export default function Account() {
                 placeHolder="Enter the role code"
                 style={{ width: 460}}
                 defaultValue={formData["ROLE CODE"]}
+                bold = {false}
                 onChangeText={(text)=> handleInputChange("ROLE CODE", text)}>
               </SmallInput>
               <RoundedButton
@@ -405,11 +411,13 @@ export default function Account() {
                   title="Email"
                   placeHolder="Enter email"
                   style={{width: 345}}
+                  bold = {false}
                   onChangeText={(text)=> updateCreateFormField("email", text)}>
                 </SmallInput>
                 <CustomSelect
                   title="Role"
                   options={["Student", "Teacher"]}
+                  textStyle={{fontWeight: 500}}
                   onSelect={(index)=>{
                     if(index === 0)
                       updateCreateFormField("roleName", "Student");
@@ -422,11 +430,13 @@ export default function Account() {
                 title="Full name"
                 placeHolder="Enter user's name"
                 style={{ width: 460}}
+                bold = {false}
                 onChangeText={(text)=> updateCreateFormField("name",text)}>  
               </SmallInput>
               <div style={{ display: "flex", gap: "15px" }}>
                 <CustomDatePicker
                   title="Date of birth"
+                  bold = {false}
                   setSelectedDate={(date)=>{
                     if(date) updateCreateFormField("date",format(date,"yyyy-MM-dd"));
                   }}>
@@ -434,6 +444,7 @@ export default function Account() {
                 <SmallInput
                   title="Phone"
                   placeHolder="Enter phone number"
+                  bold = {false}
                   onChangeText={(text)=> updateCreateFormField("phoneNumber", text)}>
                 </SmallInput>
               </div>
@@ -441,6 +452,7 @@ export default function Account() {
                 title="Role code"
                 placeHolder="Enter the role code"
                 style={{ width: 460}}
+                bold = {false}
                 onChangeText={(text)=> updateCreateFormField("roleCode",text)}>
               </SmallInput>
              <RoundedButton

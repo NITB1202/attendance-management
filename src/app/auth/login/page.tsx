@@ -17,7 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [screenWidth, setScreenWidth] = useState(700);
   const [error, setError] = useState<{ title: string; description: string }>({
     title: "",
     description: "",

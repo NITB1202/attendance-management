@@ -7,12 +7,13 @@ interface SmallInputProps{
     style?: React.CSSProperties;
     defaultValue?: string;
     disable?: boolean;
+    bold?: boolean
 }
 
-export default function SmallInput({title, placeHolder, onChangeText, style, defaultValue, disable = false}: SmallInputProps){
+export default function SmallInput({title, placeHolder, onChangeText, style, defaultValue, disable = false, bold = true}: SmallInputProps){
     return(
         <div style={styles.container}>
-            <h1 style={styles.title}>{title}</h1>
+            <h1 style={{...styles.title, fontWeight: bold? 600 : 500}}>{title}</h1>
             <Input
                 style={{...styles.inputContainer,...style}}
                 textStyle={styles.inputText}
@@ -36,7 +37,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     title:{
         fontFamily: "Roboto, sans-serif",
         fontSize: 20,
-        fontWeight: 600,
     },
     inputContainer: {
         border: '1px solid rgb(149, 149, 149)',

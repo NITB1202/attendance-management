@@ -249,7 +249,7 @@ const DetailStudent = () => {
                                     </div>
                                     <div style={styles.leftColumn}>
                                         <label style={styles.normalText}>{classData.maxLate}</label>
-                                        <label style={{...styles.normalText, marginTop: isMobile? 35 : 0 }}>{classData.maxAb}</label>
+                                        <label style={{...styles.normalText, marginTop: isMobile? 35 : 0 }}>{classData.maxAb !== null? classData.maxAb.toString() : "3"}</label>
                                     </div>
                                 </div>
                             </div>
