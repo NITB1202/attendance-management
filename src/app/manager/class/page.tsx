@@ -222,6 +222,7 @@ const handleSave = ()=>{
   }
 
   const info = JSON.stringify(createRequest, null, 2);
+  console.log(info);
 
   try{
 
