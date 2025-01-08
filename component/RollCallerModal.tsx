@@ -6,150 +6,168 @@ import Dropdown from "./Dropdown";
 import RoundedButton from "./RoundedButton";
 import CustomSelect from "./CustomSelect";
 import { Colors } from "../constant/Colors";
+import ErrorMessage from "./ErrorMessage";
 
 interface RollCallerModalProps {
   open: boolean;
   onClose: () => void;
-  rollCallers?: { name: string; code: string }[];
-  absent?: string[];
+  students: any[][];
+  sessionId: number;
+  rollCaller:{name: string, code: string}
 }
 
-const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose }) => {
-  const rollCallers = [
-    { name: "Nguyen Van A", code: "A001" },
-    { name: "Tran Thi B", code: "B002" },
-    { name: "Le Van C", code: "C003" },
-  ];
-
-  const [rollCallerName, setRollCallerName] = useState(rollCallers[0].name);
-  const [studentCode, setStudentCode] = useState(rollCallers[0].code);
-  const absent = ["Morton Hamsey", "Jack Tarco", "Alice Smith", "John Doe"];
-
+const RollCallerModal: React.FC<RollCallerModalProps> = ({ open, onClose, students, sessionId, rollCaller }) => {
+  const filteredStudentsList = filterList(rollCaller.code, students);
+  
+  const [rollCallerName, setRollCallerName] = useState(rollCaller.name);
+  const [studentCode, setStudentCode] = useState(rollCaller.code);
+  const absent = students.map(item => item.at(3));
+  
   const [absentList, setAbsentList] = useState<string[]>([]);
-  const [filteredAbsent, setFilteredAbsent] = useState<string[]>(() =>
-    absent.filter((name) => !absentList.includes(name))
-  );
-  const [newAbsentee, setNewAbsentee] = useState<string>(() =>
-    absent.length > 0 ? absent[0] : ""
-  );
+  const [filteredAbsent, setFilteredAbsent] = useState<string[]>([]);
+  const [newAbsentee, setNewAbsentee] = useState<string>(absent.length > 0 ? absent[0] : "");
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
-    const updatedFilteredAbsent = absent.filter(
-      (name) => !absentList.includes(name)
-    );
-
-    if (
-      JSON.stringify(updatedFilteredAbsent) !== JSON.stringify(filteredAbsent)
-    ) {
+    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
+    if (JSON.stringify(updatedFilteredAbsent) !== JSON.stringify(filteredAbsent)) {
       setFilteredAbsent(updatedFilteredAbsent);
     }
-
-    if (updatedFilteredAbsent.length > 0 && newAbsentee !== updatedFilteredAbsent[0]) {
-      setNewAbsentee(updatedFilteredAbsent[0]);
-    } else if (updatedFilteredAbsent.length === 0 && newAbsentee !== "") {
-      setNewAbsentee("");
-    }
-  }, [absentList, absent, filteredAbsent, newAbsentee]);
+  }, [absentList, absent, filteredAbsent]);
 
   const handleDropdownChange = (index: number) => {
-    const selectRollCaller = rollCallers.at(index);
-    setRollCallerName(selectRollCaller?.name? selectRollCaller.name : "");
-    setStudentCode(selectRollCaller?.code? selectRollCaller.code : "");
+    const selectRollCaller = filteredStudentsList.at(index);
+    setRollCallerName(selectRollCaller?.at(3));
+    setStudentCode(selectRollCaller?.at(2));
   };
 
   const handleAddAbsentee = () => {
     if (newAbsentee && !absentList.includes(newAbsentee)) {
-      setAbsentList([...absentList, newAbsentee]);
+      setAbsentList(prevList => [...prevList, newAbsentee]);
     }
   };
 
   const handleRemoveAbsentee = (name: string) => {
-    setAbsentList(absentList.filter((item) => item !== name));
+    setAbsentList(prevList => prevList.filter(item => item !== name));
   };
 
   const handleSave = () => {
-    console.log("Attendance status updated", { rollCallerName, absentList });
-    onClose();
+    if (absentList.includes(rollCallerName)) {
+      setShowError(true);
+      return;
+    }
+
+    const selectedStudents = students.filter(item => absentList.includes(item.at(3)));
+    const studentIds = selectedStudents.map(item => item.at(0));
+
+    console.log(studentIds);
+    // onClose();
   };
 
+  useEffect(() => {
+    const updatedFilteredAbsent = absent.filter((name) => !absentList.includes(name));
+    if (updatedFilteredAbsent.length > 0 && !updatedFilteredAbsent.includes(newAbsentee)) {
+      setNewAbsentee(updatedFilteredAbsent[0]);
+    } else if (updatedFilteredAbsent.length === 0 && newAbsentee !== "") {
+      setNewAbsentee("");
+    }
+  }, [absentList, absent, newAbsentee]);
+
   return (
-    <Modal open={open} onCancel={onClose} footer={null} title={null} width={500}>
-      <div style={styles.modalContent}>
-        <div style={styles.label}>Roll Caller</div>
-        <div style={styles.row}>
-          <div style={styles.item}>
-            <CustomSelect
-              title="Roll-caller name"
-              textStyle={{fontWeight: 500}}
-              options={rollCallers.map((caller) => caller.name)}
-              style={styles.fullWidth}
-              onSelect={handleDropdownChange}
-            />
-          </div>
-          <div style={styles.item}>
-            <div style={styles.titleInputContainer}>
-              <label style={styles.title}>Student code</label>
-              <div style={styles.inputContainer}>
-                  <h1 style={styles.inputText}>{studentCode}</h1>
+    <div>
+      {showError ? (
+        <ErrorMessage
+          title="Invalid roll caller"
+          description="The roll caller cannot be included in the absent student list."
+          setOpen={setShowError}
+        />
+      ) : (
+        <Modal open={open} onCancel={onClose} footer={null} title={null} width={500}>
+          <div style={styles.modalContent}>
+            <div style={styles.label}>Roll Caller</div>
+            <div style={styles.row}>
+              <div style={styles.item}>
+                <CustomSelect
+                  title="Roll-caller name"
+                  textStyle={{ fontWeight: 500 }}
+                  options={filteredStudentsList.map((caller) => caller.at(3))}
+                  style={styles.fullWidth}
+                  onSelect={handleDropdownChange}
+                />
+              </div>
+              <div style={styles.item}>
+                <div style={styles.titleInputContainer}>
+                  <label style={styles.title}>Student code</label>
+                  <div style={styles.inputContainer}>
+                    <h1 style={styles.inputText}>{studentCode}</h1>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div style={styles.section}>
+              <label style={{ ...styles.label, marginTop: 20 }}>Absent with permission</label>
+              <List
+                dataSource={absentList}
+                renderItem={(item) => (
+                  <List.Item style={styles.listItem}>
+                    <button
+                      onClick={() => handleRemoveAbsentee(item)}
+                      style={{
+                        marginRight: 10,
+                        fontSize: 18,
+                        padding: 5,
+                        borderRadius: 3,
+                      }}
+                    >
+                      <MinusCircleOutlined size={24} color="white" />
+                    </button>
+                    <span>{item}</span>
+                  </List.Item>
+                )}
+              />
+            </div>
+
+            <div style={styles.row1}>
+              <Dropdown
+                title=""
+                options={filteredAbsent}
+                style={styles.fullWidthA}
+                onChange={(value) => setNewAbsentee(value)}
+              />
+              <button
+                onClick={handleAddAbsentee}
+                disabled={!newAbsentee}
+                style={{
+                  fontSize: 18,
+                  marginTop: 8,
+                  padding: 5,
+                  borderRadius: 3,
+                }}
+              >
+                <PlusCircleOutlined size={30} color="white" />
+              </button>
+            </div>
+
+            <RoundedButton
+              title="CONFIRM"
+              style={styles.saveButton}
+              textStyle={styles.butttonText}
+              onClick={handleSave}
+            />
           </div>
-        </div>
-
-        <div style={styles.section}>
-          <label style={{...styles.label, marginTop: 20}}>Absent with permission</label>
-          <List
-            dataSource={absentList}
-            renderItem={(item) => (
-              <List.Item style={styles.listItem}>
-                <button
-                  onClick={() => handleRemoveAbsentee(item)}
-                  style={{
-                    marginRight: 10,
-                    tabSize: 24,
-                    fontSize: 18,
-                    padding: 5,
-                    borderRadius: 3,
-                  }}>
-                    <MinusCircleOutlined size={24} color = "white"/>
-                  </button>
-                <span>{item}</span>
-              </List.Item>
-            )}
-          />
-        </div>
-
-        <div style={styles.row1}>
-          <Dropdown
-            title=""
-            options={filteredAbsent}
-            style={styles.fullWidthA}
-            onChange={(value) => setNewAbsentee(value)}
-          />
-          <button
-            onClick={handleAddAbsentee}
-            disabled={!newAbsentee}
-            style={{
-              tabSize: 26,
-              fontSize: 18,
-              marginTop: 8,
-              padding: 5,
-              borderRadius: 3,
-            }}>
-              <PlusCircleOutlined  size={30} color="white"/>
-          </button>
-        </div>
-
-        <RoundedButton
-          title="CONFIRM"
-          style={styles.saveButton}
-          textStyle={styles.butttonText}
-          onClick={handleSave}
-        />
-      </div>
-    </Modal>
+        </Modal>
+      )}
+    </div>
   );
 };
+
+
+function filterList(code: string, students: any[][]){
+  const selected = students.find(item => item.at(2) === code);
+  const remaining = students.filter(item => item.at(2) !== code);
+  return selected ? [selected, ...remaining] : students;
+}
 
 
 // Styles

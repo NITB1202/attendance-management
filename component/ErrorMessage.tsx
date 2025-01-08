@@ -43,7 +43,7 @@ const styles: { [key: string]: React.CSSProperties } = {
       backgroundColor: "rgba(0, 0, 0, 0.3)",
     },
     messageContainer: {
-      zIndex: 10,
+      zIndex: 999,
       backgroundColor: "white",
       borderRadius: "10px",
       boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.2)",

@@ -545,7 +545,10 @@ const DetailTeacher = () => {
                         openModal &&
                         <RollCallerModal
                             open={openModal}
-                            onClose={()=> setOpenModal(false)}>
+                            onClose={()=> setOpenModal(false)}
+                            students={students}
+                            sessionId={sessionId}
+                            rollCaller={rollCaller}>
                         </RollCallerModal>
                     }
                     {
