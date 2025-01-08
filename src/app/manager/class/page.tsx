@@ -213,6 +213,22 @@ const handleSave = ()=>{
   }
 }
 
+const handleCloseModal = () => {
+  setModalVisible(false);
+  setFile(null);
+  setFileName("");
+  setCreateRequest({
+    name: "",
+    beginDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
+    allowedLateTime: 3,
+    teacherId: 1 ,
+    courseId: 1,
+  })
+}
+
 const justifyContent = screenWidth > 700? "flex-end": "flex-start";  
 
   return (
@@ -274,7 +290,7 @@ const justifyContent = screenWidth > 700? "flex-end": "flex-start";
           <div style={styles.form}>
             <button 
               style={styles.closeButton}
-              onClick={() => setModalVisible(false)}
+              onClick={handleCloseModal}
             >
               <IoMdClose size={35} />
             </button>
